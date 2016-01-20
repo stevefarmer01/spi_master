@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="spi_master_tb_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="glbl" />
+            <top_module name="spi_master_tb" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <WVObjectSize size="38" />
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/sys_clk_i" type="logic">
+      <obj_property name="ElementShortName">sys_clk_i</obj_property>
+      <obj_property name="ObjectShortName">sys_clk_i</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/sys_rst_i" type="logic">
+      <obj_property name="ElementShortName">sys_rst_i</obj_property>
+      <obj_property name="ObjectShortName">sys_rst_i</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/csn_i" type="logic">
+      <obj_property name="ElementShortName">csn_i</obj_property>
+      <obj_property name="ObjectShortName">csn_i</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/data_i" type="array">
+      <obj_property name="ElementShortName">data_i[15:0]</obj_property>
+      <obj_property name="ObjectShortName">data_i[15:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/slave_data_i" type="array">
+      <obj_property name="ElementShortName">slave_data_i[15:0]</obj_property>
+      <obj_property name="ObjectShortName">slave_data_i[15:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/wr_i" type="logic">
+      <obj_property name="ElementShortName">wr_i</obj_property>
+      <obj_property name="ObjectShortName">wr_i</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/rd_i" type="logic">
+      <obj_property name="ElementShortName">rd_i</obj_property>
+      <obj_property name="ObjectShortName">rd_i</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spim_data_i" type="array">
+      <obj_property name="ElementShortName">spim_data_i[15:0]</obj_property>
+      <obj_property name="ObjectShortName">spim_data_i[15:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spim_tx_ready_i" type="logic">
+      <obj_property name="ElementShortName">spim_tx_ready_i</obj_property>
+      <obj_property name="ObjectShortName">spim_tx_ready_i</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spim_rx_ready_i" type="logic">
+      <obj_property name="ElementShortName">spim_rx_ready_i</obj_property>
+      <obj_property name="ObjectShortName">spim_rx_ready_i</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spim_tx_error_i" type="logic">
+      <obj_property name="ElementShortName">spim_tx_error_i</obj_property>
+      <obj_property name="ObjectShortName">spim_tx_error_i</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spim_rx_error_i" type="logic">
+      <obj_property name="ElementShortName">spim_rx_error_i</obj_property>
+      <obj_property name="ObjectShortName">spim_rx_error_i</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/slave_addr_i" type="array">
+      <obj_property name="ElementShortName">slave_addr_i[1:0]</obj_property>
+      <obj_property name="ObjectShortName">slave_addr_i[1:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/cpol_i" type="logic">
+      <obj_property name="ElementShortName">cpol_i</obj_property>
+      <obj_property name="ObjectShortName">cpol_i</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/cpha_i" type="logic">
+      <obj_property name="ElementShortName">cpha_i</obj_property>
+      <obj_property name="ObjectShortName">cpha_i</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/lsb_first_i" type="logic">
+      <obj_property name="ElementShortName">lsb_first_i</obj_property>
+      <obj_property name="ObjectShortName">lsb_first_i</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_start_i" type="logic">
+      <obj_property name="ElementShortName">spi_start_i</obj_property>
+      <obj_property name="ObjectShortName">spi_start_i</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/clk_period_i" type="array">
+      <obj_property name="ElementShortName">clk_period_i[7:0]</obj_property>
+      <obj_property name="ObjectShortName">clk_period_i[7:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/setup_cycles_i" type="array">
+      <obj_property name="ElementShortName">setup_cycles_i[7:0]</obj_property>
+      <obj_property name="ObjectShortName">setup_cycles_i[7:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/hold_cycles_i" type="array">
+      <obj_property name="ElementShortName">hold_cycles_i[7:0]</obj_property>
+      <obj_property name="ObjectShortName">hold_cycles_i[7:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/tx2tx_cycles_i" type="array">
+      <obj_property name="ElementShortName">tx2tx_cycles_i[7:0]</obj_property>
+      <obj_property name="ObjectShortName">tx2tx_cycles_i[7:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/slave_csn_i" type="array">
+      <obj_property name="ElementShortName">slave_csn_i[3:0]</obj_property>
+      <obj_property name="ObjectShortName">slave_csn_i[3:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/mosi_i" type="logic">
+      <obj_property name="ElementShortName">mosi_i</obj_property>
+      <obj_property name="ObjectShortName">mosi_i</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/miso_00_i" type="logic">
+      <obj_property name="ElementShortName">miso_00_i</obj_property>
+      <obj_property name="ObjectShortName">miso_00_i</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/miso_01_i" type="logic">
+      <obj_property name="ElementShortName">miso_01_i</obj_property>
+      <obj_property name="ObjectShortName">miso_01_i</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/miso_10_i" type="logic">
+      <obj_property name="ElementShortName">miso_10_i</obj_property>
+      <obj_property name="ObjectShortName">miso_10_i</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/miso_11_i" type="logic">
+      <obj_property name="ElementShortName">miso_11_i</obj_property>
+      <obj_property name="ObjectShortName">miso_11_i</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/miso" type="logic">
+      <obj_property name="ElementShortName">miso</obj_property>
+      <obj_property name="ObjectShortName">miso</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/sclk_i" type="logic">
+      <obj_property name="ElementShortName">sclk_i</obj_property>
+      <obj_property name="ObjectShortName">sclk_i</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/ss_i" type="logic">
+      <obj_property name="ElementShortName">ss_i</obj_property>
+      <obj_property name="ObjectShortName">ss_i</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/count" type="other">
+      <obj_property name="ElementShortName">count</obj_property>
+      <obj_property name="ObjectShortName">count</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/DATA_SIZE" type="other">
+      <obj_property name="ElementShortName">DATA_SIZE</obj_property>
+      <obj_property name="ObjectShortName">DATA_SIZE</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/FIFO_REQ" type="other">
+      <obj_property name="ElementShortName">FIFO_REQ</obj_property>
+      <obj_property name="ObjectShortName">FIFO_REQ</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/TIME_PERIOD_CLK" type="other">
+      <obj_property name="ElementShortName">TIME_PERIOD_CLK</obj_property>
+      <obj_property name="ObjectShortName">TIME_PERIOD_CLK</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/input_data" type="array">
+      <obj_property name="ElementShortName">input_data[0:15][15:0]</obj_property>
+      <obj_property name="ObjectShortName">input_data[0:15][15:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/period_cycles" type="array">
+      <obj_property name="ElementShortName">period_cycles[0:3][7:0]</obj_property>
+      <obj_property name="ObjectShortName">period_cycles[0:3][7:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/delay_cycles" type="array">
+      <obj_property name="ElementShortName">delay_cycles[0:3][7:0]</obj_property>
+      <obj_property name="ObjectShortName">delay_cycles[0:3][7:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/four_data" type="array">
+      <obj_property name="ElementShortName">four_data[0:3][1:0]</obj_property>
+      <obj_property name="ObjectShortName">four_data[0:3][1:0]</obj_property>
+   </wvobject>
+</wave_config>
