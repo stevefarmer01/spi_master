@@ -77,6 +77,38 @@ component spi_master_top
         );
 end component;
 
+component spi_slave is
+    generic(
+        DATA_SIZE  :     natural := 16);
+    port (
+        i_sys_clk  : in  std_logic;     -- system clock
+        i_sys_rst  : in  std_logic;     -- system reset
+        i_csn      : in  std_logic;     -- Slave Enable/select
+        i_data     : in  std_logic_vector(DATA_SIZE - 1 downto 0);  -- Input data
+        i_wr       : in  std_logic;     -- Active Low Write, Active High Read
+        i_rd       : in  std_logic;     -- Active Low Write, Active High Read
+        o_data     : out std_logic_vector(DATA_SIZE - 1 downto 0);  --output data
+        o_tx_ready : out std_logic;     -- Transmitter ready, can write another 
+                    -- data
+        o_rx_ready : out std_logic;     -- Receiver ready, can read data
+        o_tx_error : out std_logic;     -- Transmitter error
+        o_rx_error : out std_logic;     -- Receiver error
+
+        i_cpol      : in std_logic;     -- CPOL value - 0 or 1
+        i_cpha      : in std_logic;     -- CPHA value - 0 or 1 
+        i_lsb_first : in std_logic;     -- lsb first when '1' /msb first when 
+                    -- '0'
+
+        o_miso      : out std_logic;    -- Slave output to Master
+        i_mosi      : in  std_logic;    -- Slave input from Master
+        i_ssn       : in  std_logic;    -- Slave Slect Active low
+        i_sclk      : in  std_logic;    -- Clock from SPI Master
+        miso_tri_en : out std_logic;
+        o_tx_ack    : out std_logic;
+        o_tx_no_ack : out std_logic
+        );
+end component;
+
 
 
 
@@ -144,9 +176,49 @@ end component;
 
     signal stop_clks : boolean := FALSE;
 
+    signal o_data_slave : std_logic_vector(15 downto 0); 
+    signal master_slave_match : boolean := FALSE;
+
 begin
 
-    u0_spim_inst : spi_master_top
+master_slave_match <= TRUE when data_i = o_data_slave else FALSE;
+
+    spi_slave_inst : spi_slave
+        generic map(
+            DATA_SIZE => DATA_SIZE)
+        port map(
+        ---i_sys_clk   => i_sys_clk,      -- i_sys_clk  : in  std_logic;                                    -- system clock
+        ---i_sys_rst   => i_sys_rst,      -- i_sys_rst  : in  std_logic;                                    -- system reset
+        ---i_csn       => i_csn,          -- i_csn      : in  std_logic;                                    -- Slave Enable/select
+        ---i_data      => i_data,         -- i_data     : in  std_logic_vector(15 downto 0);                -- Input data
+        ---i_wr        => i_wr,           -- i_wr       : in  std_logic;                                    -- Active Low Write, Active High Read
+        ---i_rd        => i_rd,           -- i_rd       : in  std_logic;                                    -- Active Low Write, Active High Read
+            i_sys_clk      => sys_clk_i,       -- : in  std_logic;                                    -- system clock
+            i_sys_rst      => sys_rst_i,       -- : in  std_logic;                                    -- system reset
+            i_csn          => csn_i,           -- : in  std_logic;                                    -- chip select for SPI master
+            i_data         => data_i,          -- : in  std_logic_vector(15 downto 0);                -- Input data
+            i_wr           => wr_i,            -- : in  std_logic;                                    -- Active Low Write, Active High Read
+            i_rd           => rd_i,            -- : in  std_logic;                                    -- Active Low Write, Active High Read
+        o_data      => o_data_slave,         -- o_data     : out std_logic_vector(15 downto 0);  --output data
+        o_tx_ready  => open,     -- o_tx_ready : out std_logic;                                    -- Transmitter ready, can write another
+        o_rx_ready  => open,     -- o_rx_ready : out std_logic;                                    -- Receiver ready, can read data
+        o_tx_error  => open,     -- o_tx_error : out std_logic;                                    -- Transmitter error
+        o_rx_error  => open,     -- o_rx_error : out std_logic;                                    -- Receiver error
+        ---i_cpol      => i_cpol,         -- i_cpol      : in std_logic;                                    -- CPOL value - 0 or 1
+        ---i_cpha      => i_cpha,         -- i_cpha      : in std_logic;                                    -- CPHA value - 0 or 1
+        ---i_lsb_first => i_lsb_first,    -- i_lsb_first : in std_logic;                                    -- lsb first when '1' /msb first when
+            i_cpol         => '0',             -- : in  std_logic;                                    -- CPOL value - 0 or 1
+            i_cpha         => '0',             -- : in  std_logic;                                    -- CPHA value - 0 or 1
+            i_lsb_first    => '0',             -- : in  std_logic;                                    -- lsb first when '1' /msb first when
+        i_ssn       => ss_i,          -- i_ssn  : in  std_logic;                                        -- Slave Slect Active low
+        i_mosi      => mosi_i,         -- i_mosi : in  std_logic;                                        -- Slave input from Master
+        o_miso      => miso,         -- o_miso : out std_logic;                                        -- Slave output to Master
+        i_sclk      => sclk_i,         -- i_sclk : in  std_logic;                                        -- Clock from SPI Master
+        o_tx_ack    => open,       -- o_tx_ack : out std_logic;
+        o_tx_no_ack => open     -- o_tx_no_ack : out std_logic
+            );
+
+    spi_master_inst : spi_master_top
         generic map(
             DATA_SIZE      => DATA_SIZE, -- :     integer := 16;
             FIFO_REQ       => FIFO_REQ -- :     Boolean := True
@@ -161,8 +233,8 @@ begin
             o_data         => spim_data_i,     -- : out std_logic_vector(15 downto 0);  --output data
             o_tx_ready     => spim_tx_ready_i, -- : out std_logic;                                    -- Transmitter ready, can write another
             o_rx_ready     => spim_rx_ready_i, -- : out std_logic;                                    -- Receiver ready, can read data
-            o_tx_error     => spim_tx_error_i, -- : out std_logic;                                    -- Transmitter error
-            o_rx_error     => spim_rx_error_i, -- : out std_logic;                                    -- Receiver error
+            o_tx_error     => open, -- : out std_logic;                                    -- Transmitter error
+            o_rx_error     => open, -- : out std_logic;                                    -- Receiver error
             i_slave_addr   => slave_addr_i,    -- : in  std_logic_vector(1 downto 0);                 -- Slave Address
             --.i_cpol         => cpol_i,       -- : in  std_logic;                                    -- CPOL value - 0 or 1
             --.i_cpha         => cpha_i,       -- : in  std_logic;                                    -- CPHA value - 0 or 1
@@ -217,9 +289,10 @@ begin
         wait for TIME_PERIOD_CLK*20;
 
 
-        for j in 0 to 3 loop
-            cpol_i          <= four_data(j)(1);
-            cpha_i          <= four_data(j)(0);
+        ---for j in 0 to 3 loop
+        for j in input_data_type'RANGE loop
+            ---cpol_i          <= four_data(j)(1);
+            ---cpha_i          <= four_data(j)(0);
             if FIFO_REQ = False then
                 csn_i       <= '0';
                 data_i      <= input_data(j);
@@ -234,13 +307,13 @@ begin
 
             wait until rising_edge(sys_clk_i);
             wait for TIME_PERIOD_CLK/2;
-            for i in 0 to 3 loop
-                clk_period_i   <= period_cycles(i);
-                setup_cycles_i <= delay_cycles(i);
-                hold_cycles_i  <= delay_cycles(i) + 7;
-                tx2tx_cycles_i <= delay_cycles(i) + 15;
-                slave_addr_i   <= four_data(i);
-                lsb_first_i    <= four_data(i)(0);
+            ---for i in 0 to 3 loop
+                ---clk_period_i   <= period_cycles(i);
+                ---setup_cycles_i <= delay_cycles(i);
+                ---hold_cycles_i  <= delay_cycles(i) + 7;
+                ---tx2tx_cycles_i <= delay_cycles(i) + 15;
+                ---slave_addr_i   <= four_data(i);
+                ---lsb_first_i    <= four_data(i)(0);
                 wait until rising_edge(sys_clk_i);
                 wait until rising_edge(sys_clk_i);
                 wait for TIME_PERIOD_CLK/2;
@@ -259,7 +332,7 @@ begin
                 csn_i       <= '1';
                 rd_i        <= '0';
                 wait for 64 * TIME_PERIOD_CLK;
-            end loop;
+            ---end loop;
         end loop;
         stop_clks <= TRUE;
         wait;
@@ -354,10 +427,10 @@ begin
         end if;
     end process;
 
-    miso <= miso_00_i when (cpol_i = '0' and cpha_i = '0' and ss_i = '0') else
-            miso_01_i when (cpol_i = '0' and cpha_i = '1' and ss_i = '0') else
-            miso_10_i when (cpol_i = '1' and cpha_i = '0' and ss_i = '0') else
-            miso_11_i when (cpol_i = '1' and cpha_i = '1' and ss_i = '0') else
-            'Z';
+--.    miso <= miso_00_i when (cpol_i = '0' and cpha_i = '0' and ss_i = '0') else
+--.            miso_01_i when (cpol_i = '0' and cpha_i = '1' and ss_i = '0') else
+--.            miso_10_i when (cpol_i = '1' and cpha_i = '0' and ss_i = '0') else
+--.            miso_11_i when (cpol_i = '1' and cpha_i = '1' and ss_i = '0') else
+--.            'Z';
 
 end behave;
