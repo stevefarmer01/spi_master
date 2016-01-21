@@ -176,12 +176,30 @@ end component;
 
     signal stop_clks : boolean := FALSE;
 
-    signal o_data_slave : std_logic_vector(15 downto 0); 
-    signal master_slave_match : boolean := FALSE;
+    signal o_data_slave, o_data_master, data_i_master_tx, data_i_slave_tx : std_logic_vector(15 downto 0); 
+    signal master_slave_match, slave_master_match : boolean := FALSE;
+    signal master_to_slave_rx_match_latch, slave_to_master_rx_match_latch : boolean := TRUE;
+    signal o_rx_ready_slave, o_tx_ready_slave : std_logic := '0';
+    constant induce_fault_master_tx_c : boolean := FALSE;
+    constant induce_fault_slave_tx_c : boolean := FALSE;
+    signal o_tx_ready_master, o_rx_ready_master : std_logic := '0';
+
 
 begin
 
+data_i_master_tx <= (data_i(data_i'HIGH downto 1) & '1') when induce_fault_master_tx_c else data_i;
+
 master_slave_match <= TRUE when data_i = o_data_slave else FALSE;
+
+--.Latch the failure if when rx ready goes high and tx/rx values don't agree
+latch_match_proc : process
+begin
+    wait until o_rx_ready_slave = '1';
+    if not (data_i = o_data_slave) then
+        master_to_slave_rx_match_latch <= FALSE;
+    end if;
+end process;
+
 
     spi_slave_inst : spi_slave
         generic map(
@@ -195,13 +213,13 @@ master_slave_match <= TRUE when data_i = o_data_slave else FALSE;
         ---i_rd        => i_rd,           -- i_rd       : in  std_logic;                                    -- Active Low Write, Active High Read
             i_sys_clk      => sys_clk_i,       -- : in  std_logic;                                    -- system clock
             i_sys_rst      => sys_rst_i,       -- : in  std_logic;                                    -- system reset
-            i_csn          => csn_i,           -- : in  std_logic;                                    -- chip select for SPI master
-            i_data         => data_i,          -- : in  std_logic_vector(15 downto 0);                -- Input data
+            i_csn          => '0',           -- : in  std_logic;                                    -- chip select for SPI master
+            i_data         => data_i_slave_tx,          -- : in  std_logic_vector(15 downto 0);                -- Input data
             i_wr           => wr_i,            -- : in  std_logic;                                    -- Active Low Write, Active High Read
             i_rd           => rd_i,            -- : in  std_logic;                                    -- Active Low Write, Active High Read
         o_data      => o_data_slave,         -- o_data     : out std_logic_vector(15 downto 0);  --output data
-        o_tx_ready  => open,     -- o_tx_ready : out std_logic;                                    -- Transmitter ready, can write another
-        o_rx_ready  => open,     -- o_rx_ready : out std_logic;                                    -- Receiver ready, can read data
+        o_tx_ready  => o_tx_ready_slave,     -- o_tx_ready : out std_logic;                                    -- Transmitter ready, can write another
+        o_rx_ready  => o_rx_ready_slave,     -- o_rx_ready : out std_logic;                                    -- Receiver ready, can read data
         o_tx_error  => open,     -- o_tx_error : out std_logic;                                    -- Transmitter error
         o_rx_error  => open,     -- o_rx_error : out std_logic;                                    -- Receiver error
         ---i_cpol      => i_cpol,         -- i_cpol      : in std_logic;                                    -- CPOL value - 0 or 1
@@ -218,6 +236,19 @@ master_slave_match <= TRUE when data_i = o_data_slave else FALSE;
         o_tx_no_ack => open     -- o_tx_no_ack : out std_logic
             );
 
+data_i_slave_tx <= (data_i(data_i'HIGH downto 2) & "11") when induce_fault_slave_tx_c else data_i;
+
+slave_master_match <= TRUE when data_i = o_data_master else FALSE;
+
+--.Latch the failure if when rx ready goes high and tx/rx values don't agree
+latch_match_2_proc : process
+begin
+    wait until o_rx_ready_master = '1';
+    if not (data_i = o_data_master) then
+        slave_to_master_rx_match_latch <= FALSE;
+    end if;
+end process;
+
     spi_master_inst : spi_master_top
         generic map(
             DATA_SIZE      => DATA_SIZE, -- :     integer := 16;
@@ -226,13 +257,13 @@ master_slave_match <= TRUE when data_i = o_data_slave else FALSE;
         port map(
             i_sys_clk      => sys_clk_i,       -- : in  std_logic;                                    -- system clock
             i_sys_rst      => sys_rst_i,       -- : in  std_logic;                                    -- system reset
-            i_csn          => csn_i,           -- : in  std_logic;                                    -- chip select for SPI master
-            i_data         => data_i,          -- : in  std_logic_vector(15 downto 0);                -- Input data
+            i_csn          => '0',           -- : in  std_logic;                                    -- chip select for SPI master
+            i_data         => data_i_master_tx,          -- : in  std_logic_vector(15 downto 0);                -- Input data
             i_wr           => wr_i,            -- : in  std_logic;                                    -- Active Low Write, Active High Read
             i_rd           => rd_i,            -- : in  std_logic;                                    -- Active Low Write, Active High Read
-            o_data         => spim_data_i,     -- : out std_logic_vector(15 downto 0);  --output data
-            o_tx_ready     => spim_tx_ready_i, -- : out std_logic;                                    -- Transmitter ready, can write another
-            o_rx_ready     => spim_rx_ready_i, -- : out std_logic;                                    -- Receiver ready, can read data
+            o_data         => o_data_master,     -- : out std_logic_vector(15 downto 0);  --output data
+            o_tx_ready     => o_tx_ready_master, -- : out std_logic;                                    -- Transmitter ready, can write another
+            o_rx_ready     => o_rx_ready_master, -- : out std_logic;                                    -- Receiver ready, can read data
             o_tx_error     => open, -- : out std_logic;                                    -- Transmitter error
             o_rx_error     => open, -- : out std_logic;                                    -- Receiver error
             i_slave_addr   => slave_addr_i,    -- : in  std_logic_vector(1 downto 0);                 -- Slave Address
