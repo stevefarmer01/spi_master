@@ -14,12 +14,11 @@ entity spi_master is
         i_sys_clk      : in  std_logic;  -- system clock
         i_sys_rst      : in  std_logic;  -- system reset
         i_csn          : in  std_logic;  -- chip select for SPI master
-        i_data         : in  std_logic_vector(15 downto 0);  -- Input data
+        i_data         : in  std_logic_vector(DATA_SIZE - 1 downto 0);  -- Input data
         i_wr           : in  std_logic;  -- Active Low Write, Active High Read
         i_rd           : in  std_logic;  -- Active Low Write, Active High Read
-        o_data         : out std_logic_vector(15 downto 0);  --output data
+        o_data         : out std_logic_vector(DATA_SIZE - 1 downto 0);  --output data
         o_tx_ready     : out std_logic;  -- Transmitter ready, can write another 
-  					-- data
         o_rx_ready     : out std_logic;  -- Receiver ready, can read data
         o_tx_error     : out std_logic;  -- Transmitter error
         o_rx_error     : out std_logic;  -- Receiver error
@@ -68,21 +67,18 @@ architecture spi_master_rtl of spi_master is
             i_sys_clk   : in  std_logic;  -- system clock
             i_sys_rst   : in  std_logic;  -- system reset
             i_csn       : in  std_logic;  -- Master Enable/select
-            i_data      : in  std_logic_vector(16 - 1 downto 0);  -- Input data
+            i_data      : in  std_logic_vector(DATA_SIZE - 1 downto 0);  -- Input data
             i_wr        : in  std_logic;  -- Active Low Write, Active High Read
             i_rd        : in  std_logic;  -- Active Low Write, Active High Read
             i_spi_start : in  std_logic;
-            o_data      : out std_logic_vector(16 - 1 downto 0);  --output data
+            o_data      : out std_logic_vector(DATA_SIZE - 1 downto 0);  --output data
             o_tx_ready  : out std_logic;  -- Transmitter ready, can write another 
-  					-- data
             o_rx_ready  : out std_logic;  -- Receiver ready, can read data
             o_tx_error  : out std_logic;  -- Transmitter error
             o_rx_error  : out std_logic;  -- Receiver error
-
             i_cpol      : in  std_logic;  -- CPOL value - 0 or 1
             i_cpha      : in  std_logic;  -- CPHA value - 0 or 1 
             i_lsb_first : in  std_logic;  -- lsb first when '1' /msb first when 
-  					  -- '0'
             o_intr      : out std_logic;
             o_mosi      : out std_logic;  -- Master output to Slave
             i_miso      : in  std_logic;  -- Master input from Slave

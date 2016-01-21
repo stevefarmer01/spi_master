@@ -14,11 +14,11 @@ entity spi_data_path is
         i_sys_clk   : in  std_logic;  			  -- system clock
         i_sys_rst   : in  std_logic;  			  -- system reset
         i_csn       : in  std_logic;  			  -- Master Enable/select
-        i_data      : in  std_logic_vector(15 downto 0);  -- Input data
+        i_data      : in  std_logic_vector(DATA_SIZE - 1 downto 0);  -- Input data
         i_wr        : in  std_logic;  			  -- Active Low Write, Active High Read
         i_rd        : in  std_logic;  			  -- Active Low Write, Active High Read
         i_spi_start : in  std_logic;
-        o_data      : out std_logic_vector(15 downto 0);  --output data
+        o_data      : out std_logic_vector(DATA_SIZE - 1 downto 0);  --output data
         o_tx_ready  : out std_logic;  			  -- Transmitter ready, can write another 
   							  -- data
         o_rx_ready  : out std_logic;  			  -- Receiver ready, can read data

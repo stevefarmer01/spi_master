@@ -53,10 +53,10 @@ component spi_master_top
         i_sys_clk      : in  std_logic;  -- system clock
         i_sys_rst      : in  std_logic;  -- system reset
         i_csn          : in  std_logic;  -- chip select for SPI master
-        i_data         : in  std_logic_vector(15 downto 0);  -- Input data
+        i_data         : in  std_logic_vector(DATA_SIZE - 1 downto 0);  -- Input data
         i_wr           : in  std_logic;  -- Active Low Write, Active High Read
         i_rd           : in  std_logic;  -- Active Low Write, Active High Read
-        o_data         : out std_logic_vector(15 downto 0);  --output data
+        o_data         : out std_logic_vector(DATA_SIZE - 1 downto 0);  --output data
         o_tx_ready     : out std_logic;  -- Transmitter ready, can write another 
         o_rx_ready     : out std_logic;  -- Receiver ready, can read data
         o_tx_error     : out std_logic;  -- Transmitter error
@@ -89,16 +89,12 @@ component spi_slave is
         i_rd       : in  std_logic;     -- Active Low Write, Active High Read
         o_data     : out std_logic_vector(DATA_SIZE - 1 downto 0);  --output data
         o_tx_ready : out std_logic;     -- Transmitter ready, can write another 
-                    -- data
         o_rx_ready : out std_logic;     -- Receiver ready, can read data
         o_tx_error : out std_logic;     -- Transmitter error
         o_rx_error : out std_logic;     -- Receiver error
-
         i_cpol      : in std_logic;     -- CPOL value - 0 or 1
         i_cpha      : in std_logic;     -- CPHA value - 0 or 1 
         i_lsb_first : in std_logic;     -- lsb first when '1' /msb first when 
-                    -- '0'
-
         o_miso      : out std_logic;    -- Slave output to Master
         i_mosi      : in  std_logic;    -- Slave input from Master
         i_ssn       : in  std_logic;    -- Slave Slect Active low
@@ -115,11 +111,11 @@ end component;
     signal   sys_clk_i       : std_logic                     := '0';  -- system clock
     signal   sys_rst_i       : std_logic                     := '1';  -- system reset
     signal   csn_i           : std_logic                     := '1';  -- SPI Master chip select
-    signal   data_i          : std_logic_vector(15 downto 0) := (others => '0');  -- Input data
-    signal   slave_data_i    : std_logic_vector(15 downto 0) := (others => '0');  -- Input data
+    signal   data_i          : std_logic_vector(DATA_SIZE - 1 downto 0) := (others => '0');  -- Input data
+    signal   slave_data_i    : std_logic_vector(DATA_SIZE - 1 downto 0) := (others => '0');  -- Input data
     signal   wr_i            : std_logic                     := '0';  -- Active Low Write, Active High Read
     signal   rd_i            : std_logic                     := '0';  -- Active Low Write, Active High Read
-    signal   spim_data_i     : std_logic_vector(15 downto 0);  --output data
+    signal   spim_data_i     : std_logic_vector(DATA_SIZE - 1 downto 0);  --output data
     signal   spim_tx_ready_i : std_logic                     := '0';  -- Transmitter ready, can write another 
     signal   spim_rx_ready_i : std_logic                     := '0';  -- Receiver ready, can read data
     signal   spim_tx_error_i : std_logic                     := '0';  -- Transmitter error
@@ -145,7 +141,7 @@ end component;
     signal   count           : integer                       := 0;
     constant TIME_PERIOD_CLK : time                          := 256 ns;
     shared variable cnt      : integer                       := 0;
-    type input_data_type is array (integer range 0 to 15) of std_logic_vector(15 downto 0);
+    type input_data_type is array (integer range 0 to 15) of std_logic_vector(DATA_SIZE - 1 downto 0);
     type delay_type is array (integer range 0 to 3) of std_logic_vector(7 downto 0);
     type period_type is array (integer range 0 to 3) of std_logic_vector(7 downto 0);
     type four_values is array (integer range 0 to 3) of std_logic_vector(1 downto 0);
@@ -369,94 +365,94 @@ end process;
         wait;
     end process;
 
-    process
-    begin
-        for k in 0 to DATA_SIZE - 1 loop
-            wait until rising_edge(spi_start_i );
-            count        <= count + 1;
-            slave_data_i <= input_data(count);
-        end loop;  -- k
-    end process;
-
-
-    process
-
-    begin
-        wait for 10 * TIME_PERIOD_CLK;
-        cnt         := 0;
-        wait until falling_edge(ss_i);
-        miso_00_i <= '1';
-        miso_01_i <= '1';
-        miso_10_i <= '1';
-        miso_11_i <= '1';
-        if(cpol_i = '0') then
-            if(cpha_i = '0') then
-                cnt := DATA_SIZE - 1;
-
-                for i in DATA_SIZE - 1 downto 0 loop
-                    if cnt >= 0 then
-                        if(lsb_first_i = '1') then
-                            miso_00_i <= slave_data_i(conv_integer(DATA_SIZE-cnt-1));
-                        else
-
-                            miso_00_i <= slave_data_i(conv_integer(cnt));
-                        end if;
-                        wait until falling_edge(sclk_i);
-                    end if;
-
-                    if cnt > 0 then
-                        cnt := cnt - 1;
-                    elsif cnt = 0 then
-                        cnt := DATA_SIZE - 1;
-                        miso_00_i <= '1';
-                    end if;
-
-                end loop;
-                if cnt = DATA_SIZE - 1 then
-                    miso_00_i     <= '1';
-                end if;
-            else
-                cnt     := 0;
-                for i in DATA_SIZE - 1 downto 0 loop
-                    wait until rising_edge(sclk_i);
-                    if((lsb_first_i = '1')) then
-                        miso_01_i <= slave_data_i(cnt);
-                    else
-                        miso_01_i <= slave_data_i(DATA_SIZE-cnt-1);
-                    end if;
-                    cnt := cnt+1;
-                end loop;
-
-            end if;
-        else
-            if(cpha_i = '0') then
-                cnt := 0;
-                for i in DATA_SIZE - 1 downto 0 loop
-                    if(lsb_first_i = '1') then
-                        miso_10_i <= slave_data_i(cnt);
-                    else
-                        miso_10_i <= slave_data_i(DATA_SIZE-cnt-1);
-                    end if;
-
-                    wait until rising_edge(sclk_i);
-                    cnt := cnt+1;
-                end loop;
-
-            else
-                cnt     := 0;
-                for i in DATA_SIZE - 1 downto 0 loop
-                    wait until falling_edge(sclk_i);
-                    if((lsb_first_i = '1')) then
-                        miso_11_i <= slave_data_i(cnt);
-                    else
-                        miso_11_i <= slave_data_i(DATA_SIZE-cnt-1);
-                    end if;
-                    cnt := cnt+1;
-                end loop;
-
-            end if;
-        end if;
-    end process;
+--.    process
+--.    begin
+--.        for k in 0 to DATA_SIZE - 1 loop
+--.            wait until rising_edge(spi_start_i );
+--.            count        <= count + 1;
+--.            slave_data_i <= input_data(count);
+--.        end loop;  -- k
+--.    end process;
+--.
+--.
+--.    process
+--.
+--.    begin
+--.        wait for 10 * TIME_PERIOD_CLK;
+--.        cnt         := 0;
+--.        wait until falling_edge(ss_i);
+--.        miso_00_i <= '1';
+--.        miso_01_i <= '1';
+--.        miso_10_i <= '1';
+--.        miso_11_i <= '1';
+--.        if(cpol_i = '0') then
+--.            if(cpha_i = '0') then
+--.                cnt := DATA_SIZE - 1;
+--.
+--.                for i in DATA_SIZE - 1 downto 0 loop
+--.                    if cnt >= 0 then
+--.                        if(lsb_first_i = '1') then
+--.                            miso_00_i <= slave_data_i(conv_integer(DATA_SIZE-cnt-1));
+--.                        else
+--.
+--.                            miso_00_i <= slave_data_i(conv_integer(cnt));
+--.                        end if;
+--.                        wait until falling_edge(sclk_i);
+--.                    end if;
+--.
+--.                    if cnt > 0 then
+--.                        cnt := cnt - 1;
+--.                    elsif cnt = 0 then
+--.                        cnt := DATA_SIZE - 1;
+--.                        miso_00_i <= '1';
+--.                    end if;
+--.
+--.                end loop;
+--.                if cnt = DATA_SIZE - 1 then
+--.                    miso_00_i     <= '1';
+--.                end if;
+--.            else
+--.                cnt     := 0;
+--.                for i in DATA_SIZE - 1 downto 0 loop
+--.                    wait until rising_edge(sclk_i);
+--.                    if((lsb_first_i = '1')) then
+--.                        miso_01_i <= slave_data_i(cnt);
+--.                    else
+--.                        miso_01_i <= slave_data_i(DATA_SIZE-cnt-1);
+--.                    end if;
+--.                    cnt := cnt+1;
+--.                end loop;
+--.
+--.            end if;
+--.        else
+--.            if(cpha_i = '0') then
+--.                cnt := 0;
+--.                for i in DATA_SIZE - 1 downto 0 loop
+--.                    if(lsb_first_i = '1') then
+--.                        miso_10_i <= slave_data_i(cnt);
+--.                    else
+--.                        miso_10_i <= slave_data_i(DATA_SIZE-cnt-1);
+--.                    end if;
+--.
+--.                    wait until rising_edge(sclk_i);
+--.                    cnt := cnt+1;
+--.                end loop;
+--.
+--.            else
+--.                cnt     := 0;
+--.                for i in DATA_SIZE - 1 downto 0 loop
+--.                    wait until falling_edge(sclk_i);
+--.                    if((lsb_first_i = '1')) then
+--.                        miso_11_i <= slave_data_i(cnt);
+--.                    else
+--.                        miso_11_i <= slave_data_i(DATA_SIZE-cnt-1);
+--.                    end if;
+--.                    cnt := cnt+1;
+--.                end loop;
+--.
+--.            end if;
+--.        end if;
+--.    end process;
 
 --.    miso <= miso_00_i when (cpol_i = '0' and cpha_i = '0' and ss_i = '0') else
 --.            miso_01_i when (cpol_i = '0' and cpha_i = '1' and ss_i = '0') else
