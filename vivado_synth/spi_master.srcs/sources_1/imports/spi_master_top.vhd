@@ -40,10 +40,10 @@ entity spi_master_top is
         i_sys_clk  : in  std_logic;  -- system clock
         i_sys_rst  : in  std_logic;  -- system reset
         i_csn      : in  std_logic;  -- SPI Master chip select
-        i_data     : in  std_logic_vector(15 downto 0);  -- Input data
+        i_data     : in  std_logic_vector(DATA_SIZE - 1 downto 0);  -- Input data
         i_wr       : in  std_logic;  -- Active Low Write, Active High Read
         i_rd       : in  std_logic;  -- Active Low Write, Active High Read
-        o_data     : out std_logic_vector(15 downto 0);  --output data
+        o_data     : out std_logic_vector(DATA_SIZE - 1 downto 0);  --output data
         o_tx_ready : out std_logic;  -- Transmitter ready, can write another 
         o_rx_ready : out std_logic;  -- Receiver ready, can read data
         o_tx_error : out std_logic;  -- Transmitter error
@@ -75,10 +75,10 @@ component spi_master
         i_sys_clk      : in  std_logic;  -- system clock
         i_sys_rst      : in  std_logic;  -- system reset
         i_csn          : in  std_logic;  -- chip select for SPI master
-        i_data         : in  std_logic_vector(15 downto 0);  -- Input data
+        i_data         : in  std_logic_vector(DATA_SIZE - 1 downto 0);  -- Input data
         i_wr           : in  std_logic;  -- Active Low Write, Active High Read
         i_rd           : in  std_logic;  -- Active Low Write, Active High Read
-        o_data         : out std_logic_vector(15 downto 0);  --output data
+        o_data         : out std_logic_vector(DATA_SIZE - 1 downto 0);  --output data
         o_tx_ready     : out std_logic;  -- Transmitter ready, can write another 
         o_rx_ready     : out std_logic;  -- Receiver ready, can read data
         o_tx_error     : out std_logic;  -- Transmitter error

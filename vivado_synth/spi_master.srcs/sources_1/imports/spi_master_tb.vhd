@@ -2,47 +2,17 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.std_logic_arith.all;
-use ieee.std_logic_unsigned.all;
+--use ieee.std_logic_arith.all;
+--use ieee.std_logic_unsigned.all;
+use ieee.numeric_std.all;
 
 entity spi_master_tb is
 end spi_master_tb;
 
 architecture behave of spi_master_tb is
 
-    constant DATA_SIZE : integer   := 16;
+    constant DATA_SIZE : integer   := 22;
     constant FIFO_REQ  : Boolean   := FALSE;
-
---.    component spi_master_top
---.        port(
---.            i_sys_clk  : in  std_logic;  -- system clock
---.            i_sys_rst  : in  std_logic;  -- system reset
---.            i_csn      : in  std_logic;  -- SPI Master chip select
---.            i_data     : in  std_logic_vector(15 downto 0);  -- Input data
---.            i_wr       : in  std_logic;  -- Active Low Write, Active High Read
---.            i_rd       : in  std_logic;  -- Active Low Write, Active High Read
---.            o_data     : out std_logic_vector(15 downto 0);  --output data
---.            o_tx_ready : out std_logic;  -- Transmitter ready, can write another 
---.                    -- data
---.            o_rx_ready : out std_logic;  -- Receiver ready, can read data
---.            o_tx_error : out std_logic;  -- Transmitter error
---.            o_rx_error : out std_logic;  -- Receiver error
---.
---.            i_slave_addr   : in  std_logic_vector(1 downto 0);  -- Slave Address
---.            i_cpol         : in  std_logic;  -- CPOL value - 0 or 1
---.            i_cpha         : in  std_logic;  -- CPHA value - 0 or 1 
---.            i_lsb_first    : in  std_logic;  -- lsb first when '1' /msb first when 
---.            i_spi_start    : in  std_logic;  -- START SPI Master Transactions
---.            i_clk_period   : in  std_logic_vector(7 downto 0);  -- SCL clock period in terms of i_sys_clk
---.            i_setup_cycles : in  std_logic_vector(7 downto 0);  -- SPIM setup time  in terms of i_sys_clk
---.            i_hold_cycles  : in  std_logic_vector(7 downto 0);  -- SPIM hold time  in terms of i_sys_clk
---.            i_tx2tx_cycles : in  std_logic_vector(7 downto 0);  -- SPIM interval between data transactions in terms of i_sys_clk
---.            o_slave_csn    : out std_logic_vector(3 downto 0);  -- SPI Slave select (chip select) active low
---.            o_mosi         : out std_logic;  -- Master output to Slave
---.            i_miso         : in  std_logic;  -- Master input from Slave
---.            o_sclk         : out std_logic  -- Master clock
---.            );
---.    end component;
 
 component spi_master_top
     generic(
@@ -148,22 +118,22 @@ end component;
 
 
 --    constant input_data : input_data_type := ("0011100000011000",
-    constant input_data : input_data_type := ("1111111111111111",
-                                              "0000000000000001",
-                                              "1000000000000000",
-                                              "1111111111111111",
-                                              "0010101010101010",
-                                              "0100110011001101",
-                                              "1111000011111111",
-                                              "1111111111111110",
-                                              "0111111111110000",
-                                              "0000111111110001",
-                                              "1111111111111111",
-                                              "1000000000000000",
-                                              "0010101010101010",
-                                              "1111111111111111",
-                                              "1111000011100000",
-                                              "1111111111111110"
+    constant input_data : input_data_type := (std_logic_vector(to_unsigned(2#1111111111111111#,DATA_SIZE)),
+                                              std_logic_vector(to_unsigned(2#0000000000000001#,DATA_SIZE)),
+                                              std_logic_vector(to_unsigned(2#1000000000000000#,DATA_SIZE)),
+                                              std_logic_vector(to_unsigned(2#1111111111111111#,DATA_SIZE)),
+                                              std_logic_vector(to_unsigned(2#0010101010101010#,DATA_SIZE)),
+                                              std_logic_vector(to_unsigned(2#0100110011001101#,DATA_SIZE)),
+                                              std_logic_vector(to_unsigned(2#1111000011111111#,DATA_SIZE)),
+                                              std_logic_vector(to_unsigned(2#1111111111111110#,DATA_SIZE)),
+                                              std_logic_vector(to_unsigned(2#0111111111110000#,DATA_SIZE)),
+                                              std_logic_vector(to_unsigned(2#0000111111110001#,DATA_SIZE)),
+                                              std_logic_vector(to_unsigned(2#1111111111111111#,DATA_SIZE)),
+                                              std_logic_vector(to_unsigned(2#1000000000000000#,DATA_SIZE)),
+                                              std_logic_vector(to_unsigned(2#0010101010101010#,DATA_SIZE)),
+                                              std_logic_vector(to_unsigned(2#1111111111111111#,DATA_SIZE)),
+                                              std_logic_vector(to_unsigned(2#1111000011100000#,DATA_SIZE)),
+                                              std_logic_vector(to_unsigned(2#1111111111111110#,DATA_SIZE))
                                               );
 
     constant period_cycles : delay_type  := ( "00000100", "00001000", "00010000", "00100000");
@@ -172,7 +142,7 @@ end component;
 
     signal stop_clks : boolean := FALSE;
 
-    signal o_data_slave, o_data_master, data_i_master_tx, data_i_slave_tx : std_logic_vector(15 downto 0); 
+    signal o_data_slave, o_data_master, data_i_master_tx, data_i_slave_tx : std_logic_vector(DATA_SIZE - 1 downto 0); 
     signal master_slave_match, slave_master_match : boolean := FALSE;
     signal master_to_slave_rx_match_latch, slave_to_master_rx_match_latch : boolean := TRUE;
     signal o_rx_ready_slave, o_tx_ready_slave : std_logic := '0';

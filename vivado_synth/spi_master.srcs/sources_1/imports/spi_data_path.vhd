@@ -106,87 +106,87 @@ architecture rtl_arch of spi_data_path is
 
 begin
 
-    read_fifo_1  : if FIFO_REQ = True and  DATA_SIZE = 8 generate
-        u_RxFifo : asyn_fifo
-            generic map (
-                DATA_SIZE              => 16,
-                ADDRESS_WIDTH          => 4)
-            port map (
-                i_rst                  => i_sys_rst,
-                i_rd_clk               => i_sys_clk,
-                i_rd_en                => rx_fifo_rd_en_i,
-                o_rd_data              => o_data,
-                o_empty                => RxFifoEmpty_i,
-                i_wr_clk               => i_sys_clk,
-                i_wr_en                => rx_fifo_wr_en_i,
-                i_wr_data(7 downto 0)  => rxdata_reg_i,
-                i_wr_data(15 downto 8) => dummy_rd,
-                o_half_full            => ReadHalfFull_i,
-                o_full                 => RxFifoFull_i
-                );
-    end generate read_fifo_1;
-
-    read_fifo_2  : if FIFO_REQ = True and DATA_SIZE = 16 generate
-        u_RxFifo : asyn_fifo
-            generic map (
-                DATA_SIZE     => 16,
-                ADDRESS_WIDTH => 4)
-            port map (
-                i_rst         => i_sys_rst,
-                i_rd_clk      => i_sys_clk,
-                i_rd_en       => rx_fifo_rd_en_i,
-                o_rd_data     => o_data,
-                o_empty       => RxFifoEmpty_i,
-                i_wr_clk      => i_sys_clk,
-                i_wr_en       => rx_fifo_wr_en_i,
-                i_wr_data     => rxdata_reg_i,
-                o_half_full   => ReadHalfFull_i,
-                o_full        => RxFifoFull_i
-                );
-    end generate read_fifo_2;
-
-
-    ------------------------------------------------------------------------------------------------
-    -- Write Fifo 
-    ------------------------------------------------------------------------------------------------
-    write_fifo_1 : if FIFO_REQ = True and DATA_SIZE = 8 generate
-        u_TxFifo : asyn_fifo
-            generic map (
-                DATA_SIZE              => 16,
-                ADDRESS_WIDTH          => 4)
-            port map (
-                i_rst                  => i_sys_rst,
-                i_rd_clk               => i_sys_clk,
-                i_rd_en                => tx_fifo_rd_en_i,
-                o_rd_data(7 downto 0)  => data_in_reg_i,
-                o_rd_data(15 downto 8) => dummy_i,
-                o_empty                => TxFifoEmpty_i,
-                i_wr_clk               => i_sys_clk,
-                i_wr_en                => tx_fifo_wr_en_i,
-                i_wr_data              => i_data,
-                o_half_full            => TxFifoHalfFull_i,
-                o_full                 => TxFifoFull_i
-                );
-    end generate write_fifo_1;
-
-    write_fifo_2 : if FIFO_REQ = True and DATA_SIZE = 16 generate
-        u_TxFifo : asyn_fifo
-            generic map (
-                DATA_SIZE     => 16,
-                ADDRESS_WIDTH => 4)
-            port map (
-                i_rst         => i_sys_rst,
-                i_rd_clk      => i_sys_clk,
-                i_rd_en       => tx_fifo_rd_en_i,
-                o_rd_data     => data_in_reg_i,
-                o_empty       => TxFifoEmpty_i,
-                i_wr_clk      => i_sys_clk,
-                i_wr_en       => tx_fifo_wr_en_i,
-                i_wr_data     => i_data,
-                o_half_full   => TxFifoHalfFull_i,
-                o_full        => TxFifoFull_i
-                );
-    end generate write_fifo_2;
+--.    read_fifo_1  : if FIFO_REQ = True and  DATA_SIZE = 8 generate
+--.        u_RxFifo : asyn_fifo
+--.            generic map (
+--.                DATA_SIZE              => 16,
+--.                ADDRESS_WIDTH          => 4)
+--.            port map (
+--.                i_rst                  => i_sys_rst,
+--.                i_rd_clk               => i_sys_clk,
+--.                i_rd_en                => rx_fifo_rd_en_i,
+--.                o_rd_data              => o_data,
+--.                o_empty                => RxFifoEmpty_i,
+--.                i_wr_clk               => i_sys_clk,
+--.                i_wr_en                => rx_fifo_wr_en_i,
+--.                i_wr_data(7 downto 0)  => rxdata_reg_i,
+--.                i_wr_data(15 downto 8) => dummy_rd,
+--.                o_half_full            => ReadHalfFull_i,
+--.                o_full                 => RxFifoFull_i
+--.                );
+--.    end generate read_fifo_1;
+--.
+--.    read_fifo_2  : if FIFO_REQ = True and DATA_SIZE = 16 generate
+--.        u_RxFifo : asyn_fifo
+--.            generic map (
+--.                DATA_SIZE     => 16,
+--.                ADDRESS_WIDTH => 4)
+--.            port map (
+--.                i_rst         => i_sys_rst,
+--.                i_rd_clk      => i_sys_clk,
+--.                i_rd_en       => rx_fifo_rd_en_i,
+--.                o_rd_data     => o_data,
+--.                o_empty       => RxFifoEmpty_i,
+--.                i_wr_clk      => i_sys_clk,
+--.                i_wr_en       => rx_fifo_wr_en_i,
+--.                i_wr_data     => rxdata_reg_i,
+--.                o_half_full   => ReadHalfFull_i,
+--.                o_full        => RxFifoFull_i
+--.                );
+--.    end generate read_fifo_2;
+--.
+--.
+--.    ------------------------------------------------------------------------------------------------
+--.    -- Write Fifo 
+--.    ------------------------------------------------------------------------------------------------
+--.    write_fifo_1 : if FIFO_REQ = True and DATA_SIZE = 8 generate
+--.        u_TxFifo : asyn_fifo
+--.            generic map (
+--.                DATA_SIZE              => 16,
+--.                ADDRESS_WIDTH          => 4)
+--.            port map (
+--.                i_rst                  => i_sys_rst,
+--.                i_rd_clk               => i_sys_clk,
+--.                i_rd_en                => tx_fifo_rd_en_i,
+--.                o_rd_data(7 downto 0)  => data_in_reg_i,
+--.                o_rd_data(15 downto 8) => dummy_i,
+--.                o_empty                => TxFifoEmpty_i,
+--.                i_wr_clk               => i_sys_clk,
+--.                i_wr_en                => tx_fifo_wr_en_i,
+--.                i_wr_data              => i_data,
+--.                o_half_full            => TxFifoHalfFull_i,
+--.                o_full                 => TxFifoFull_i
+--.                );
+--.    end generate write_fifo_1;
+--.
+--.    write_fifo_2 : if FIFO_REQ = True and DATA_SIZE = 16 generate
+--.        u_TxFifo : asyn_fifo
+--.            generic map (
+--.                DATA_SIZE     => 16,
+--.                ADDRESS_WIDTH => 4)
+--.            port map (
+--.                i_rst         => i_sys_rst,
+--.                i_rd_clk      => i_sys_clk,
+--.                i_rd_en       => tx_fifo_rd_en_i,
+--.                o_rd_data     => data_in_reg_i,
+--.                o_empty       => TxFifoEmpty_i,
+--.                i_wr_clk      => i_sys_clk,
+--.                i_wr_en       => tx_fifo_wr_en_i,
+--.                i_wr_data     => i_data,
+--.                o_half_full   => TxFifoHalfFull_i,
+--.                o_full        => TxFifoFull_i
+--.                );
+--.    end generate write_fifo_2;
 
     o_tx_ready <= tx_ready_i;
     o_rx_ready <= rx_ready_i;
@@ -195,14 +195,16 @@ begin
 
     mosi_tri_en             <= i_ssn;
     
-    output_data_16 : if FIFO_REQ = False and DATA_SIZE = 16 generate
+--.    output_data_16 : if FIFO_REQ = False and DATA_SIZE = 16 generate
+--.        o_data              <= rxdata_reg_i;
+--.    end generate output_data_16;
+--.    
+--.    output_data_8  : if FIFO_REQ = False and DATA_SIZE = 8 generate
+--.        o_data(7 downto 0)  <= rxdata_reg_i;
+--.        o_data(15 downto 8) <= (others => '0');
+--.    end generate output_data_8;
+
         o_data              <= rxdata_reg_i;
-    end generate output_data_16;
-    
-    output_data_8  : if FIFO_REQ = False and DATA_SIZE = 8 generate
-        o_data(7 downto 0)  <= rxdata_reg_i;
-        o_data(15 downto 8) <= (others => '0');
-    end generate output_data_8;
 ----------------------------------------------------------------------------------------------------
 -- Data input latch process
 -- Latched only when slave enabled, Transmitter ready and wr is high.
@@ -212,15 +214,15 @@ begin
         if(i_sys_rst = '1') then
             data_in         <= (others => '0');
         elsif rising_edge(i_sys_clk) then
-            if FIFO_REQ = False and DATA_SIZE = 8 then
-                if (i_wr = '1' and i_csn = '0' and tx_ready_i = '1') then
-                    data_in <= i_data(7 downto 0);
-                end if;
-            elsif FIFO_REQ = False and DATA_SIZE = 16 then
-                if (i_wr = '1' and i_csn = '0' and tx_ready_i = '1') then
-                    data_in <= i_data;
-                end if;
-            end if;
+--.            if FIFO_REQ = False and DATA_SIZE = 8 then
+--.                if (i_wr = '1' and i_csn = '0' and tx_ready_i = '1') then
+--.                    data_in <= i_data(7 downto 0);
+--.                end if;
+--.            elsif FIFO_REQ = False and DATA_SIZE = 16 then
+--.                if (i_wr = '1' and i_csn = '0' and tx_ready_i = '1') then
+            data_in <= i_data;
+--.                end if;
+--.            end if;
         end if;
     end process;
 
