@@ -1,0 +1,3 @@
+[submodule "spi_slave"]
+	path = spi_slave
+	url = https://github.com/stevefarmer01/spi_slave.git
