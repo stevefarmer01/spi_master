@@ -5,7 +5,6 @@
    <db_ref_list>
       <db_ref path="spi_master_tb_behav.wdb" id="1">
          <top_modules>
-            <top_module name="glbl" />
             <top_module name="spi_master_tb" />
          </top_modules>
       </db_ref>
@@ -22,6 +21,10 @@
    <wvobject db_ref_id="1" fp_name="/spi_master_tb/csn_i" type="logic">
       <obj_property name="ElementShortName">csn_i</obj_property>
       <obj_property name="ObjectShortName">csn_i</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_start_i" type="logic">
+      <obj_property name="ElementShortName">spi_start_i</obj_property>
+      <obj_property name="ObjectShortName">spi_start_i</obj_property>
    </wvobject>
    <wvobject db_ref_id="1" fp_name="/spi_master_tb/data_i" type="array">
       <obj_property name="ElementShortName">data_i[15:0]</obj_property>
@@ -74,10 +77,6 @@
    <wvobject db_ref_id="1" fp_name="/spi_master_tb/lsb_first_i" type="logic">
       <obj_property name="ElementShortName">lsb_first_i</obj_property>
       <obj_property name="ObjectShortName">lsb_first_i</obj_property>
-   </wvobject>
-   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_start_i" type="logic">
-      <obj_property name="ElementShortName">spi_start_i</obj_property>
-      <obj_property name="ObjectShortName">spi_start_i</obj_property>
    </wvobject>
    <wvobject db_ref_id="1" fp_name="/spi_master_tb/clk_period_i" type="array">
       <obj_property name="ElementShortName">clk_period_i[7:0]</obj_property>

@@ -9,39 +9,76 @@ entity spi_master_tb is
 end spi_master_tb;
 
 architecture behave of spi_master_tb is
+
     constant DATA_SIZE : integer   := 16;
-    constant FIFO_REQ  : Boolean   := True;
+    constant FIFO_REQ  : Boolean   := FALSE;
 
-    component spi_master_top
-        port(
-            i_sys_clk  : in  std_logic;  -- system clock
-            i_sys_rst  : in  std_logic;  -- system reset
-            i_csn      : in  std_logic;  -- SPI Master chip select
-            i_data     : in  std_logic_vector(15 downto 0);  -- Input data
-            i_wr       : in  std_logic;  -- Active Low Write, Active High Read
-            i_rd       : in  std_logic;  -- Active Low Write, Active High Read
-            o_data     : out std_logic_vector(15 downto 0);  --output data
-            o_tx_ready : out std_logic;  -- Transmitter ready, can write another 
-                    -- data
-            o_rx_ready : out std_logic;  -- Receiver ready, can read data
-            o_tx_error : out std_logic;  -- Transmitter error
-            o_rx_error : out std_logic;  -- Receiver error
+--.    component spi_master_top
+--.        port(
+--.            i_sys_clk  : in  std_logic;  -- system clock
+--.            i_sys_rst  : in  std_logic;  -- system reset
+--.            i_csn      : in  std_logic;  -- SPI Master chip select
+--.            i_data     : in  std_logic_vector(15 downto 0);  -- Input data
+--.            i_wr       : in  std_logic;  -- Active Low Write, Active High Read
+--.            i_rd       : in  std_logic;  -- Active Low Write, Active High Read
+--.            o_data     : out std_logic_vector(15 downto 0);  --output data
+--.            o_tx_ready : out std_logic;  -- Transmitter ready, can write another 
+--.                    -- data
+--.            o_rx_ready : out std_logic;  -- Receiver ready, can read data
+--.            o_tx_error : out std_logic;  -- Transmitter error
+--.            o_rx_error : out std_logic;  -- Receiver error
+--.
+--.            i_slave_addr   : in  std_logic_vector(1 downto 0);  -- Slave Address
+--.            i_cpol         : in  std_logic;  -- CPOL value - 0 or 1
+--.            i_cpha         : in  std_logic;  -- CPHA value - 0 or 1 
+--.            i_lsb_first    : in  std_logic;  -- lsb first when '1' /msb first when 
+--.            i_spi_start    : in  std_logic;  -- START SPI Master Transactions
+--.            i_clk_period   : in  std_logic_vector(7 downto 0);  -- SCL clock period in terms of i_sys_clk
+--.            i_setup_cycles : in  std_logic_vector(7 downto 0);  -- SPIM setup time  in terms of i_sys_clk
+--.            i_hold_cycles  : in  std_logic_vector(7 downto 0);  -- SPIM hold time  in terms of i_sys_clk
+--.            i_tx2tx_cycles : in  std_logic_vector(7 downto 0);  -- SPIM interval between data transactions in terms of i_sys_clk
+--.            o_slave_csn    : out std_logic_vector(3 downto 0);  -- SPI Slave select (chip select) active low
+--.            o_mosi         : out std_logic;  -- Master output to Slave
+--.            i_miso         : in  std_logic;  -- Master input from Slave
+--.            o_sclk         : out std_logic  -- Master clock
+--.            );
+--.    end component;
 
-            i_slave_addr   : in  std_logic_vector(1 downto 0);  -- Slave Address
-            i_cpol         : in  std_logic;  -- CPOL value - 0 or 1
-            i_cpha         : in  std_logic;  -- CPHA value - 0 or 1 
-            i_lsb_first    : in  std_logic;  -- lsb first when '1' /msb first when 
-            i_spi_start    : in  std_logic;  -- START SPI Master Transactions
-            i_clk_period   : in  std_logic_vector(7 downto 0);  -- SCL clock period in terms of i_sys_clk
-            i_setup_cycles : in  std_logic_vector(7 downto 0);  -- SPIM setup time  in terms of i_sys_clk
-            i_hold_cycles  : in  std_logic_vector(7 downto 0);  -- SPIM hold time  in terms of i_sys_clk
-            i_tx2tx_cycles : in  std_logic_vector(7 downto 0);  -- SPIM interval between data transactions in terms of i_sys_clk
-            o_slave_csn    : out std_logic_vector(3 downto 0);  -- SPI Slave select (chip select) active low
-            o_mosi         : out std_logic;  -- Master output to Slave
-            i_miso         : in  std_logic;  -- Master input from Slave
-            o_sclk         : out std_logic  -- Master clock
-            );
-    end component;
+component spi_master_top
+    generic(
+        DATA_SIZE      :     integer := 16;
+        FIFO_REQ       :     Boolean := True
+        );
+    port(
+        i_sys_clk      : in  std_logic;  -- system clock
+        i_sys_rst      : in  std_logic;  -- system reset
+        i_csn          : in  std_logic;  -- chip select for SPI master
+        i_data         : in  std_logic_vector(15 downto 0);  -- Input data
+        i_wr           : in  std_logic;  -- Active Low Write, Active High Read
+        i_rd           : in  std_logic;  -- Active Low Write, Active High Read
+        o_data         : out std_logic_vector(15 downto 0);  --output data
+        o_tx_ready     : out std_logic;  -- Transmitter ready, can write another 
+        o_rx_ready     : out std_logic;  -- Receiver ready, can read data
+        o_tx_error     : out std_logic;  -- Transmitter error
+        o_rx_error     : out std_logic;  -- Receiver error
+        i_slave_addr   : in  std_logic_vector(1 downto 0);  -- Slave Address
+        i_cpol         : in  std_logic;  -- CPOL value - 0 or 1
+        i_cpha         : in  std_logic;  -- CPHA value - 0 or 1 
+        i_lsb_first    : in  std_logic;  -- lsb first when '1' /msb first when 
+        i_spi_start    : in  std_logic;  -- START SPI Master Transactions
+        i_clk_period   : in  std_logic_vector(7 downto 0);  -- SCL clock period in terms of i_sys_clk
+        i_setup_cycles : in  std_logic_vector(7 downto 0);  -- SPIM setup time  in terms of i_sys_clk
+        i_hold_cycles  : in  std_logic_vector(7 downto 0);  -- SPIM hold time  in terms of i_sys_clk
+        i_tx2tx_cycles : in  std_logic_vector(7 downto 0);  -- SPIM interval between data transactions in terms of i_sys_clk
+        o_slave_csn    : out std_logic_vector(3 downto 0);  -- SPI Slave select (chip select) active low
+        o_mosi         : out std_logic;  -- Master output to Slave
+        i_miso         : in  std_logic;  -- Master input from Slave
+        o_sclk         : out std_logic  -- Master clock
+        );
+end component;
+
+
+
 
     signal   sys_clk_i       : std_logic                     := '0';  -- system clock
     signal   sys_rst_i       : std_logic                     := '1';  -- system reset
@@ -58,7 +95,7 @@ architecture behave of spi_master_tb is
     signal   slave_addr_i    : std_logic_vector(1 downto 0)  := "00";  -- Slave Address
     signal   cpol_i          : std_logic                     := '0';  -- CPOL value - 0 or 1
     signal   cpha_i          : std_logic                     := '0';  -- CPHA value - 0 or 1 
-    signal   lsb_first_i     : std_logic                     := '1';  -- lsb first when '1' /msb first when 
+    signal   lsb_first_i     : std_logic                     := '0';  -- lsb first when '1' /msb first when 
     signal   spi_start_i     : std_logic                     := '0';  -- START SPI Master Transactions
     signal   clk_period_i    : std_logic_vector(7 downto 0);  -- SCL clock period in terms of i_sys_clk
     signal   setup_cycles_i  : std_logic_vector(7 downto 0);  -- SPIM setup time  in terms of i_sys_clk
@@ -82,7 +119,8 @@ architecture behave of spi_master_tb is
     type four_values is array (integer range 0 to 3) of std_logic_vector(1 downto 0);
 
 
-    constant input_data : input_data_type := ("0011100000011000",
+--    constant input_data : input_data_type := ("0011100000011000",
+    constant input_data : input_data_type := ("1111111111111111",
                                               "0000000000000001",
                                               "1000000000000000",
                                               "1111111111111111",
@@ -109,31 +147,43 @@ architecture behave of spi_master_tb is
 begin
 
     u0_spim_inst : spi_master_top
+        generic map(
+            DATA_SIZE      => DATA_SIZE, -- :     integer := 16;
+            FIFO_REQ       => FIFO_REQ -- :     Boolean := True
+            )
         port map(
-            i_sys_clk      => sys_clk_i,
-            i_sys_rst      => sys_rst_i,
-            i_csn          => csn_i,
-            i_data         => data_i,
-            i_wr           => wr_i,
-            i_rd           => rd_i,
-            o_data         => spim_data_i,
-            o_tx_ready     => spim_tx_ready_i,
-            o_rx_ready     => spim_rx_ready_i,
-            o_tx_error     => spim_tx_error_i,
-            o_rx_error     => spim_rx_error_i,
-            i_slave_addr   => slave_addr_i,
-            i_cpol         => cpol_i,
-            i_cpha         => cpha_i,
-            i_lsb_first    => lsb_first_i,
-            i_spi_start    => spi_start_i,
-            i_clk_period   => clk_period_i,
-            i_setup_cycles => setup_cycles_i,
-            i_hold_cycles  => hold_cycles_i,
-            i_tx2tx_cycles => tx2tx_cycles_i,
-            o_slave_csn    => slave_csn_i,
-            o_mosi         => mosi_i,
-            i_miso         => miso,
-            o_sclk         => sclk_i
+            i_sys_clk      => sys_clk_i,       -- : in  std_logic;                                    -- system clock
+            i_sys_rst      => sys_rst_i,       -- : in  std_logic;                                    -- system reset
+            i_csn          => csn_i,           -- : in  std_logic;                                    -- chip select for SPI master
+            i_data         => data_i,          -- : in  std_logic_vector(15 downto 0);                -- Input data
+            i_wr           => wr_i,            -- : in  std_logic;                                    -- Active Low Write, Active High Read
+            i_rd           => rd_i,            -- : in  std_logic;                                    -- Active Low Write, Active High Read
+            o_data         => spim_data_i,     -- : out std_logic_vector(15 downto 0);  --output data
+            o_tx_ready     => spim_tx_ready_i, -- : out std_logic;                                    -- Transmitter ready, can write another
+            o_rx_ready     => spim_rx_ready_i, -- : out std_logic;                                    -- Receiver ready, can read data
+            o_tx_error     => spim_tx_error_i, -- : out std_logic;                                    -- Transmitter error
+            o_rx_error     => spim_rx_error_i, -- : out std_logic;                                    -- Receiver error
+            i_slave_addr   => slave_addr_i,    -- : in  std_logic_vector(1 downto 0);                 -- Slave Address
+            --.i_cpol         => cpol_i,       -- : in  std_logic;                                    -- CPOL value - 0 or 1
+            --.i_cpha         => cpha_i,       -- : in  std_logic;                                    -- CPHA value - 0 or 1
+            --.i_lsb_first    => lsb_first_i,  -- : in  std_logic;                                    -- lsb first when '1' /msb first when
+            ---i_spi_start    => spi_start_i,     -- : in  std_logic;                                    -- START SPI Master Transactions
+            ---i_clk_period   => clk_period_i,    -- : in  std_logic_vector(7 downto 0);                 -- SCL clock period in terms of i_sys_clk
+            ---i_setup_cycles => setup_cycles_i,  -- : in  std_logic_vector(7 downto 0);                 -- SPIM setup time  in terms of i_sys_clk
+            ---i_hold_cycles  => hold_cycles_i,   -- : in  std_logic_vector(7 downto 0);                 -- SPIM hold time  in terms of i_sys_clk
+            ---i_tx2tx_cycles => tx2tx_cycles_i,  -- : in  std_logic_vector(7 downto 0);                 -- SPIM interval between data transactions in terms of i_sys_clk
+            i_cpol         => '0',             -- : in  std_logic;                                    -- CPOL value - 0 or 1
+            i_cpha         => '0',             -- : in  std_logic;                                    -- CPHA value - 0 or 1
+            i_lsb_first    => '0',             -- : in  std_logic;                                    -- lsb first when '1' /msb first when
+            i_spi_start    => spi_start_i,     -- : in  std_logic;                                    -- START SPI Master Transactions
+            i_clk_period   => "00000100",    -- : in  std_logic_vector(7 downto 0);                 -- SCL clock period in terms of i_sys_clk
+            i_setup_cycles => "00000111",  -- : in  std_logic_vector(7 downto 0);                 -- SPIM setup time  in terms of i_sys_clk
+            i_hold_cycles  => "00000111",   -- : in  std_logic_vector(7 downto 0);                 -- SPIM hold time  in terms of i_sys_clk
+            i_tx2tx_cycles => "00000111",  -- : in  std_logic_vector(7 downto 0);                 -- SPIM interval between data transactions in terms of i_sys_clk
+            o_slave_csn    => slave_csn_i,     -- : out std_logic_vector(3 downto 0);                 -- SPI Slave select (chip select) active low
+            o_mosi         => mosi_i,          -- : out std_logic;                                    -- Master output to Slave
+            i_miso         => miso,            -- : in  std_logic;                                    -- Master input from Slave
+            o_sclk         => sclk_i           -- : out std_logic;                                    -- Master clock
             );
 
     ss_i      <= slave_csn_i(0) and slave_csn_i(1) and slave_csn_i(2) and slave_csn_i(3);
