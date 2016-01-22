@@ -9,7 +9,7 @@
          </top_modules>
       </db_ref>
    </db_ref_list>
-   <WVObjectSize size="32" />
+   <WVObjectSize size="33" />
    <wvobject db_ref_id="1" fp_name="/spi_master_tb/sys_clk_i" type="logic">
       <obj_property name="ElementShortName">sys_clk_i</obj_property>
       <obj_property name="ObjectShortName">sys_clk_i</obj_property>
@@ -77,6 +77,10 @@
    <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_start_i" type="logic">
       <obj_property name="ElementShortName">spi_start_i</obj_property>
       <obj_property name="ObjectShortName">spi_start_i</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_master_inst/spi_master_inst/sclk_gen_u0/spim_clk_state_i" type="other">
+      <obj_property name="ElementShortName">spim_clk_state_i</obj_property>
+      <obj_property name="ObjectShortName">spim_clk_state_i</obj_property>
    </wvobject>
    <wvobject type="divider" fp_name="divider39">
       <obj_property name="label">slave</obj_property>
