@@ -109,7 +109,7 @@ end component;
     signal   sclk_i          : std_logic                     := '0';  -- Master clock
     signal   ss_i            : std_logic;  -- Master
     signal   count           : integer                       := 0;
-    constant TIME_PERIOD_CLK : time                          := 256 ns;
+    constant TIME_PERIOD_CLK : time                          := 10 ns;
     shared variable cnt      : integer                       := 0;
     type input_data_type is array (integer range 0 to 15) of std_logic_vector(DATA_SIZE - 1 downto 0);
     type delay_type is array (integer range 0 to 3) of std_logic_vector(7 downto 0);
@@ -245,7 +245,7 @@ end process;
             i_cpha         => '0',             -- : in  std_logic;                                    -- CPHA value - 0 or 1
             i_lsb_first    => '0',             -- : in  std_logic;                                    -- lsb first when '1' /msb first when
             i_spi_start    => spi_start_i,     -- : in  std_logic;                                    -- START SPI Master Transactions
-            i_clk_period   => "00000100",    -- : in  std_logic_vector(7 downto 0);                 -- SCL clock period in terms of i_sys_clk
+            i_clk_period   => "01100100",    -- : in  std_logic_vector(7 downto 0);                 -- SCL clock period in terms of i_sys_clk
             i_setup_cycles => "00000111",  -- : in  std_logic_vector(7 downto 0);                 -- SPIM setup time  in terms of i_sys_clk
             i_hold_cycles  => "00000111",   -- : in  std_logic_vector(7 downto 0);                 -- SPIM hold time  in terms of i_sys_clk
             i_tx2tx_cycles => "00000111",  -- : in  std_logic_vector(7 downto 0);                 -- SPIM interval between data transactions in terms of i_sys_clk
@@ -320,6 +320,7 @@ end process;
 
                 wait for TIME_PERIOD_CLK/2;
                 spi_start_i <= '0';
+                wait for 2048 * TIME_PERIOD_CLK;
                 wait for 2048 * TIME_PERIOD_CLK;
                 wait for TIME_PERIOD_CLK/2;
                 csn_i       <= '0';
