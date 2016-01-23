@@ -168,21 +168,11 @@ begin
     wait;
 end process;
 
+--------------------------Slave SPI DUT----------------------------
 
 --.Induce fault to check test bench if desired
-data_i_master_tx <= (data_i(data_i'HIGH downto 1) & '1') when induce_fault_master_tx_c else data_i;
---.Instantaneous check if tx/rx values agree
-master_slave_match <= TRUE when data_i = o_data_slave else FALSE;
---.Latch the failure if when rx ready goes high and tx/rx values don't agree
-latch_match_proc : process
-begin
-    wait until o_rx_ready_slave = '1';
-    if not (data_i = o_data_slave) then
-        master_to_slave_rx_match_latch <= FALSE;
-    end if;
-end process;
+data_i_slave_tx <= (data_i(data_i'HIGH downto 2) & "11") when induce_fault_slave_tx_c else data_i;
 
---------------------------Slave SPI DUT----------------------------
     spi_slave_inst : spi_slave
         generic map(
             DATA_SIZE => DATA_SIZE)
@@ -192,9 +182,9 @@ end process;
         i_csn          => '0',             -- : in  std_logic;                                               -- chip select for SPI master
         i_data         => data_i_slave_tx, -- : in  std_logic_vector(15 downto 0);                           -- Input data
         i_wr           => wr_i,            -- : in  std_logic;                                               -- Active Low Write, Active High Read
-        i_rd           => rd_i,            -- : in  std_logic;                                               -- Active Low Write, Active High Read
+        i_rd           => '0',            -- : in  std_logic;                                               -- Active Low Write, Active High Read
         o_data      => o_data_slave,       -- o_data     : out std_logic_vector(15 downto 0);  --output data
-        o_tx_ready  => o_tx_ready_slave,   -- o_tx_ready : out std_logic;                                    -- Transmitter ready, can write another
+        o_tx_ready  => open,   -- o_tx_ready : out std_logic;                                    -- Transmitter ready, can write another
         o_rx_ready  => o_rx_ready_slave,   -- o_rx_ready : out std_logic;                                    -- Receiver ready, can read data
         o_tx_error  => open,               -- o_tx_error : out std_logic;                                    -- Transmitter error
         o_rx_error  => open,               -- o_rx_error : out std_logic;                                    -- Receiver error
@@ -212,8 +202,6 @@ end process;
         o_tx_no_ack => open                -- o_tx_no_ack : out std_logic
             );
 
---.Induce fault to check test bench if desired
-data_i_slave_tx <= (data_i(data_i'HIGH downto 2) & "11") when induce_fault_slave_tx_c else data_i;
 --.Instantaneous check if tx/rx values agree
 slave_master_match <= TRUE when data_i = o_data_master else FALSE;
 --.Latch the failure if when rx ready goes high and tx/rx values don't agree
@@ -226,6 +214,10 @@ begin
 end process;
 
 --------------------------MASTER SPI DUT----------------------------
+
+--.Induce fault to check test bench if desired
+data_i_master_tx <= (data_i(data_i'HIGH downto 1) & '1') when induce_fault_master_tx_c else data_i;
+
     spi_master_inst : spi_master_top
         generic map(
             DATA_SIZE      => DATA_SIZE,         -- :     integer := 16;
@@ -265,6 +257,18 @@ end process;
             i_miso         => miso,              -- : in  std_logic;                                    -- Master input from Slave
             o_sclk         => sclk_i             -- : out std_logic;                                    -- Master clock
             );
+
+--.Instantaneous check if tx/rx values agree
+master_slave_match <= TRUE when data_i = o_data_slave else FALSE;
+--.Latch the failure if when rx ready goes high and tx/rx values don't agree
+latch_match_proc : process
+begin
+    wait until o_rx_ready_slave = '1';
+    if not (data_i = o_data_slave) then
+        master_to_slave_rx_match_latch <= FALSE;
+    end if;
+end process;
+
 
     ss_i <= slave_csn_i(0) and slave_csn_i(1) and slave_csn_i(2) and slave_csn_i(3);
 

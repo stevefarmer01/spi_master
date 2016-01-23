@@ -219,9 +219,9 @@ begin
 --.                    data_in <= i_data(7 downto 0);
 --.                end if;
 --.            elsif FIFO_REQ = False and DATA_SIZE = 16 then
---.                if (i_wr = '1' and i_csn = '0' and tx_ready_i = '1') then
-            data_in <= i_data;
---.                end if;
+            if (i_wr = '1' and i_csn = '0' and tx_ready_i = '1') then
+                data_in <= i_data;
+            end if;
 --.            end if;
         end if;
     end process;
