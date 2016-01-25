@@ -9,7 +9,7 @@
          </top_modules>
       </db_ref>
    </db_ref_list>
-   <WVObjectSize size="23" />
+   <WVObjectSize size="25" />
    <wvobject db_ref_id="1" fp_name="/spi_master_tb/sys_clk_i" type="logic">
       <obj_property name="ElementShortName">sys_clk_i</obj_property>
       <obj_property name="ObjectShortName">sys_clk_i</obj_property>
@@ -102,5 +102,13 @@
       <obj_property name="ElementShortName">dut_clk_ratio_to_testbench</obj_property>
       <obj_property name="ObjectShortName">dut_clk_ratio_to_testbench</obj_property>
       <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/stop_clks" type="other">
+      <obj_property name="ElementShortName">stop_clks</obj_property>
+      <obj_property name="ObjectShortName">stop_clks</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/TIME_PERIOD_CLK_DUT_S" type="other">
+      <obj_property name="ElementShortName">TIME_PERIOD_CLK_DUT_S</obj_property>
+      <obj_property name="ObjectShortName">TIME_PERIOD_CLK_DUT_S</obj_property>
    </wvobject>
 </wave_config>
