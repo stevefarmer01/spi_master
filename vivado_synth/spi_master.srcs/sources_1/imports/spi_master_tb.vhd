@@ -136,7 +136,7 @@ end component;
     type period_type is array (integer range 0 to 3) of std_logic_vector(7 downto 0);
     type four_values is array (integer range 0 to 3) of std_logic_vector(1 downto 0);
 
-    constant input_data : input_data_type := (std_logic_vector(to_unsigned(2#1111111111111111#,DATA_SIZE)),
+    constant input_data : input_data_type := (std_logic_vector(to_unsigned(2#0101010101010101#,DATA_SIZE)),
                                               std_logic_vector(to_unsigned(2#0000000000000001#,DATA_SIZE)),
                                               std_logic_vector(to_unsigned(2#1000000000000000#,DATA_SIZE)),
                                               std_logic_vector(to_unsigned(2#1111111111111111#,DATA_SIZE)),
@@ -169,6 +169,11 @@ end component;
     signal o_tx_ready_master, o_rx_ready_master : std_logic := '0';
     signal master_rx_activity : boolean := FALSE;
 
+--.    constant TIME_PERIOD_CLK_DUT : time                          := 16.6 ns;
+    constant TIME_PERIOD_CLK_DUT : time                          := 50 ns;
+    signal dut_sys_clk_i : std_logic := '0';
+    constant dut_clk_ratio_to_testbench : integer := integer(TIME_PERIOD_CLK_DUT/TIME_PERIOD_CLK);
+
 begin
 
 ---reset and clocks
@@ -183,13 +188,21 @@ begin
     wait;
 end process;
 
+clk_gen_dut_proc : process
+begin
+    while not stop_clks loop
+        wait for TIME_PERIOD_CLK_DUT/2;
+        dut_sys_clk_i <= not dut_sys_clk_i;
+    end loop;
+    wait;
+end process;
 
-spi_master_gen : if DUT_TYPE = "spi_slave" generate
 
 --------------------------Slave SPI DUT----------------------------
+spi_master_gen : if DUT_TYPE = "spi_slave" generate
 
---.Induce fault to check test bench if desired
-data_i_slave_tx <= (data_i(data_i'HIGH downto 2) & "11") when induce_fault_slave_tx_c else data_i;
+    --.Induce fault to check test bench if desired
+    data_i_slave_tx <= (data_i(data_i'HIGH downto 2) & "11") when induce_fault_slave_tx_c else data_i;
 
     spi_slave_inst : spi_slave
         generic map(
@@ -200,9 +213,9 @@ data_i_slave_tx <= (data_i(data_i'HIGH downto 2) & "11") when induce_fault_slave
         i_csn          => '0',             -- : in  std_logic;                                               -- chip select for SPI master
         i_data         => data_i_slave_tx, -- : in  std_logic_vector(15 downto 0);                           -- Input data
         i_wr           => wr_i,            -- : in  std_logic;                                               -- Active Low Write, Active High Read
-        i_rd           => '0',            -- : in  std_logic;                                               -- Active Low Write, Active High Read
+        i_rd           => '0',             -- : in  std_logic;                                               -- Active Low Write, Active High Read
         o_data      => o_data_slave,       -- o_data     : out std_logic_vector(15 downto 0);  --output data
-        o_tx_ready  => open,   -- o_tx_ready : out std_logic;                                    -- Transmitter ready, can write another
+        o_tx_ready  => open,               -- o_tx_ready : out std_logic;                                    -- Transmitter ready, can write another
         o_rx_ready  => o_rx_ready_slave,   -- o_rx_ready : out std_logic;                                    -- Receiver ready, can read data
         o_tx_error  => open,               -- o_tx_error : out std_logic;                                    -- Transmitter error
         o_rx_error  => open,               -- o_rx_error : out std_logic;                                    -- Receiver error
@@ -220,38 +233,38 @@ data_i_slave_tx <= (data_i(data_i'HIGH downto 2) & "11") when induce_fault_slave
         o_tx_no_ack => open                -- o_tx_no_ack : out std_logic
             );
 
---.Instantaneous check if tx/rx values agree
-master_slave_match <= TRUE when data_i = o_data_slave else FALSE;
---.Latch the failure if when rx ready goes high and tx/rx values don't agree
-latch_match_proc : process
-begin
-    wait until o_rx_ready_slave = '1';
-    if not (data_i = o_data_slave) then
-        master_to_slave_rx_match_latch <= FALSE;
-    else
-        master_to_slave_rx_match_latch <= TRUE;
-    end if;
-end process;
+    --.Instantaneous check if tx/rx values agree
+    master_slave_match <= TRUE when data_i = o_data_slave else FALSE;
+    --.Latch the failure if when rx ready goes high and tx/rx values don't agree
+    latch_match_proc : process
+    begin
+        wait until o_rx_ready_slave = '1';
+        if not (data_i = o_data_slave) then
+            master_to_slave_rx_match_latch <= FALSE;
+        else
+            master_to_slave_rx_match_latch <= TRUE;
+        end if;
+    end process;
 
 end generate spi_master_gen;
 
+
+    --------------------------Register Map SPI DUT----------------------------
 spi_reg_map_gen : if DUT_TYPE = "spi_reg_map" generate
 
---------------------------Register Map SPI DUT----------------------------
-
-reg_map_proc : reg_map_spi_slave
-    generic map(
-        DATA_SIZE => DATA_SIZE --  :     natural := 16
-        )
-    Port map(  
-            clk => sys_clk_i, -- : std_logic;
-            reset => sys_rst_i, -- : std_logic;
-            ---Slave SPI interface pins
-            sclk => sclk_i, -- : in STD_LOGIC;
-            ss_n => ss_i, -- : in STD_LOGIC;
-            mosi => mosi_i, -- : in STD_LOGIC;
-            miso => miso -- : out STD_LOGIC
-            );
+    reg_map_proc : reg_map_spi_slave
+        generic map(
+            DATA_SIZE => DATA_SIZE --  :     natural := 16
+            )
+        Port map(  
+                clk => dut_sys_clk_i, -- : std_logic;
+                reset => sys_rst_i, -- : std_logic;
+                ---Slave SPI interface pins
+                sclk => sclk_i, -- : in STD_LOGIC;
+                ss_n => ss_i, -- : in STD_LOGIC;
+                mosi => mosi_i, -- : in STD_LOGIC;
+                miso => miso -- : out STD_LOGIC
+                );
 
 end generate spi_reg_map_gen;
 
@@ -316,24 +329,24 @@ begin
 end process;
 
 
-    ss_i <= slave_csn_i(0) and slave_csn_i(1) and slave_csn_i(2) and slave_csn_i(3);
+ss_i <= slave_csn_i(0) and slave_csn_i(1) and slave_csn_i(2) and slave_csn_i(3);
 
 
     main_control_proc : process
     begin
---.        wait for 100 * TIME_PERIOD_CLK;
---.        if FIFO_REQ = True then
---.            wr_i       <= '1';
---.            csn_i      <= '0';
---.            for i in 0 to 15 loop
---.                wait until rising_edge(sys_clk_i);
---.                data_i <= input_data(i);
---.            end loop;
---.            wr_i       <= '0';
---.            csn_i      <= '1';
---.        end if;
+    --.        wait for 100 * TIME_PERIOD_CLK;
+    --.        if FIFO_REQ = True then
+    --.            wr_i       <= '1';
+    --.            csn_i      <= '0';
+    --.            for i in 0 to 15 loop
+    --.                wait until rising_edge(sys_clk_i);
+    --.                data_i <= input_data(i);
+    --.            end loop;
+    --.            wr_i       <= '0';
+    --.            csn_i      <= '1';
+    --.        end if;
 
-        wait for TIME_PERIOD_CLK*20; -- Wait for sys_rst_i to propagate through DUT
+        wait for TIME_PERIOD_CLK* 20 * dut_clk_ratio_to_testbench; -- Wait for sys_rst_i to propagate through DUT especially if DUT is running a much slower clock
 
         ---for j in 0 to 3 loop
         for j in input_data_type'RANGE loop
@@ -369,22 +382,23 @@ end process;
 
                 wait until ss_i = '1'; -- packet has finished when slave select goes low (this ia an active low enable)
 
---                wait until rising_edge(sys_clk_i);
---                rd_i        <= '1';     -- read data rx'd by master
---                wait until rising_edge(sys_clk_i);
---                rd_i        <= '0'; 
+                wait until rising_edge(sys_clk_i);
+                rd_i        <= '1';     -- read data rx'd by master
+                wait until rising_edge(sys_clk_i);
+                rd_i        <= '0'; 
 
-                wait for to_integer(unsigned(tx2tx_cycles_i)) * TIME_PERIOD_CLK; -- wait tx to tx minimum period which is implemented in master's sclk_gen component
+                wait for to_integer(unsigned(tx2tx_cycles_i)) * TIME_PERIOD_CLK * dut_clk_ratio_to_testbench; -- wait tx to tx minimum period which is implemented in master's sclk_gen component
 
             ---end loop;
         end loop;
         stop_clks <= TRUE;  ----------FINSHED SIMULATION----------.
         assert not slave_to_master_rx_match_latch = FALSE
             report "FAIL - Master SPI recieved different to expected" severity Note;
-        assert not (slave_to_master_rx_match_latch = TRUE and master_rx_activity = TRUE)
+        assert not (slave_to_master_rx_match_latch = TRUE and master_rx_activity = TRUE)    -- Check for correct data back and that there has actually been some data received
             report "PASS - Master SPI recieved as expected" severity Note;
         wait;
     end process;
+
 
 --.    process
 --.    begin

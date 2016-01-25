@@ -9,7 +9,7 @@
          </top_modules>
       </db_ref>
    </db_ref_list>
-   <WVObjectSize size="36" />
+   <WVObjectSize size="23" />
    <wvobject db_ref_id="1" fp_name="/spi_master_tb/sys_clk_i" type="logic">
       <obj_property name="ElementShortName">sys_clk_i</obj_property>
       <obj_property name="ObjectShortName">sys_clk_i</obj_property>
@@ -17,6 +17,10 @@
    <wvobject db_ref_id="1" fp_name="/spi_master_tb/sys_rst_i" type="logic">
       <obj_property name="ElementShortName">sys_rst_i</obj_property>
       <obj_property name="ObjectShortName">sys_rst_i</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/dut_sys_clk_i" type="logic">
+      <obj_property name="ElementShortName">dut_sys_clk_i</obj_property>
+      <obj_property name="ObjectShortName">dut_sys_clk_i</obj_property>
    </wvobject>
    <wvobject db_ref_id="1" fp_name="/spi_master_tb/csn_i" type="logic">
       <obj_property name="ElementShortName">csn_i</obj_property>
@@ -70,22 +74,6 @@
       <obj_property name="label">slave</obj_property>
       <obj_property name="DisplayName">label</obj_property>
    </wvobject>
-   <wvobject db_ref_id="1" fp_name="/spi_master_tb/wr_i" type="logic">
-      <obj_property name="ElementShortName">wr_i</obj_property>
-      <obj_property name="ObjectShortName">wr_i</obj_property>
-   </wvobject>
-   <wvobject db_ref_id="1" fp_name="/spi_master_tb/rd_i" type="logic">
-      <obj_property name="ElementShortName">rd_i</obj_property>
-      <obj_property name="ObjectShortName">rd_i</obj_property>
-   </wvobject>
-   <wvobject db_ref_id="1" fp_name="/spi_master_tb/o_rx_ready_slave" type="logic">
-      <obj_property name="ElementShortName">o_rx_ready_slave</obj_property>
-      <obj_property name="ObjectShortName">o_rx_ready_slave</obj_property>
-   </wvobject>
-   <wvobject db_ref_id="1" fp_name="/spi_master_tb/o_tx_ready_slave" type="logic">
-      <obj_property name="ElementShortName">o_tx_ready_slave</obj_property>
-      <obj_property name="ObjectShortName">o_tx_ready_slave</obj_property>
-   </wvobject>
    <wvobject db_ref_id="1" fp_name="/spi_master_tb/o_tx_ready_master" type="logic">
       <obj_property name="ElementShortName">o_tx_ready_master</obj_property>
       <obj_property name="ObjectShortName">o_tx_ready_master</obj_property>
@@ -94,17 +82,9 @@
       <obj_property name="ElementShortName">o_rx_ready_master</obj_property>
       <obj_property name="ObjectShortName">o_rx_ready_master</obj_property>
    </wvobject>
-   <wvobject db_ref_id="1" fp_name="/spi_master_tb/master_slave_match" type="other">
-      <obj_property name="ElementShortName">master_slave_match</obj_property>
-      <obj_property name="ObjectShortName">master_slave_match</obj_property>
-   </wvobject>
    <wvobject db_ref_id="1" fp_name="/spi_master_tb/slave_master_match" type="other">
       <obj_property name="ElementShortName">slave_master_match</obj_property>
       <obj_property name="ObjectShortName">slave_master_match</obj_property>
-   </wvobject>
-   <wvobject db_ref_id="1" fp_name="/spi_master_tb/master_to_slave_rx_match_latch" type="other">
-      <obj_property name="ElementShortName">master_to_slave_rx_match_latch</obj_property>
-      <obj_property name="ObjectShortName">master_to_slave_rx_match_latch</obj_property>
    </wvobject>
    <wvobject db_ref_id="1" fp_name="/spi_master_tb/slave_to_master_rx_match_latch" type="other">
       <obj_property name="ElementShortName">slave_to_master_rx_match_latch</obj_property>
@@ -118,41 +98,9 @@
       <obj_property name="ElementShortName">o_data_master[7:0]</obj_property>
       <obj_property name="ObjectShortName">o_data_master[7:0]</obj_property>
    </wvobject>
-   <wvobject db_ref_id="1" fp_name="/spi_master_tb/wr_i" type="logic">
-      <obj_property name="ElementShortName">wr_i</obj_property>
-      <obj_property name="ObjectShortName">wr_i</obj_property>
-   </wvobject>
-   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_reg_map_gen/reg_map_proc/o_rx_ready_slave_s" type="logic">
-      <obj_property name="ElementShortName">o_rx_ready_slave_s</obj_property>
-      <obj_property name="ObjectShortName">o_rx_ready_slave_s</obj_property>
-   </wvobject>
-   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_reg_map_gen/reg_map_proc/data_i_slave_tx_s" type="array">
-      <obj_property name="ElementShortName">data_i_slave_tx_s[7:0]</obj_property>
-      <obj_property name="ObjectShortName">data_i_slave_tx_s[7:0]</obj_property>
-   </wvobject>
-   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_reg_map_gen/reg_map_proc/o_data_slave_s" type="array">
-      <obj_property name="ElementShortName">o_data_slave_s[7:0]</obj_property>
-      <obj_property name="ObjectShortName">o_data_slave_s[7:0]</obj_property>
-   </wvobject>
-   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_reg_map_gen/reg_map_proc/wr_i_s" type="array">
-      <obj_property name="ElementShortName">wr_i_s[1:0]</obj_property>
-      <obj_property name="ObjectShortName">wr_i_s[1:0]</obj_property>
-   </wvobject>
-   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_reg_map_gen/reg_map_proc/spi_slave_inst/data_in_reg_i" type="array">
-      <obj_property name="ElementShortName">data_in_reg_i[7:0]</obj_property>
-      <obj_property name="ObjectShortName">data_in_reg_i[7:0]</obj_property>
-   </wvobject>
-   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_reg_map_gen/reg_map_proc/temp_count_s" type="other">
-      <obj_property name="ElementShortName">temp_count_s</obj_property>
-      <obj_property name="ObjectShortName">temp_count_s</obj_property>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/dut_clk_ratio_to_testbench" type="other">
+      <obj_property name="ElementShortName">dut_clk_ratio_to_testbench</obj_property>
+      <obj_property name="ObjectShortName">dut_clk_ratio_to_testbench</obj_property>
       <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
-   </wvobject>
-   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_reg_map_gen/reg_map_proc/data_i_slave_tx_s" type="array">
-      <obj_property name="ElementShortName">data_i_slave_tx_s[7:0]</obj_property>
-      <obj_property name="ObjectShortName">data_i_slave_tx_s[7:0]</obj_property>
-   </wvobject>
-   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_reg_map_gen/reg_map_proc/reset_s" type="logic">
-      <obj_property name="ElementShortName">reset_s</obj_property>
-      <obj_property name="ObjectShortName">reset_s</obj_property>
    </wvobject>
 </wave_config>

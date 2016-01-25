@@ -81,7 +81,7 @@ signal data_i_slave_tx_s, o_data_slave_s : std_logic_vector(DATA_SIZE-1 downto 0
 signal wr_i_s : std_logic_vector(1 downto 0) := "01";
 
     type input_data_type is array (integer range 0 to 15) of std_logic_vector(DATA_SIZE - 1 downto 0);
-    constant input_data : input_data_type := (std_logic_vector(to_unsigned(2#1111111111111111#,DATA_SIZE)),
+    constant input_data : input_data_type := (std_logic_vector(to_unsigned(2#0101010101010101#,DATA_SIZE)),
                                               std_logic_vector(to_unsigned(2#0000000000000001#,DATA_SIZE)),
                                               std_logic_vector(to_unsigned(2#1000000000000000#,DATA_SIZE)),
                                               std_logic_vector(to_unsigned(2#1111111111111111#,DATA_SIZE)),
