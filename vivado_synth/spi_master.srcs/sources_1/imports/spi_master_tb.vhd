@@ -11,12 +11,13 @@ use ieee.std_logic_1164.all;
 --use ieee.std_logic_unsigned.all;
 use ieee.numeric_std.all;
 
+use work.spi_package.ALL;
+
 entity spi_master_tb is
 end spi_master_tb;
 
 architecture behave of spi_master_tb is
 
-    constant DATA_SIZE : integer   := 8;
     constant FIFO_REQ  : Boolean   := FALSE;
 --    constant DUT_TYPE : string := "spi_slave";
     constant DUT_TYPE : string := "spi_reg_map";
@@ -131,28 +132,9 @@ end component;
     signal   count           : integer                       := 0;
     constant TIME_PERIOD_CLK : time                          := 10 ns;
     shared variable cnt      : integer                       := 0;
-    type input_data_type is array (integer range 0 to 15) of std_logic_vector(DATA_SIZE - 1 downto 0);
     type delay_type is array (integer range 0 to 3) of std_logic_vector(7 downto 0);
     type period_type is array (integer range 0 to 3) of std_logic_vector(7 downto 0);
     type four_values is array (integer range 0 to 3) of std_logic_vector(1 downto 0);
-
-    constant input_data : input_data_type := (std_logic_vector(to_unsigned(2#0101010101010101#,DATA_SIZE)),
-                                              std_logic_vector(to_unsigned(2#0000000000000001#,DATA_SIZE)),
-                                              std_logic_vector(to_unsigned(2#1000000000000000#,DATA_SIZE)),
-                                              std_logic_vector(to_unsigned(2#1111111111111111#,DATA_SIZE)),
-                                              std_logic_vector(to_unsigned(2#0010101010101010#,DATA_SIZE)),
-                                              std_logic_vector(to_unsigned(2#0100110011001101#,DATA_SIZE)),
-                                              std_logic_vector(to_unsigned(2#1111000011111111#,DATA_SIZE)),
-                                              std_logic_vector(to_unsigned(2#1111111111111110#,DATA_SIZE)),
-                                              std_logic_vector(to_unsigned(2#0111111111110000#,DATA_SIZE)),
-                                              std_logic_vector(to_unsigned(2#0000111111110001#,DATA_SIZE)),
-                                              std_logic_vector(to_unsigned(2#1111111111111111#,DATA_SIZE)),
-                                              std_logic_vector(to_unsigned(2#1000000000000000#,DATA_SIZE)),
-                                              std_logic_vector(to_unsigned(2#0010101010101010#,DATA_SIZE)),
-                                              std_logic_vector(to_unsigned(2#1111111111111111#,DATA_SIZE)),
-                                              std_logic_vector(to_unsigned(2#1111000011100000#,DATA_SIZE)),
-                                              std_logic_vector(to_unsigned(2#1111111111111110#,DATA_SIZE))
-                                              );
 
     signal input_data_s : input_data_type;
 
@@ -187,7 +169,8 @@ procedure spi_main_test_loop (signal TIME_PERIOD_CLK : in time;
                                 signal tx2tx_cycles_i : out std_logic_vector(tx2tx_cycles_i'RANGE);
                                 signal rd_i : out std_logic;
                                 signal stop_clks : out boolean;
-                                signal dut_clk_ratio_to_testbench : integer
+                                signal dut_clk_ratio_to_testbench : integer;
+                                constant single_test_run_only : boolean
                                  );
 
 procedure spi_main_test_loop (signal TIME_PERIOD_CLK : in time;
@@ -199,7 +182,8 @@ procedure spi_main_test_loop (signal TIME_PERIOD_CLK : in time;
                                 signal tx2tx_cycles_i : out std_logic_vector(tx2tx_cycles_i'RANGE);
                                 signal rd_i : out std_logic;
                                 signal stop_clks : out boolean;
-                                signal dut_clk_ratio_to_testbench : integer
+                                signal dut_clk_ratio_to_testbench : integer;
+                                constant single_test_run_only : boolean
                                  ) is 
     variable tx2tx_cycles_v : std_logic_vector(tx2tx_cycles_i'LEFT-1 downto 0);
 begin
@@ -267,7 +251,7 @@ begin
             report "FAIL - Master SPI recieved different to expected" severity Note;
         assert not (slave_to_master_rx_match_latch = TRUE and master_rx_activity = TRUE)    -- Check for correct data back and that there has actually been some data received
             report "PASS - Master SPI recieved as expected" severity Note;
-        if slave_to_master_rx_match_latch = FALSE then
+        if slave_to_master_rx_match_latch = FALSE or single_test_run_only then
             stop_clks <= TRUE;  ----------FINSHED SIMULATION----------.
             wait;
         end if;
@@ -448,8 +432,8 @@ TIME_PERIOD_CLK_S <= TIME_PERIOD_CLK;
                                             tx2tx_cycles_i => tx2tx_cycles_i, -- : out std_logic_vector;
                                             rd_i => rd_i, -- : out std_logic
                                             stop_clks => stop_clks, -- : out boolean
-                                            dut_clk_ratio_to_testbench => dut_clk_ratio_to_testbench -- : integer
-
+                                            dut_clk_ratio_to_testbench => dut_clk_ratio_to_testbench, -- : integer
+                                            single_test_run_only => TRUE -- : boolean
                                              ); 
         end loop;
     end process;

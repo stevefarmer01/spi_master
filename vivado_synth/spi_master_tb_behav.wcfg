@@ -6,10 +6,11 @@
       <db_ref path="spi_master_tb_behav.wdb" id="1">
          <top_modules>
             <top_module name="spi_master_tb" />
+            <top_module name="spi_package" />
          </top_modules>
       </db_ref>
    </db_ref_list>
-   <WVObjectSize size="25" />
+   <WVObjectSize size="29" />
    <wvobject db_ref_id="1" fp_name="/spi_master_tb/sys_clk_i" type="logic">
       <obj_property name="ElementShortName">sys_clk_i</obj_property>
       <obj_property name="ObjectShortName">sys_clk_i</obj_property>
@@ -91,12 +92,12 @@
       <obj_property name="ObjectShortName">slave_to_master_rx_match_latch</obj_property>
    </wvobject>
    <wvobject db_ref_id="1" fp_name="/spi_master_tb/data_i_master_tx" type="array">
-      <obj_property name="ElementShortName">data_i_master_tx[7:0]</obj_property>
-      <obj_property name="ObjectShortName">data_i_master_tx[7:0]</obj_property>
+      <obj_property name="ElementShortName">data_i_master_tx[12:0]</obj_property>
+      <obj_property name="ObjectShortName">data_i_master_tx[12:0]</obj_property>
    </wvobject>
    <wvobject db_ref_id="1" fp_name="/spi_master_tb/o_data_master" type="array">
-      <obj_property name="ElementShortName">o_data_master[7:0]</obj_property>
-      <obj_property name="ObjectShortName">o_data_master[7:0]</obj_property>
+      <obj_property name="ElementShortName">o_data_master[12:0]</obj_property>
+      <obj_property name="ObjectShortName">o_data_master[12:0]</obj_property>
    </wvobject>
    <wvobject db_ref_id="1" fp_name="/spi_master_tb/dut_clk_ratio_to_testbench" type="other">
       <obj_property name="ElementShortName">dut_clk_ratio_to_testbench</obj_property>
@@ -110,5 +111,21 @@
    <wvobject db_ref_id="1" fp_name="/spi_master_tb/TIME_PERIOD_CLK_DUT_S" type="other">
       <obj_property name="ElementShortName">TIME_PERIOD_CLK_DUT_S</obj_property>
       <obj_property name="ObjectShortName">TIME_PERIOD_CLK_DUT_S</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_reg_map_gen/reg_map_proc/o_data_slave_s" type="array">
+      <obj_property name="ElementShortName">o_data_slave_s[12:0]</obj_property>
+      <obj_property name="ObjectShortName">o_data_slave_s[12:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_reg_map_gen/reg_map_proc/rx_address_s" type="array">
+      <obj_property name="ElementShortName">rx_address_s[3:0]</obj_property>
+      <obj_property name="ObjectShortName">rx_address_s[3:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_reg_map_gen/reg_map_proc/rx_data_s" type="array">
+      <obj_property name="ElementShortName">rx_data_s[7:0]</obj_property>
+      <obj_property name="ObjectShortName">rx_data_s[7:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_reg_map_gen/reg_map_proc/rx_read_write_bit" type="logic">
+      <obj_property name="ElementShortName">rx_read_write_bit</obj_property>
+      <obj_property name="ObjectShortName">rx_read_write_bit</obj_property>
    </wvobject>
 </wave_config>
