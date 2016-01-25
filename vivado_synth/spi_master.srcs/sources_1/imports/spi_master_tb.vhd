@@ -16,10 +16,10 @@ end spi_master_tb;
 
 architecture behave of spi_master_tb is
 
-    constant DATA_SIZE : integer   := 22;
+    constant DATA_SIZE : integer   := 8;
     constant FIFO_REQ  : Boolean   := FALSE;
-    constant DUT_TYPE : string := "spi_slave";
---    constant DUT_TYPE : string := "spi_reg_map";
+--    constant DUT_TYPE : string := "spi_slave";
+    constant DUT_TYPE : string := "spi_reg_map";
 
 component spi_master_top
     generic(
@@ -162,12 +162,12 @@ end component;
 
     signal o_data_slave, o_data_master, data_i_master_tx, data_i_slave_tx : std_logic_vector(DATA_SIZE - 1 downto 0); 
     signal master_slave_match, slave_master_match : boolean := FALSE;
-    signal master_to_slave_rx_match_latch, slave_to_master_rx_match_latch : boolean := FALSE;
+    signal master_to_slave_rx_match_latch, slave_to_master_rx_match_latch : boolean := TRUE;
     signal o_rx_ready_slave, o_tx_ready_slave : std_logic := '0';
     constant induce_fault_master_tx_c : boolean := FALSE;
     constant induce_fault_slave_tx_c : boolean := FALSE;
     signal o_tx_ready_master, o_rx_ready_master : std_logic := '0';
-    ---signal master_rx_activity : boolean := FALSE;
+    signal master_rx_activity : boolean := FALSE;
 
 begin
 
@@ -307,11 +307,11 @@ slave_master_match <= TRUE when data_i = o_data_master else FALSE;
 latch_match_2_proc : process
 begin
     wait until o_rx_ready_master = '1';
-    ---master_rx_activity <= TRUE; -- show that there have been some master data recieved (shows link has been active)
+    master_rx_activity <= TRUE; -- show that there have been some master data recieved (shows link has been active)
     if not (data_i = o_data_master) then
         slave_to_master_rx_match_latch <= FALSE;
-    else
-        slave_to_master_rx_match_latch <= TRUE;
+--.    else
+--.        slave_to_master_rx_match_latch <= TRUE;
     end if;
 end process;
 
@@ -381,7 +381,7 @@ end process;
         stop_clks <= TRUE;  ----------FINSHED SIMULATION----------.
         assert not slave_to_master_rx_match_latch = FALSE
             report "FAIL - Master SPI recieved different to expected" severity Note;
-        assert not slave_to_master_rx_match_latch = TRUE
+        assert not (slave_to_master_rx_match_latch = TRUE and master_rx_activity = TRUE)
             report "PASS - Master SPI recieved as expected" severity Note;
         wait;
     end process;
