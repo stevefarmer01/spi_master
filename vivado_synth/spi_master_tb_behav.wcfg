@@ -10,7 +10,7 @@
          </top_modules>
       </db_ref>
    </db_ref_list>
-   <WVObjectSize size="25" />
+   <WVObjectSize size="29" />
    <wvobject db_ref_id="1" fp_name="/spi_master_tb/sys_clk_i" type="logic">
       <obj_property name="ElementShortName">sys_clk_i</obj_property>
       <obj_property name="ObjectShortName">sys_clk_i</obj_property>
@@ -111,5 +111,21 @@
    <wvobject db_ref_id="1" fp_name="/spi_master_tb/o_data_master" type="array">
       <obj_property name="ElementShortName">o_data_master[12:0]</obj_property>
       <obj_property name="ObjectShortName">o_data_master[12:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_reg_map_gen/reg_map_proc/gdrb_ctrl_data_array" type="array">
+      <obj_property name="ElementShortName">gdrb_ctrl_data_array[0:15][7:0]</obj_property>
+      <obj_property name="ObjectShortName">gdrb_ctrl_data_array[0:15][7:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/slave_to_master_rx_match_latch_result" type="other">
+      <obj_property name="ElementShortName">slave_to_master_rx_match_latch_result</obj_property>
+      <obj_property name="ObjectShortName">slave_to_master_rx_match_latch_result</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/test_0" type="array">
+      <obj_property name="ElementShortName">test_0[7:0]</obj_property>
+      <obj_property name="ObjectShortName">test_0[7:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/test_1" type="array">
+      <obj_property name="ElementShortName">test_1[7:0]</obj_property>
+      <obj_property name="ObjectShortName">test_1[7:0]</obj_property>
    </wvobject>
 </wave_config>

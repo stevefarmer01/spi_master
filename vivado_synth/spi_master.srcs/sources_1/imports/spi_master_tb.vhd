@@ -19,8 +19,8 @@ end spi_master_tb;
 architecture behave of spi_master_tb is
 
     constant FIFO_REQ  : Boolean   := FALSE;
-    constant DUT_TYPE : string := "spi_slave"; -- Simple test of just the low level spi_slave.vhd
---    constant DUT_TYPE : string := "spi_reg_map"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board
+--    constant DUT_TYPE : string := "spi_slave"; -- Simple test of just the low level spi_slave.vhd
+    constant DUT_TYPE : string := "spi_reg_map"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board
 
 component spi_master_top
     generic(
@@ -159,6 +159,146 @@ end component;
 --.    constant dut_clk_ratio_to_testbench : integer := integer(TIME_PERIOD_CLK_DUT/TIME_PERIOD_CLK);
     signal dut_clk_ratio_to_testbench : integer := integer(TIME_PERIOD_CLK_DUT_S/TIME_PERIOD_CLK);
     signal TIME_PERIOD_CLK_S : time := 10 ns;
+
+    ---Array of data spanning entire address range declared and initialised in 'spi_package' has offset to make i's contents different from that held in DUT
+    signal gdrb_ctrl_data_array_tb_s : gdrb_ctrl_address_type := gdrb_ctrl_data_array_initalise_offset;
+
+    signal slave_to_master_rx_match_latch_result : boolean;
+    signal test_0, test_1 : std_logic_vector(7 downto 0);
+
+
+--.    constant SPI_ADDRESS_BITS : integer := 4;
+--.    constant SPI_DATA_BITS : integer := 8;
+--.    constant DATA_SIZE : integer   := SPI_ADDRESS_BITS+SPI_DATA_BITS+1; -- Total data size is address + data + read/write bit
+--.    type gdrb_ctrl_address_type is array (integer range 0 to (SPI_ADDRESS_BITS**2)-1) of std_logic_vector(SPI_DATA_BITS-1 downto 0);
+
+    procedure spi_main_test_loop_reg_map (signal TIME_PERIOD_CLK : in time;
+                                    signal sys_clk_i : in std_logic;
+                                    signal spi_start_i : out std_logic;
+                                    constant FIFO_REQ : in boolean := FALSE;
+                                    constant input_data : in input_data_type;
+                                    signal ss_i : in std_logic;
+                                    signal data_i : out std_logic_vector(DATA_SIZE - 1 downto 0);
+                                    signal wr_i : out std_logic;
+                                    signal tx2tx_cycles_i : out std_logic_vector;
+                                    signal rd_i : out std_logic;
+                                    signal stop_clks : out boolean;
+                                    signal dut_clk_ratio_to_testbench : integer;
+                                    --.signal slave_to_master_rx_match_latch, master_rx_activity : in boolean;
+                                    signal master_rx_activity : in boolean;
+                                    signal o_data_master : in std_logic_vector;
+                                    signal slave_to_master_rx_match_latch : out boolean;
+                                    constant single_test_run_only : boolean;
+                                    signal test_0, test_1 : out std_logic_vector
+                                     );
+
+    procedure spi_main_test_loop_reg_map (signal TIME_PERIOD_CLK : in time;
+                                    signal sys_clk_i : in std_logic;
+                                    signal spi_start_i : out std_logic;
+                                    constant FIFO_REQ : in boolean := FALSE;
+                                    constant input_data : in input_data_type;
+                                    signal ss_i : in std_logic;
+                                    signal data_i : out std_logic_vector(DATA_SIZE - 1 downto 0);
+                                    signal wr_i : out std_logic;
+                                    signal tx2tx_cycles_i : out std_logic_vector;
+                                    signal rd_i : out std_logic;
+                                    signal stop_clks : out boolean;
+                                    signal dut_clk_ratio_to_testbench : integer;
+                                    --.signal slave_to_master_rx_match_latch, master_rx_activity : in boolean;
+                                    signal master_rx_activity : in boolean;
+                                    signal o_data_master : in std_logic_vector;
+                                    signal slave_to_master_rx_match_latch : out boolean;
+                                    constant single_test_run_only : boolean;
+                                    signal test_0, test_1 : out std_logic_vector
+                                     ) is 
+        variable tx2tx_cycles_v : std_logic_vector(tx2tx_cycles_i'RANGE);
+        variable slave_to_master_rx_match_latch_V : boolean := TRUE;
+        constant read_write_bit_width : integer := 1;
+    begin
+    
+        --.        wait for 100 * TIME_PERIOD_CLK;
+        --.        if FIFO_REQ = True then
+        --.            wr_i       <= '1';
+        --.            csn_i      <= '0';
+        --.            for i in 0 to 15 loop
+        --.                wait until rising_edge(sys_clk_i);
+        --.                data_i <= input_data(i);
+        --.            end loop;
+        --.            wr_i       <= '0';
+        --.            csn_i      <= '1';
+        --.        end if;
+    
+            wait for TIME_PERIOD_CLK* 20 * dut_clk_ratio_to_testbench; -- Wait for sys_rst_i to propagate through DUT especially if DUT is running a much slower clock
+    
+            ---for j in 0 to 3 loop
+            for j in input_data_type'RANGE loop
+                ---cpol_i          <= four_data(j)(1);
+                ---cpha_i          <= four_data(j)(0);
+    
+                wait until rising_edge(sys_clk_i);
+                spi_start_i     <= '0';
+    
+                if FIFO_REQ = False then
+--.                    data_i      <= input_data(j);
+                    data_i      <= '0' & std_logic_vector(to_unsigned(j,SPI_ADDRESS_BITS)) & std_logic_vector(to_unsigned(0,SPI_DATA_BITS)); -- dummy read/write bit, address, dummy write data
+                    wr_i        <= '1'; -- write new packet for master to tx
+                    wait until rising_edge(sys_clk_i);
+                    wr_i        <= '0';
+                end if;
+    
+    
+                ---for i in 0 to 3 loop
+                    ---clk_period_i   <= period_cycles(i);
+                    ---setup_cycles_i <= delay_cycles(i);
+                    ---hold_cycles_i  <= delay_cycles(i) + 7;
+                    tx2tx_cycles_v := std_logic_vector(to_unsigned(16,tx2tx_cycles_i'LENGTH));
+                    tx2tx_cycles_i <= tx2tx_cycles_v;
+                    ---slave_addr_i   <= four_data(i);
+                    ---lsb_first_i    <= four_data(i)(0);
+                    ---wait until rising_edge(sys_clk_i);
+    
+    
+                    wait until rising_edge(sys_clk_i);
+                    spi_start_i <= '1';
+    
+                    wait until rising_edge(sys_clk_i);
+                    spi_start_i <= '0';
+    
+                    wait until ss_i = '1'; -- packet has finished when slave select goes low (this ia an active low enable)
+
+                    if j /= 0 then  -- Data received always one transmission behind that just transmitted due to nature of the way SPI works (data is sent at the same time it is being receieved)
+                        if o_data_master(o_data_master'LEFT downto o_data_master'LEFT-(SPI_DATA_BITS-1)) /= gdrb_ctrl_data_array_initalise(j-1) then -- Detect if rx data doesn't match data in reg map data_array
+                        ---if o_data_master(o_data_master'LEFT downto o_data_master'LEFT-(SPI_DATA_BITS-1)) /= gdrb_ctrl_data_array_initalise_offset(j-1) then -- Detect if rx data doesn't match data in reg map data_array
+                            slave_to_master_rx_match_latch_V := FALSE;
+                            ---slave_to_master_rx_match_latch_V := TRUE;
+                        end if;
+                            test_0 <= o_data_master(o_data_master'LEFT downto o_data_master'LEFT-(SPI_DATA_BITS-1));
+                            test_1 <= gdrb_ctrl_data_array_initalise(j-1);
+                        slave_to_master_rx_match_latch <= slave_to_master_rx_match_latch_V;
+                    end if;
+    
+                    wait until rising_edge(sys_clk_i);
+                    rd_i        <= '1';     -- read data rx'd by master
+                    wait until rising_edge(sys_clk_i);
+                    rd_i        <= '0'; 
+    
+                    wait for to_integer(unsigned(tx2tx_cycles_v)) * TIME_PERIOD_CLK * dut_clk_ratio_to_testbench; -- wait tx to tx minimum period which is implemented in master's sclk_gen component
+    
+                ---end loop;
+            end loop;
+    --.        stop_clks <= TRUE;  ----------FINSHED SIMULATION----------.
+            assert not slave_to_master_rx_match_latch_V = FALSE
+                report "FAIL - Master SPI recieved different to expected" severity Note;
+            assert not master_rx_activity = FALSE
+                report "FAIL - Master SPI has had no receive activity" severity Note;
+            assert not (slave_to_master_rx_match_latch_V = TRUE and master_rx_activity = TRUE)    -- Check for correct data back and that there has actually been some data received
+                report "PASS - Master SPI recieved as expected" severity Note;
+            if slave_to_master_rx_match_latch_V = FALSE or single_test_run_only then
+                stop_clks <= TRUE;  ----------FINSHED SIMULATION----------.
+                wait;
+            end if;
+    
+    end procedure spi_main_test_loop_reg_map;
 
 begin
 
@@ -309,8 +449,6 @@ begin
     master_rx_activity <= TRUE; -- show that there have been some master data recieved (shows link has been active)
     if not (data_i = o_data_master) then
         slave_to_master_rx_match_latch <= FALSE;
---.    else
---.        slave_to_master_rx_match_latch <= TRUE;
     end if;
 end process;
 
@@ -320,29 +458,67 @@ ss_i <= slave_csn_i(0) and slave_csn_i(1) and slave_csn_i(2) and slave_csn_i(3);
 
 TIME_PERIOD_CLK_S <= TIME_PERIOD_CLK;
 
+spi_master_test_routine_gen : if DUT_TYPE = "spi_slave" generate
     main_control_proc : process
     begin
         while TRUE loop
             TIME_PERIOD_CLK_DUT_S <= TIME_PERIOD_CLK_DUT_S + 1 ns;
             dut_clk_ratio_to_testbench <= integer(TIME_PERIOD_CLK_DUT_S/TIME_PERIOD_CLK);
-            spi_main_test_loop (TIME_PERIOD_CLK => TIME_PERIOD_CLK_S, -- : in time;
-                                            sys_clk_i => sys_clk_i, -- : in std_logic;
-                                            spi_start_i => spi_start_i, -- : out std_logic;
-                                            FIFO_REQ => FIFO_REQ, -- : in boolean := FALSE;
-                                            input_data => input_data, -- : in input_data_type;
-                                            ss_i => ss_i, -- : in std_logic;
-                                            data_i => data_i, -- : out std_logic_vector(DATA_SIZE - 1 downto 0);
-                                            wr_i => wr_i, -- : out std_logic;
-                                            tx2tx_cycles_i => tx2tx_cycles_i, -- : out std_logic_vector;
-                                            rd_i => rd_i, -- : out std_logic
-                                            stop_clks => stop_clks, -- : out boolean
-                                            dut_clk_ratio_to_testbench => dut_clk_ratio_to_testbench, -- : in boolean
-                                            slave_to_master_rx_match_latch => slave_to_master_rx_match_latch, -- : in boolean
-                                            master_rx_activity => master_rx_activity, -- : integer
-                                            single_test_run_only => TRUE -- : boolean
-                                             ); 
+
+                --.Proceedure for testing low level spi_slave.vhd
+                spi_main_test_loop (TIME_PERIOD_CLK => TIME_PERIOD_CLK_S, -- : in time;
+                                                sys_clk_i => sys_clk_i, -- : in std_logic;
+                                                spi_start_i => spi_start_i, -- : out std_logic;
+                                                FIFO_REQ => FIFO_REQ, -- : in boolean := FALSE;
+                                                input_data => input_data, -- : in input_data_type;
+                                                ss_i => ss_i, -- : in std_logic;
+                                                data_i => data_i, -- : out std_logic_vector(DATA_SIZE - 1 downto 0);
+                                                wr_i => wr_i, -- : out std_logic;
+                                                tx2tx_cycles_i => tx2tx_cycles_i, -- : out std_logic_vector;
+                                                rd_i => rd_i, -- : out std_logic
+                                                stop_clks => stop_clks, -- : out boolean
+                                                dut_clk_ratio_to_testbench => dut_clk_ratio_to_testbench, -- : in boolean
+                                                slave_to_master_rx_match_latch => slave_to_master_rx_match_latch, -- : in boolean
+                                                master_rx_activity => master_rx_activity, -- : integer
+                                                single_test_run_only => TRUE -- : boolean
+                                                 ); 
+
         end loop;
     end process;
+end generate spi_master_test_routine_gen;
+
+
+spi_reg_map_test_routine_gen : if DUT_TYPE = "spi_reg_map" generate
+    main_control_proc : process
+    begin
+        while TRUE loop
+            TIME_PERIOD_CLK_DUT_S <= TIME_PERIOD_CLK_DUT_S + 1 ns;
+            dut_clk_ratio_to_testbench <= integer(TIME_PERIOD_CLK_DUT_S/TIME_PERIOD_CLK);
+
+                spi_main_test_loop_reg_map (TIME_PERIOD_CLK => TIME_PERIOD_CLK_S, -- : in time;
+                                                sys_clk_i => sys_clk_i, -- : in std_logic;
+                                                spi_start_i => spi_start_i, -- : out std_logic;
+                                                FIFO_REQ => FIFO_REQ, -- : in boolean := FALSE;
+                                                input_data => input_data, -- : in input_data_type;
+                                                ss_i => ss_i, -- : in std_logic;
+                                                data_i => data_i, -- : out std_logic_vector(DATA_SIZE - 1 downto 0);
+                                                wr_i => wr_i, -- : out std_logic;
+                                                tx2tx_cycles_i => tx2tx_cycles_i, -- : out std_logic_vector;
+                                                rd_i => rd_i, -- : out std_logic
+                                                stop_clks => stop_clks, -- : out boolean
+                                                dut_clk_ratio_to_testbench => dut_clk_ratio_to_testbench, -- : in boolean
+                                                --.slave_to_master_rx_match_latch => slave_to_master_rx_match_latch, -- : in boolean
+                                                master_rx_activity => master_rx_activity, -- : integer
+                                                o_data_master => o_data_master, -- : in std_logic_vector;
+                                                slave_to_master_rx_match_latch => slave_to_master_rx_match_latch_result, -- : out boolean;
+                                                single_test_run_only => FALSE, -- : boolean
+                                                test_0 => test_0,
+                                                test_1 => test_1
+                                                 ); 
+
+        end loop;
+    end process;
+end generate spi_reg_map_test_routine_gen;
 
 
 --.    process

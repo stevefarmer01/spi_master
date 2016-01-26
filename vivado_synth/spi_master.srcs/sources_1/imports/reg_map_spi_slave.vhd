@@ -87,6 +87,7 @@ signal wr_i_s : std_logic_vector(1 downto 0) := "01";
 
 ---Array of data spanning entire address range declared and initialised in 'spi_package'
 signal gdrb_ctrl_data_array : gdrb_ctrl_address_type := gdrb_ctrl_data_array_initalise;
+
 signal rx_address_s : std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) := (others => '0');
 signal rx_data_s, read_data_s : std_logic_vector(SPI_DATA_BITS-1 downto 0) := (others => '0');
 signal rx_read_write_bit : std_logic := '0';
@@ -155,22 +156,22 @@ spi_rx_bits_proc : process(clk)
 begin
     if rising_edge(clk) then
         if reset_s = '1' then
+            rx_read_write_bit <= '0';        
             rx_address_s <= (others => '0');
             rx_data_s <= (others => '0');
-            rx_read_write_bit <= '0';        
         else
             o_rx_ready_slave_s1 <= ss_n;
             if o_rx_ready_slave_s1 = '0' and ss_n = '1' then
-                rx_data_s <= o_data_slave_s((SPI_DATA_BITS-1) downto 0);                                 -- Data bits are LSb's
-                rx_address_s <= o_data_slave_s((SPI_ADDRESS_BITS-1)+SPI_DATA_BITS downto SPI_DATA_BITS); -- Address bits are the next MSb's after data
                 rx_read_write_bit <= o_data_slave_s(SPI_ADDRESS_BITS+SPI_DATA_BITS);                     -- Tead/Write bit is the MSb
+                rx_address_s <= o_data_slave_s((SPI_ADDRESS_BITS-1)+SPI_DATA_BITS downto SPI_DATA_BITS); -- Address bits are the next MSb's after data
+                rx_data_s <= o_data_slave_s((SPI_DATA_BITS-1) downto 0);                                 -- Data bits are LSb's
             end if;
         end if;
     end if;
 end process;
 
-read_data_s <= gdrb_ctrl_data_array(to_integer(unsigned(rx_address_s)));
+read_data_s <= gdrb_ctrl_data_array(to_integer(unsigned(rx_address_s))); -- Use address received  to extract read data to send back on next tx
 
-tx_data_s(tx_data_s'LEFT downto (tx_data_s'LEFT-read_data_s'LEFT)) <= read_data_s;
+tx_data_s(tx_data_s'LEFT downto (tx_data_s'LEFT-read_data_s'LEFT)) <= read_data_s; -- Read data goes into MSb's of data sent back (no address or Read/Write bit sent back as per protocol)
 
 end Behavioral;

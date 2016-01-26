@@ -62,6 +62,7 @@ package spi_package is
     function initalise_gdrb_ctrl_data_array(data_start_value : natural ) return gdrb_ctrl_address_type;
 
     constant gdrb_ctrl_data_array_initalise : gdrb_ctrl_address_type;
+    constant gdrb_ctrl_data_array_initalise_offset : gdrb_ctrl_address_type;
 
     procedure spi_main_test_loop (signal TIME_PERIOD_CLK : in time;
                                     signal sys_clk_i : in std_logic;
@@ -86,13 +87,15 @@ package body spi_package is
     function initalise_gdrb_ctrl_data_array(data_start_value : natural ) return gdrb_ctrl_address_type is
         variable gdrb_ctrl_data_array : gdrb_ctrl_address_type := (others => (others => '0'));
     begin
-        for i in 0 to gdrb_ctrl_data_array'LEFT loop
+        for i in gdrb_ctrl_data_array'RANGE loop
             gdrb_ctrl_data_array(i) := std_logic_vector(to_unsigned(data_start_value+i,SPI_DATA_BITS));
         end loop;
         return gdrb_ctrl_data_array;
     end;
 
-    constant gdrb_ctrl_data_array_initalise : gdrb_ctrl_address_type := initalise_gdrb_ctrl_data_array(0);
+    constant gdrb_ctrl_data_array_initalise : gdrb_ctrl_address_type := initalise_gdrb_ctrl_data_array(data_start_value => 0);
+    constant gdrb_ctrl_data_array_initalise_offset : gdrb_ctrl_address_type := initalise_gdrb_ctrl_data_array(data_start_value => 16#10#);
+
 
     procedure spi_main_test_loop (signal TIME_PERIOD_CLK : in time;
                                     signal sys_clk_i : in std_logic;
