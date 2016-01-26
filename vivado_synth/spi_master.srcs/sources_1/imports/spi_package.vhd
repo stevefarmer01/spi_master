@@ -96,7 +96,6 @@ package body spi_package is
     constant gdrb_ctrl_data_array_initalise : gdrb_ctrl_address_type := initalise_gdrb_ctrl_data_array(data_start_value => 0);
     constant gdrb_ctrl_data_array_initalise_offset : gdrb_ctrl_address_type := initalise_gdrb_ctrl_data_array(data_start_value => 16#10#);
 
-
     procedure spi_main_test_loop (signal TIME_PERIOD_CLK : in time;
                                     signal sys_clk_i : in std_logic;
                                     signal spi_start_i : out std_logic;

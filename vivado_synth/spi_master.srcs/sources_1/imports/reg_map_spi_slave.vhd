@@ -79,19 +79,19 @@ end component;
 signal reset_domain_cross_s : std_logic_vector(1 downto 0) := (others => '0');
 signal reset_s : std_logic := '0';
 signal o_rx_ready_slave_s : std_logic := '0';
-signal data_i_slave_tx_s, o_data_slave_s : std_logic_vector(DATA_SIZE-1 downto 0) := (others  => '0');
-signal wr_i_s : std_logic_vector(1 downto 0) := "01";
-
-    signal temp_count_s : integer range 0 to 15 := 0;
-    signal o_rx_ready_slave_s1 : std_logic := '1';
+signal o_rx_ready_slave_r0 : std_logic := '0';
+signal o_rx_ready_rising_edge_s : std_logic := '0';
+signal o_data_slave_s : std_logic_vector(DATA_SIZE-1 downto 0) := (others  => '0');
 
 ---Array of data spanning entire address range declared and initialised in 'spi_package'
 signal gdrb_ctrl_data_array : gdrb_ctrl_address_type := gdrb_ctrl_data_array_initalise;
 
+signal rx_valid_S : std_logic := '0';
 signal rx_address_s : std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) := (others => '0');
 signal rx_data_s, read_data_s : std_logic_vector(SPI_DATA_BITS-1 downto 0) := (others => '0');
 signal rx_read_write_bit : std_logic := '0';
 signal tx_data_s : std_logic_vector(DATA_SIZE-1 downto 0) := (others  => '0');
+signal wr_en_to_spi_slave_S : std_logic := '0';
 
 begin
 
@@ -103,54 +103,33 @@ begin
     end if;
 end process;
 
-temp_count_proc : process(clk)
-begin
-    if rising_edge(clk) then
-        if reset_s = '1' then
-            wr_i_s <= "01";
-        else
-        wr_i_s <= wr_i_s(wr_i_s'LEFT-1 downto 0) & '0';
-        o_rx_ready_slave_s1 <= ss_n;
-            if o_rx_ready_slave_s1 = '0' and ss_n = '1' then
-                if temp_count_s = input_data'HIGH then
-                    temp_count_s <= 0;
-                else
-                    temp_count_s <= temp_count_s + 1;
-                end if;
-                wr_i_s <= "01";
-            end if;
-        end if;
-    end if;
-end process;
-
-data_i_slave_tx_s <= input_data(temp_count_s);
-
     spi_slave_inst : spi_slave
         generic map(
             DATA_SIZE => DATA_SIZE)
         port map(
-        i_sys_clk      => clk,                  -- : in  std_logic;                                -- system clock
-        i_sys_rst      => reset_s,              -- : in  std_logic;                                -- system reset
-        i_csn          => '0',                  -- : in  std_logic;                                -- chip select for SPI master
-        --.i_data         => data_i_slave_tx_s, -- : in  std_logic_vector(15 downto 0);            -- Input data
-        i_data         => tx_data_s,            -- : in  std_logic_vector(15 downto 0);            -- Input data
-        i_wr           => wr_i_s(wr_i_s'LEFT),  -- : in  std_logic;                                -- Active Low Write, Active High Read
-        i_rd           => '0',                  -- : in  std_logic;                                -- Active Low Write, Active High Read
-        o_data      => o_data_slave_s,          -- o_data     : out std_logic_vector(15 downto 0); -- output data
-        o_tx_ready  => open,                    -- o_tx_ready : out std_logic;                     -- Transmitter ready, can write another
-        o_rx_ready  => o_rx_ready_slave_s,      -- o_rx_ready : out std_logic;                     -- Receiver ready, can read data
-        o_tx_error  => open,                    -- o_tx_error : out std_logic;                     -- Transmitter error
-        o_rx_error  => open,                    -- o_rx_error : out std_logic;                     -- Receiver error
-        i_cpol         => '0',                  -- : in  std_logic;                                -- CPOL value - 0 or 1
-        i_cpha         => '0',                  -- : in  std_logic;                                -- CPHA value - 0 or 1
-        i_lsb_first    => '0',                  -- : in  std_logic;                                -- lsb first when '1' /msb first when
-        i_ssn       => ss_n,                    -- i_ssn  : in  std_logic;                         -- Slave Slect Active low
-        i_mosi      => mosi,                    -- i_mosi : in  std_logic;                         -- Slave input from Master
-        o_miso      => miso,                    -- o_miso : out std_logic;                         -- Slave output to Master
-        i_sclk      => sclk,                    -- i_sclk : in  std_logic;                         -- Clock from SPI Master
-        o_tx_ack    => open,                    -- o_tx_ack : out std_logic;
-        o_tx_no_ack => open                     -- o_tx_no_ack : out std_logic
+        i_sys_clk   => clk,                  -- : in  std_logic;                                -- system clock
+        i_sys_rst   => reset_s,              -- : in  std_logic;                                -- system reset
+        i_csn       => '0',                  -- : in  std_logic;                                -- chip select for SPI master
+        i_data      => tx_data_s,            -- : in  std_logic_vector(15 downto 0);            -- Input data
+        i_wr        => wr_en_to_spi_slave_S, -- : in  std_logic;                                -- Active Low Write, Active High Read
+        i_rd        => '0',                  -- : in  std_logic;                                -- Active Low Write, Active High Read
+        o_data      => o_data_slave_s,       -- o_data     : out std_logic_vector(15 downto 0); -- output data
+        o_tx_ready  => open,                 -- o_tx_ready : out std_logic;                     -- Transmitter ready, can write another
+        o_rx_ready  => o_rx_ready_slave_s,   -- o_rx_ready : out std_logic;                     -- Receiver ready, can read data
+        o_tx_error  => open,                 -- o_tx_error : out std_logic;                     -- Transmitter error
+        o_rx_error  => open,                 -- o_rx_error : out std_logic;                     -- Receiver error
+        i_cpol      => '0',                  -- : in  std_logic;                                -- CPOL value - 0 or 1
+        i_cpha      => '0',                  -- : in  std_logic;                                -- CPHA value - 0 or 1
+        i_lsb_first => '0',                  -- : in  std_logic;                                -- lsb first when '1' /msb first when
+        i_ssn       => ss_n,                 -- i_ssn  : in  std_logic;                         -- Slave Slect Active low
+        i_mosi      => mosi,                 -- i_mosi : in  std_logic;                         -- Slave input from Master
+        o_miso      => miso,                 -- o_miso : out std_logic;                         -- Slave output to Master
+        i_sclk      => sclk,                 -- i_sclk : in  std_logic;                         -- Clock from SPI Master
+        o_tx_ack    => open,                 -- o_tx_ack : out std_logic;
+        o_tx_no_ack => open                  -- o_tx_no_ack : out std_logic
             );
+
+o_rx_ready_rising_edge_s <= '1' when o_rx_ready_slave_r0 = '0' and o_rx_ready_slave_s = '1' else '0';
 
 spi_rx_bits_proc : process(clk)
 begin
@@ -160,8 +139,10 @@ begin
             rx_address_s <= (others => '0');
             rx_data_s <= (others => '0');
         else
-            o_rx_ready_slave_s1 <= ss_n;
-            if o_rx_ready_slave_s1 = '0' and ss_n = '1' then
+            rx_valid_S <= '0';
+            o_rx_ready_slave_r0 <= o_rx_ready_slave_s;
+            if o_rx_ready_rising_edge_s = '1' then
+                rx_valid_S <= '1';
                 rx_read_write_bit <= o_data_slave_s(SPI_ADDRESS_BITS+SPI_DATA_BITS);                     -- Tead/Write bit is the MSb
                 rx_address_s <= o_data_slave_s((SPI_ADDRESS_BITS-1)+SPI_DATA_BITS downto SPI_DATA_BITS); -- Address bits are the next MSb's after data
                 rx_data_s <= o_data_slave_s((SPI_DATA_BITS-1) downto 0);                                 -- Data bits are LSb's
@@ -170,8 +151,27 @@ begin
     end if;
 end process;
 
-read_data_s <= gdrb_ctrl_data_array(to_integer(unsigned(rx_address_s))); -- Use address received  to extract read data to send back on next tx
-
+---Extract read data from reg map array and send it back across SPI to master
+read_data_s <= gdrb_ctrl_data_array(to_integer(unsigned(rx_address_s)));           -- Use address received  to extract read data from reg map array to send back on next tx
 tx_data_s(tx_data_s'LEFT downto (tx_data_s'LEFT-read_data_s'LEFT)) <= read_data_s; -- Read data goes into MSb's of data sent back (no address or Read/Write bit sent back as per protocol)
+
+---Put write data receieved from SPI into reg map array
+spi_write_to_reg_map_proc : process(clk)
+begin
+    if rising_edge(clk) then
+        if reset_s = '1' then
+            gdrb_ctrl_data_array <= gdrb_ctrl_data_array_initalise;                -- reset reg map array with a function (allows pre_loading of data values which could be useful for testing and operation)
+            wr_en_to_spi_slave_S <= '0';
+        else
+            wr_en_to_spi_slave_S <= '0';
+            if rx_valid_S = '1' then
+            wr_en_to_spi_slave_S <= '1';                                           -- Enable to latch send read or write data back across SPI by slave
+                if rx_read_write_bit = '0' then
+            gdrb_ctrl_data_array(to_integer(unsigned(rx_address_s))) <= rx_data_s; -- This is a write and so update reg map array with data received
+                end if;
+            end if;
+        end if;
+    end if;
+end process;
 
 end Behavioral;

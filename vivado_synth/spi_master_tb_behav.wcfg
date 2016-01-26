@@ -10,7 +10,7 @@
          </top_modules>
       </db_ref>
    </db_ref_list>
-   <WVObjectSize size="29" />
+   <WVObjectSize size="30" />
    <wvobject db_ref_id="1" fp_name="/spi_master_tb/sys_clk_i" type="logic">
       <obj_property name="ElementShortName">sys_clk_i</obj_property>
       <obj_property name="ObjectShortName">sys_clk_i</obj_property>
@@ -119,6 +119,10 @@
    <wvobject db_ref_id="1" fp_name="/spi_master_tb/slave_to_master_rx_match_latch_result" type="other">
       <obj_property name="ElementShortName">slave_to_master_rx_match_latch_result</obj_property>
       <obj_property name="ObjectShortName">slave_to_master_rx_match_latch_result</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/slave_to_master_tx_match_latch_result" type="other">
+      <obj_property name="ElementShortName">slave_to_master_tx_match_latch_result</obj_property>
+      <obj_property name="ObjectShortName">slave_to_master_tx_match_latch_result</obj_property>
    </wvobject>
    <wvobject db_ref_id="1" fp_name="/spi_master_tb/test_0" type="array">
       <obj_property name="ElementShortName">test_0[7:0]</obj_property>
