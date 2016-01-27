@@ -36,27 +36,9 @@ package spi_package is
 --.    constant DATA_SIZE : integer   := 13;
     constant SPI_ADDRESS_BITS : integer := 4;
     constant SPI_DATA_BITS : integer := 8;
-    constant DATA_SIZE : integer   := SPI_ADDRESS_BITS+SPI_DATA_BITS+1; -- Total data size is address + data + read/write bit
+    constant DATA_SIZE : integer   := SPI_ADDRESS_BITS+SPI_DATA_BITS+1; -- Total data size = read/write bit + address + data = 13
    
     type input_data_type is array (integer range 0 to 15) of std_logic_vector(DATA_SIZE - 1 downto 0);
-    constant input_data : input_data_type := (std_logic_vector(to_unsigned(2#0101010101010101#,DATA_SIZE)),
-                                              std_logic_vector(to_unsigned(2#0000000000000001#,DATA_SIZE)),
-                                              std_logic_vector(to_unsigned(2#1000000000000000#,DATA_SIZE)),
-                                              std_logic_vector(to_unsigned(2#1111111111111111#,DATA_SIZE)),
-                                              std_logic_vector(to_unsigned(2#0010101010101010#,DATA_SIZE)),
-                                              std_logic_vector(to_unsigned(2#0100110011001101#,DATA_SIZE)),
-                                              std_logic_vector(to_unsigned(2#1111000011111111#,DATA_SIZE)),
-                                              std_logic_vector(to_unsigned(2#1111111111111110#,DATA_SIZE)),
-                                              std_logic_vector(to_unsigned(2#0111111111110000#,DATA_SIZE)),
-                                              std_logic_vector(to_unsigned(2#0000111111110001#,DATA_SIZE)),
-                                              std_logic_vector(to_unsigned(2#1111111111111111#,DATA_SIZE)),
-                                              std_logic_vector(to_unsigned(2#1000000000000000#,DATA_SIZE)),
-                                              std_logic_vector(to_unsigned(2#0010101010101010#,DATA_SIZE)),
-                                              std_logic_vector(to_unsigned(2#1111111111111111#,DATA_SIZE)),
-                                              std_logic_vector(to_unsigned(2#1111000011100000#,DATA_SIZE)),
-                                              std_logic_vector(to_unsigned(2#1111111111111110#,DATA_SIZE))
-                                              );
-
     type gdrb_ctrl_address_type is array (integer range 0 to (SPI_ADDRESS_BITS**2)-1) of std_logic_vector(SPI_DATA_BITS-1 downto 0);
 
     function initalise_gdrb_ctrl_data_array(data_start_value : natural ) return gdrb_ctrl_address_type;

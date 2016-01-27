@@ -85,17 +85,19 @@ component spi_slave is
         );
 end component;
 
-component reg_map_spi_slave is
-    generic(
-        DATA_SIZE  :     natural := 16);
+component gdrb_ctrl_reg_map_top is
+--.    generic(
+--.        DATA_SIZE  :     natural := 16);
     Port (  
-            clk : std_logic;
-            reset : std_logic;
+            clk : in std_logic;
+            reset : in std_logic;
             ---Slave SPI interface pins
             sclk : in STD_LOGIC;
             ss_n : in STD_LOGIC;
             mosi : in STD_LOGIC;
-            miso : out STD_LOGIC);
+            miso : out STD_LOGIC
+--.            gdrb_ctrl_data_array : in gdrb_ctrl_address_type
+            );
 end component;
 
 
@@ -108,66 +110,42 @@ end component;
     signal   slave_data_i    : std_logic_vector(DATA_SIZE - 1 downto 0) := (others => '0');  -- Input data
     signal   wr_i            : std_logic                     := '0';  -- Active Low Write, Active High Read
     signal   rd_i            : std_logic                     := '0';  -- Active Low Write, Active High Read
-    signal   spim_data_i     : std_logic_vector(DATA_SIZE - 1 downto 0);  --output data
-    signal   spim_tx_ready_i : std_logic                     := '0';  -- Transmitter ready, can write another 
-    signal   spim_rx_ready_i : std_logic                     := '0';  -- Receiver ready, can read data
-    signal   spim_tx_error_i : std_logic                     := '0';  -- Transmitter error
-    signal   spim_rx_error_i : std_logic                     := '0';  -- Receiver error
     signal   slave_addr_i    : std_logic_vector(1 downto 0)  := "00";  -- Slave Address
-    signal   cpol_i          : std_logic                     := '0';  -- CPOL value - 0 or 1
-    signal   cpha_i          : std_logic                     := '0';  -- CPHA value - 0 or 1 
-    signal   lsb_first_i     : std_logic                     := '0';  -- lsb first when '1' /msb first when 
     signal   spi_start_i     : std_logic                     := '0';  -- START SPI Master Transactions
-    signal   clk_period_i    : std_logic_vector(7 downto 0);  -- SCL clock period in terms of i_sys_clk
-    signal   setup_cycles_i  : std_logic_vector(7 downto 0);  -- SPIM setup time  in terms of i_sys_clk
-    signal   hold_cycles_i   : std_logic_vector(7 downto 0);  -- SPIM hold time  in terms of i_sys_clk
     signal   tx2tx_cycles_i  : std_logic_vector(7 downto 0) := std_logic_vector(to_unsigned(16,8));  -- SPIM interval between data transactions in terms of i_sys_clk
     signal   slave_csn_i     : std_logic_vector(3 downto 0);  -- SPI Slave select (chip select) active low
     signal   mosi_i          : std_logic                     := '0';  -- Master output to Slave
-    signal   miso_00_i       : std_logic                     := '1';  -- Master input from Slave
-    signal   miso_01_i       : std_logic                     := '1';  -- Master input from Slave
-    signal   miso_10_i       : std_logic                     := '1';  -- Master input from Slave
-    signal   miso_11_i       : std_logic                     := '1';  -- Master input from Slave
     signal   miso            : std_logic                     := '1';  -- Master input from Slave
     signal   sclk_i          : std_logic                     := '0';  -- Master clock
     signal   ss_i            : std_logic;  -- Master
-    signal   count           : integer                       := 0;
     constant TIME_PERIOD_CLK : time                          := 10 ns;
     shared variable cnt      : integer                       := 0;
-    type delay_type is array (integer range 0 to 3) of std_logic_vector(7 downto 0);
-    type period_type is array (integer range 0 to 3) of std_logic_vector(7 downto 0);
-    type four_values is array (integer range 0 to 3) of std_logic_vector(1 downto 0);
 
-    signal input_data_s : input_data_type;
+    constant induce_fault_master_tx_c : boolean := FALSE;
+    constant induce_fault_slave_tx_c : boolean := FALSE;
 
-    constant period_cycles : delay_type  := ( "00000100", "00001000", "00010000", "00100000");
-    constant delay_cycles  : delay_type  := ( "00000111", "00001110", "00011000", "00110000");
-    constant four_data     : four_values := ( "00", "10", "01", "11");
-
+    signal TIME_PERIOD_CLK_S : time := 10 ns;
+    signal TIME_PERIOD_CLK_DUT_S : time := 50 ns;
+    signal dut_sys_clk_i : std_logic := '0';
+    signal dut_clk_ratio_to_testbench : integer := integer(TIME_PERIOD_CLK_DUT_S/TIME_PERIOD_CLK);
     signal stop_clks : boolean := FALSE;
+    signal trigger_another_reset_s : boolean := FALSE;
 
     signal o_data_slave, o_data_master, data_i_master_tx, data_i_slave_tx : std_logic_vector(DATA_SIZE - 1 downto 0); 
     signal master_slave_match, slave_master_match : boolean := FALSE;
     signal master_to_slave_rx_match_latch, slave_to_master_rx_match_latch : boolean := TRUE;
     signal o_rx_ready_slave, o_tx_ready_slave : std_logic := '0';
-    constant induce_fault_master_tx_c : boolean := FALSE;
-    constant induce_fault_slave_tx_c : boolean := FALSE;
     signal o_tx_ready_master, o_rx_ready_master : std_logic := '0';
+    signal rx_data_from_spi : natural;
     signal master_rx_activity : boolean := FALSE;
-
-    signal TIME_PERIOD_CLK_DUT_S : time                          := 50 ns;
-    signal dut_sys_clk_i : std_logic := '0';
-    signal dut_clk_ratio_to_testbench : integer := integer(TIME_PERIOD_CLK_DUT_S/TIME_PERIOD_CLK);
-    signal TIME_PERIOD_CLK_S : time := 10 ns;
+    signal slave_to_master_rx_match_latch_result, slave_to_master_tx_match_latch_result : boolean;
+    signal test_0, test_1 : std_logic_vector(7 downto 0);
 
     ---Array of data spanning entire address range declared and initialised in 'spi_package' has offset to make i's contents different from that held in DUT
     signal gdrb_ctrl_data_array_tb_s : gdrb_ctrl_address_type := gdrb_ctrl_data_array_initalise_offset;
 
-    signal slave_to_master_rx_match_latch_result, slave_to_master_tx_match_latch_result : boolean;
-    signal test_0, test_1 : std_logic_vector(7 downto 0);
-    signal trigger_another_reset_s : boolean := FALSE;
-
-    signal rx_data_from_spi : natural;
+-----Array of data spanning entire address range declared and initialised in 'spi_package'
+--signal gdrb_ctrl_data_array : gdrb_ctrl_address_type := gdrb_ctrl_data_array_initalise;
 
     procedure send_to_spi_master(
              constant read_write_to_spi : in std_logic;
@@ -247,72 +225,23 @@ begin
 end process;
 
 
---------------------------Slave SPI DUT----------------------------
-spi_master_gen : if DUT_TYPE = "spi_slave" generate
 
-    --.Induce fault to check test bench if desired
-    data_i_slave_tx <= (data_i(data_i'HIGH downto 2) & "11") when induce_fault_slave_tx_c else data_i;
-
-    spi_slave_inst : spi_slave
-        generic map(
-            DATA_SIZE => DATA_SIZE)
-        port map(
-        i_sys_clk      => sys_clk_i,       -- : in  std_logic;                                               -- system clock
-        i_sys_rst      => sys_rst_i,       -- : in  std_logic;                                               -- system reset
-        i_csn          => '0',             -- : in  std_logic;                                               -- chip select for SPI master
-        i_data         => data_i_slave_tx, -- : in  std_logic_vector(15 downto 0);                           -- Input data
-        i_wr           => wr_i,            -- : in  std_logic;                                               -- Active Low Write, Active High Read
-        i_rd           => '0',             -- : in  std_logic;                                               -- Active Low Write, Active High Read
-        o_data      => o_data_slave,       -- o_data     : out std_logic_vector(15 downto 0);  --output data
-        o_tx_ready  => open,               -- o_tx_ready : out std_logic;                                    -- Transmitter ready, can write another
-        o_rx_ready  => o_rx_ready_slave,   -- o_rx_ready : out std_logic;                                    -- Receiver ready, can read data
-        o_tx_error  => open,               -- o_tx_error : out std_logic;                                    -- Transmitter error
-        o_rx_error  => open,               -- o_rx_error : out std_logic;                                    -- Receiver error
-        ---i_cpol      => i_cpol,          -- i_cpol      : in std_logic;                                    -- CPOL value - 0 or 1
-        ---i_cpha      => i_cpha,          -- i_cpha      : in std_logic;                                    -- CPHA value - 0 or 1
-        ---i_lsb_first => i_lsb_first,     -- i_lsb_first : in std_logic;                                    -- lsb first when '1' /msb first when
-        i_cpol         => '0',             -- : in  std_logic;                                               -- CPOL value - 0 or 1
-        i_cpha         => '0',             -- : in  std_logic;                                               -- CPHA value - 0 or 1
-        i_lsb_first    => '0',             -- : in  std_logic;                                               -- lsb first when '1' /msb first when
-        i_ssn       => ss_i,               -- i_ssn  : in  std_logic;                                        -- Slave Slect Active low
-        i_mosi      => mosi_i,             -- i_mosi : in  std_logic;                                        -- Slave input from Master
-        o_miso      => miso,               -- o_miso : out std_logic;                                        -- Slave output to Master
-        i_sclk      => sclk_i,             -- i_sclk : in  std_logic;                                        -- Clock from SPI Master
-        o_tx_ack    => open,               -- o_tx_ack : out std_logic;
-        o_tx_no_ack => open                -- o_tx_no_ack : out std_logic
-            );
-
-    --.Instantaneous check if tx/rx values agree
-    master_slave_match <= TRUE when data_i = o_data_slave else FALSE;
-    --.Latch the failure if when rx ready goes high and tx/rx values don't agree
-    latch_match_proc : process
-    begin
-        wait until o_rx_ready_slave = '1';
-        if not (data_i = o_data_slave) then
-            master_to_slave_rx_match_latch <= FALSE;
-        else
-            master_to_slave_rx_match_latch <= TRUE;
-        end if;
-    end process;
-
-end generate spi_master_gen;
-
-
-    --------------------------Register Map SPI DUT----------------------------
+--------------------------Register Map SPI DUT----------------------------
 spi_reg_map_gen : if DUT_TYPE /= "spi_slave" generate
 
-    reg_map_proc : reg_map_spi_slave
-        generic map(
-            DATA_SIZE => DATA_SIZE --  :     natural := 16
-            )
+    reg_map_proc : gdrb_ctrl_reg_map_top
+--.        generic map(
+--.                DATA_SIZE => DATA_SIZE -- :     natural := 16
+--.                )
         Port map(  
-                clk => dut_sys_clk_i, -- : std_logic;
-                reset => sys_rst_i, -- : std_logic;
+                clk => dut_sys_clk_i,  -- : std_logic;
+                reset => sys_rst_i,    -- : std_logic;
                 ---Slave SPI interface pins
-                sclk => sclk_i, -- : in STD_LOGIC;
-                ss_n => ss_i, -- : in STD_LOGIC;
-                mosi => mosi_i, -- : in STD_LOGIC;
-                miso => miso -- : out STD_LOGIC
+                sclk => sclk_i,        -- : in STD_LOGIC;
+                ss_n => ss_i,          -- : in STD_LOGIC;
+                mosi => mosi_i,        -- : in STD_LOGIC;
+                miso => miso--,          -- : out STD_LOGIC
+                --gdrb_ctrl_data_array => gdrb_ctrl_data_array_tb_s -- : in gdrb_ctrl_address_type
                 );
 
 end generate spi_reg_map_gen;
@@ -371,8 +300,6 @@ end process;
 ss_i <= slave_csn_i(0) and slave_csn_i(1) and slave_csn_i(2) and slave_csn_i(3);
 
 
-TIME_PERIOD_CLK_S <= TIME_PERIOD_CLK;
-
 ------------------------------Multiple write and read routine with decreasing DUT clk frequency which will exit simulation when it fail------------------------------.
 spi_reg_map_test_simple_gen : if DUT_TYPE = "spi_reg_map_simple" generate
     main_control_proc : process
@@ -381,7 +308,7 @@ spi_reg_map_test_simple_gen : if DUT_TYPE = "spi_reg_map_simple" generate
         variable tx_address_to_spi : natural := 0;
         variable tx_data_to_spi : natural := 0;
     begin
-        while TRUE loop -- Will loop forever unless failure detected due to increaseing DUT frequency
+        while TRUE loop                                                                         -- Will loop forever unless failure detected due to increaseing DUT frequency
             TIME_PERIOD_CLK_DUT_S <= TIME_PERIOD_CLK_DUT_S + 1 ns;
             dut_clk_ratio_to_testbench <= integer(TIME_PERIOD_CLK_DUT_S/TIME_PERIOD_CLK);
 
@@ -390,7 +317,7 @@ spi_reg_map_test_simple_gen : if DUT_TYPE = "spi_reg_map_simple" generate
             --------Writing loop --------.
             for i in 0 to (SPI_ADDRESS_BITS**2)-1 loop
                 tx_address_to_spi := i;
-                tx_data_to_spi := i+16#10#;
+                tx_data_to_spi := i+16#10#;                            -- tx data that will be checked
                     send_to_spi_master('0', tx_address_to_spi, tx_data_to_spi, rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i);
             end loop;
             wait for TIME_PERIOD_CLK*2000;                             -- Wait to show a big gap in simulation waveform
@@ -402,7 +329,7 @@ spi_reg_map_test_simple_gen : if DUT_TYPE = "spi_reg_map_simple" generate
                 for j in 0 to 1 loop                                                               -- need to send 2 packets to perform a read on SPI
                     send_to_spi_master('1', tx_address_to_spi, tx_data_to_spi, rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i);
                 end loop;
-                if rx_data_from_spi /= i+16#10# then
+                if rx_data_from_spi /= i+16#10# then                    -- check same data rx'd that was tx'd
                     slave_to_master_rx_match_latch_V := FALSE;
                 end if;
                 assert not slave_to_master_rx_match_latch_V = FALSE
@@ -469,9 +396,67 @@ spi_write_and_then_read_gen : if DUT_TYPE = "write_and_then_read_an_address" gen
     end process;
 end generate spi_write_and_then_read_gen;
 
+
+
+
+
+
+
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ----------------these routines below are more diagnostics routine for initial designing of interface than an actual functional test and so shouldn't be run----------
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--------------------------Slave SPI DUT----------------------------
+spi_master_gen : if DUT_TYPE = "spi_slave" generate
+
+    --.Induce fault to check test bench if desired
+    data_i_slave_tx <= (data_i(data_i'HIGH downto 2) & "11") when induce_fault_slave_tx_c else data_i;
+
+    spi_slave_inst : spi_slave
+        generic map(
+            DATA_SIZE => DATA_SIZE)
+        port map(
+        i_sys_clk      => sys_clk_i,       -- : in  std_logic;                                               -- system clock
+        i_sys_rst      => sys_rst_i,       -- : in  std_logic;                                               -- system reset
+        i_csn          => '0',             -- : in  std_logic;                                               -- chip select for SPI master
+        i_data         => data_i_slave_tx, -- : in  std_logic_vector(15 downto 0);                           -- Input data
+        i_wr           => wr_i,            -- : in  std_logic;                                               -- Active Low Write, Active High Read
+        i_rd           => '0',             -- : in  std_logic;                                               -- Active Low Write, Active High Read
+        o_data      => o_data_slave,       -- o_data     : out std_logic_vector(15 downto 0);  --output data
+        o_tx_ready  => open,               -- o_tx_ready : out std_logic;                                    -- Transmitter ready, can write another
+        o_rx_ready  => o_rx_ready_slave,   -- o_rx_ready : out std_logic;                                    -- Receiver ready, can read data
+        o_tx_error  => open,               -- o_tx_error : out std_logic;                                    -- Transmitter error
+        o_rx_error  => open,               -- o_rx_error : out std_logic;                                    -- Receiver error
+        ---i_cpol      => i_cpol,          -- i_cpol      : in std_logic;                                    -- CPOL value - 0 or 1
+        ---i_cpha      => i_cpha,          -- i_cpha      : in std_logic;                                    -- CPHA value - 0 or 1
+        ---i_lsb_first => i_lsb_first,     -- i_lsb_first : in std_logic;                                    -- lsb first when '1' /msb first when
+        i_cpol         => '0',             -- : in  std_logic;                                               -- CPOL value - 0 or 1
+        i_cpha         => '0',             -- : in  std_logic;                                               -- CPHA value - 0 or 1
+        i_lsb_first    => '0',             -- : in  std_logic;                                               -- lsb first when '1' /msb first when
+        i_ssn       => ss_i,               -- i_ssn  : in  std_logic;                                        -- Slave Slect Active low
+        i_mosi      => mosi_i,             -- i_mosi : in  std_logic;                                        -- Slave input from Master
+        o_miso      => miso,               -- o_miso : out std_logic;                                        -- Slave output to Master
+        i_sclk      => sclk_i,             -- i_sclk : in  std_logic;                                        -- Clock from SPI Master
+        o_tx_ack    => open,               -- o_tx_ack : out std_logic;
+        o_tx_no_ack => open                -- o_tx_no_ack : out std_logic
+            );
+
+    --.Instantaneous check if tx/rx values agree
+    master_slave_match <= TRUE when data_i = o_data_slave else FALSE;
+    --.Latch the failure if when rx ready goes high and tx/rx values don't agree
+    latch_match_proc : process
+    begin
+        wait until o_rx_ready_slave = '1';
+        if not (data_i = o_data_slave) then
+            master_to_slave_rx_match_latch <= FALSE;
+        else
+            master_to_slave_rx_match_latch <= TRUE;
+        end if;
+    end process;
+
+end generate spi_master_gen;
+
+TIME_PERIOD_CLK_S <= TIME_PERIOD_CLK;
+
 spi_master_test_routine_gen : if DUT_TYPE = "spi_slave" generate
     main_control_proc : process
     begin
@@ -479,7 +464,7 @@ spi_master_test_routine_gen : if DUT_TYPE = "spi_slave" generate
             TIME_PERIOD_CLK_DUT_S <= TIME_PERIOD_CLK_DUT_S + 1 ns;
             dut_clk_ratio_to_testbench <= integer(TIME_PERIOD_CLK_DUT_S/TIME_PERIOD_CLK);
 
-                --.Proceedure for testing low level spi_slave.vhd
+                --.Proceedure for testing low level spi_slave.vhd - this only checks slave can receive, it doesn't check what it transmits back
                 spi_main_test_loop (TIME_PERIOD_CLK => TIME_PERIOD_CLK_S, -- : in time;
                                                 sys_clk_i => sys_clk_i, -- : in std_logic;
                                                 spi_start_i => spi_start_i, -- : out std_logic;

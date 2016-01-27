@@ -34,16 +34,25 @@ use work.spi_package.ALL;
 --use UNISIM.VComponents.all;
 
 entity reg_map_spi_slave is
-    generic(
-        DATA_SIZE  :     natural := 16);
+--.    generic(
+--.        DATA_SIZE  :     natural := 16);
     Port (  
-            clk : std_logic;
-            reset : std_logic;
+            clk : in std_logic;
+            reset : in std_logic;
             ---Slave SPI interface pins
             sclk : in STD_LOGIC;
             ss_n : in STD_LOGIC;
             mosi : in STD_LOGIC;
-            miso : out STD_LOGIC);
+            miso : out STD_LOGIC;
+            --register map interface
+            rx_valid : out std_logic; -- High pulse when spi receives packet
+            rx_read_write_bit : out std_logic;
+            rx_address : out std_logic_vector(SPI_ADDRESS_BITS-1 downto 0);
+            rx_data : out std_logic_vector(SPI_DATA_BITS-1 downto 0);
+            ---Array of data spanning entire address range declared and initialised in 'spi_package'
+            gdrb_ctrl_data_array : in gdrb_ctrl_address_type
+            );
+
 end reg_map_spi_slave;
 
 architecture Behavioral of reg_map_spi_slave is
@@ -76,42 +85,34 @@ component spi_slave is
         );
 end component;
 
-signal reset_domain_cross_s : std_logic_vector(1 downto 0) := (others => '0');
-signal reset_s : std_logic := '0';
 signal o_rx_ready_slave_s : std_logic := '0';
 signal o_rx_ready_slave_r0 : std_logic := '0';
 signal o_rx_ready_rising_edge_s : std_logic := '0';
 signal o_data_slave_s : std_logic_vector(DATA_SIZE-1 downto 0) := (others  => '0');
 
----Array of data spanning entire address range declared and initialised in 'spi_package'
-signal gdrb_ctrl_data_array : gdrb_ctrl_address_type := gdrb_ctrl_data_array_initalise;
+signal tx_data_s : std_logic_vector(DATA_SIZE-1 downto 0) := (others  => '0');
 
 signal rx_valid_S : std_logic := '0';
+signal rx_read_write_bit_s : std_logic := '0';
 signal rx_address_s : std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) := (others => '0');
 signal rx_data_s, read_data_s : std_logic_vector(SPI_DATA_BITS-1 downto 0) := (others => '0');
-signal rx_read_write_bit : std_logic := '0';
-signal tx_data_s : std_logic_vector(DATA_SIZE-1 downto 0) := (others  => '0');
-signal wr_en_to_spi_slave_S : std_logic := '0';
+
+-----Array of data spanning entire address range declared and initialised in 'spi_package'
+--signal gdrb_ctrl_data_array : gdrb_ctrl_address_type := gdrb_ctrl_data_array_initalise;
+
+signal wr_en_to_spi_slave_s : std_logic := '0';
 
 begin
-
-sync_reset_proc : process(clk)
-begin
-    if rising_edge(clk) then
-        reset_domain_cross_s <= reset_domain_cross_s(reset_domain_cross_s'LEFT-1 downto 0) & reset;
-        reset_s <= reset_domain_cross_s(reset_domain_cross_s'LEFT);
-    end if;
-end process;
 
     spi_slave_inst : spi_slave
         generic map(
             DATA_SIZE => DATA_SIZE)
         port map(
         i_sys_clk   => clk,                  -- : in  std_logic;                                -- system clock
-        i_sys_rst   => reset_s,              -- : in  std_logic;                                -- system reset
+        i_sys_rst   => reset,              -- : in  std_logic;                                -- system reset
         i_csn       => '0',                  -- : in  std_logic;                                -- chip select for SPI master
         i_data      => tx_data_s,            -- : in  std_logic_vector(15 downto 0);            -- Input data
-        i_wr        => wr_en_to_spi_slave_S, -- : in  std_logic;                                -- Active Low Write, Active High Read
+        i_wr        => wr_en_to_spi_slave_s, -- : in  std_logic;                                -- Active Low Write, Active High Read
         i_rd        => '0',                  -- : in  std_logic;                                -- Active Low Write, Active High Read
         o_data      => o_data_slave_s,       -- o_data     : out std_logic_vector(15 downto 0); -- output data
         o_tx_ready  => open,                 -- o_tx_ready : out std_logic;                     -- Transmitter ready, can write another
@@ -134,8 +135,8 @@ o_rx_ready_rising_edge_s <= '1' when o_rx_ready_slave_r0 = '0' and o_rx_ready_sl
 spi_rx_bits_proc : process(clk)
 begin
     if rising_edge(clk) then
-        if reset_s = '1' then
-            rx_read_write_bit <= '0';        
+        if reset = '1' then
+            rx_read_write_bit_s <= '0';        
             rx_address_s <= (others => '0');
             rx_data_s <= (others => '0');
         else
@@ -143,7 +144,7 @@ begin
             o_rx_ready_slave_r0 <= o_rx_ready_slave_s;
             if o_rx_ready_rising_edge_s = '1' then
                 rx_valid_S <= '1';
-                rx_read_write_bit <= o_data_slave_s(SPI_ADDRESS_BITS+SPI_DATA_BITS);                     -- Tead/Write bit is the MSb
+                rx_read_write_bit_s <= o_data_slave_s(SPI_ADDRESS_BITS+SPI_DATA_BITS);                     -- Tead/Write bit is the MSb
                 rx_address_s <= o_data_slave_s((SPI_ADDRESS_BITS-1)+SPI_DATA_BITS downto SPI_DATA_BITS); -- Address bits are the next MSb's after data
                 rx_data_s <= o_data_slave_s((SPI_DATA_BITS-1) downto 0);                                 -- Data bits are LSb's
             end if;
@@ -159,19 +160,22 @@ tx_data_s(tx_data_s'LEFT downto (tx_data_s'LEFT-read_data_s'LEFT)) <= read_data_
 spi_write_to_reg_map_proc : process(clk)
 begin
     if rising_edge(clk) then
-        if reset_s = '1' then
-            gdrb_ctrl_data_array <= gdrb_ctrl_data_array_initalise;                -- reset reg map array with a function (allows pre_loading of data values which could be useful for testing and operation)
-            wr_en_to_spi_slave_S <= '0';
+        if reset = '1' then
+            wr_en_to_spi_slave_s <= '0';
         else
-            wr_en_to_spi_slave_S <= '0';
-            if rx_valid_S = '1' then
-            wr_en_to_spi_slave_S <= '1';                                           -- Enable to latch send read or write data back across SPI by slave
-                if rx_read_write_bit = '0' then
-            gdrb_ctrl_data_array(to_integer(unsigned(rx_address_s))) <= rx_data_s; -- This is a write and so update reg map array with data received
-                end if;
+            wr_en_to_spi_slave_s <= '0';
+            if rx_valid_s = '1' then
+                wr_en_to_spi_slave_s <= '1';                                           -- Enable to latch send read or write data back across SPI by slave
             end if;
         end if;
     end if;
 end process;
+
+--Reg map outputs
+rx_valid <= rx_valid_S;
+rx_read_write_bit <= rx_read_write_bit_s;
+rx_address <= rx_address_s;
+rx_data <= rx_data_s;
+
 
 end Behavioral;

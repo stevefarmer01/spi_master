@@ -38,6 +38,24 @@ package spi_package_diagnostics is
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ----------------these routines below are more diagnostics routine for initial designing of interface than an actual functional test and so shouldn't be run----------
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    constant input_data : input_data_type := (std_logic_vector(to_unsigned(2#0101010101010101#,DATA_SIZE)),
+                                              std_logic_vector(to_unsigned(2#0000000000000001#,DATA_SIZE)),
+                                              std_logic_vector(to_unsigned(2#1000000000000000#,DATA_SIZE)),
+                                              std_logic_vector(to_unsigned(2#1111111111111111#,DATA_SIZE)),
+                                              std_logic_vector(to_unsigned(2#0010101010101010#,DATA_SIZE)),
+                                              std_logic_vector(to_unsigned(2#0100110011001101#,DATA_SIZE)),
+                                              std_logic_vector(to_unsigned(2#1111000011111111#,DATA_SIZE)),
+                                              std_logic_vector(to_unsigned(2#1111111111111110#,DATA_SIZE)),
+                                              std_logic_vector(to_unsigned(2#0111111111110000#,DATA_SIZE)),
+                                              std_logic_vector(to_unsigned(2#0000111111110001#,DATA_SIZE)),
+                                              std_logic_vector(to_unsigned(2#1111111111111111#,DATA_SIZE)),
+                                              std_logic_vector(to_unsigned(2#1000000000000000#,DATA_SIZE)),
+                                              std_logic_vector(to_unsigned(2#0010101010101010#,DATA_SIZE)),
+                                              std_logic_vector(to_unsigned(2#1111111111111111#,DATA_SIZE)),
+                                              std_logic_vector(to_unsigned(2#1111000011100000#,DATA_SIZE)),
+                                              std_logic_vector(to_unsigned(2#1111111111111110#,DATA_SIZE))
+                                              );
+
     procedure spi_main_test_loop (signal TIME_PERIOD_CLK : in time;
                                     signal sys_clk_i : in std_logic;
                                     signal spi_start_i : out std_logic;
