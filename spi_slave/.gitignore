@@ -1,0 +1,48 @@
+#Xilinx logs
+vivado*.jou
+vivado*.log
+
+#winmerge back-up files
+*.vhd.bak
+
+#Lattice Diamond
+lattice_synth/place_and_route/**/*.dir/**
+lattice_synth/place_and_route/**/impl*/**
+lattice_synth/place_and_route/**/.recovery
+lattice_synth/place_and_route/**/*.html
+lattice_synth/place_and_route/**/promote.xml
+lattice_synth/place_and_route/**/*.tpf
+lattice_synth/place_and_route/**/.*.ini
+lattice_synth/place_and_route/**/*.ccl
+#generated lattice ip files
+lattice_synth/place_and_route/**/ip_express_cores/*/*
+!lattice_synth/place_and_route/**/ip_express_cores/*/*.lpc
+!lattice_synth/place_and_route/**/ip_express_cores/*/*.ipx
+
+#DesignView
+Simulation/**
+!*/
+!Simulation/simulator_build/vhdl/pre_synthesis/BlockSim/BlockSim.mpf
+!Simulation/simulator_build/vhdl/pre_synthesis/BlockSim/modelsim.ini
+Autosave\ of*.* 
+*/graphics/Backup\ *.*
+
+
+#Simulation/simulator_build/vhdl/pre_synthesis/*/work/**
+#Simulation/simulator_build/vhdl/pre_synthesis/transcript
+#Simulation/simulator_build/vhdl/pre_synthesis/BlockSim/vsim.wlf
+#Simulation/simulator_build/vhdl/pre_synthesis/**/*.mpf.bak
+#Simulation/simulator_build/vhdl/pre_synthesis/BlockSim/control.txt
+#Simulation/simulator_build/vhdl/pre_synthesis/BlockSim/inc.txt
+#Simulation/simulator_build/vhdl/pre_synthesis/BlockSim/wave.do
+##ignore waveform and generated simulation results
+#Simulation/log/**
+#Simulation/Simulation.cdb/**
+#Simulation/genhdl/**
+
+
+#Simulation/simulator_build/vhdl/pre_synthesis/BlockSim.do
+#Simulation/simulator_build/vhdl/pre_synthesis/BlockSim/BlockSim.cr.mti
+#Simulation/simulator_build/vhdl/pre_synthesis/BlockSim/BlockSim.mpf
+#Simulation/simulator_build/vhdl/pre_synthesis/BlockSim/modelsim.ini
+#Simulation/simulator_build/vhdl/pre_synthesis/BlockSim_sim.do
