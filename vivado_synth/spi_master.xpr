@@ -9,6 +9,7 @@
     <Option Name="Id" Val="bd11ca71e8f14045925cf73eb1a3d1b1"/>
     <Option Name="Part" Val="xc7k70tfbg676-1"/>
     <Option Name="CompiledLibDir" Val="$PCACHEDIR/compile_simlib"/>
+    <Option Name="TargetLanguage" Val="VHDL"/>
     <Option Name="BoardPart" Val=""/>
     <Option Name="ActiveSimSet" Val="sim_1"/>
     <Option Name="DefaultLib" Val="xil_defaultlib"/>
@@ -100,13 +101,13 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PSRCDIR/sources_1/new/reg_map_top.vhd">
+      <File Path="$PSRCDIR/sources_1/imports/gdrb_ctrl_reg_map_top.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PSRCDIR/sources_1/imports/gdrb_ctrl_reg_map_top.vhd">
+      <File Path="$PSRCDIR/sources_1/imports/gdrb_ctrl_address_pkg.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>

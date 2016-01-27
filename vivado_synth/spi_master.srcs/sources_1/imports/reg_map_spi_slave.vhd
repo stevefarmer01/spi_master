@@ -156,7 +156,7 @@ end process;
 read_data_s <= gdrb_ctrl_data_array(to_integer(unsigned(rx_address_s)));           -- Use address received  to extract read data from reg map array to send back on next tx
 tx_data_s(tx_data_s'LEFT downto (tx_data_s'LEFT-read_data_s'LEFT)) <= read_data_s; -- Read data goes into MSb's of data sent back (no address or Read/Write bit sent back as per protocol)
 
----Put write data receieved from SPI into reg map array
+---When valid data recieved load read data from reg map into spi interface to be sent back during next spi transaction (spi reads are always sent back during next spi transaction as per standard spi protocol)
 spi_write_to_reg_map_proc : process(clk)
 begin
     if rising_edge(clk) then

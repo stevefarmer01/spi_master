@@ -28,6 +28,8 @@ use IEEE.NUMERIC_STD.ALL;
 
 use work.spi_package.ALL;
 
+use work.gdrb_ctrl_address_pkg.ALL;
+
 -- Uncomment the following library declaration if instantiating
 -- any Xilinx leaf cells in this code.
 --library UNISIM;
@@ -41,7 +43,8 @@ entity gdrb_ctrl_reg_map_top is
             sclk : in STD_LOGIC;
             ss_n : in STD_LOGIC;
             mosi : in STD_LOGIC;
-            miso : out STD_LOGIC);
+            miso : out STD_LOGIC
+        	);
 end gdrb_ctrl_reg_map_top;
 
 architecture Behavioral of gdrb_ctrl_reg_map_top is
@@ -116,11 +119,25 @@ begin
             gdrb_ctrl_data_array_s <= gdrb_ctrl_data_array_initalise;                -- reset reg map array with a function (allows pre_loading of data values which could be useful for testing and operation)
         else
         	if write_enable_from_spi_s = '1' then
-                gdrb_ctrl_data_array_s(to_integer(unsigned(rx_address_s))) <= rx_data_s; -- This is a write and so update reg map array with data received
+        	
+        		case rx_address_s is
+
+        		when gdrb_ctrl_example0_addr_c =>
+                	gdrb_ctrl_data_array_s(to_integer(unsigned(rx_address_s))) <= rx_data_s; -- This is a write and so update reg map array with data received
+
+        		when gdrb_ctrl_example1_addr_c =>
+                	gdrb_ctrl_data_array_s(to_integer(unsigned(rx_address_s))) <= rx_data_s; -- This is a write and so update reg map array with data received
+
+                when others =>
+
+                end case;
 			end if;
         end if;
     end if;
 end process;
+
+--	gdrb_ctrl_example0_addr_c : std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) 		:= std_logic_vector(to_unsigned(16#0#,SPI_ADDRESS_BITS));
+--	gdrb_ctrl_example1_addr_c : std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) 		:= std_logic_vector(to_unsigned(16#1#,SPI_ADDRESS_BITS));
 
 
 end Behavioral;
