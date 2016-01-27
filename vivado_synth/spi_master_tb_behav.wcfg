@@ -5,6 +5,7 @@
    <db_ref_list>
       <db_ref path="spi_master_tb_behav.wdb" id="1">
          <top_modules>
+            <top_module name="gdrb_ctrl_address_pkg" />
             <top_module name="spi_master_tb" />
             <top_module name="spi_package" />
             <top_module name="spi_package_diagnostics" />
@@ -94,12 +95,12 @@
       <obj_property name="ObjectShortName">rx_data_from_spi</obj_property>
       <obj_property name="Radix">HEXRADIX</obj_property>
    </wvobject>
-   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_reg_map_gen/reg_map_proc/gdrb_ctrl_data_array" type="array">
-      <obj_property name="ElementShortName">gdrb_ctrl_data_array[0:15][7:0]</obj_property>
-      <obj_property name="ObjectShortName">gdrb_ctrl_data_array[0:15][7:0]</obj_property>
-   </wvobject>
    <wvobject db_ref_id="1" fp_name="/spi_master_tb/master_to_slave_rx_match_latch" type="other">
       <obj_property name="ElementShortName">master_to_slave_rx_match_latch</obj_property>
       <obj_property name="ObjectShortName">master_to_slave_rx_match_latch</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_reg_map_gen/reg_map_proc/gdrb_ctrl_data_array_s" type="array">
+      <obj_property name="ElementShortName">gdrb_ctrl_data_array_s[0:15][7:0]</obj_property>
+      <obj_property name="ObjectShortName">gdrb_ctrl_data_array_s[0:15][7:0]</obj_property>
    </wvobject>
 </wave_config>

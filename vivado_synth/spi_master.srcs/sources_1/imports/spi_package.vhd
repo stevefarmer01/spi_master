@@ -35,7 +35,7 @@ package spi_package is
 
 --.    constant DATA_SIZE : integer   := 13;
     constant SPI_ADDRESS_BITS : integer := 4;
-    constant SPI_DATA_BITS : integer := 8;
+    constant SPI_DATA_BITS : integer := 16;
     constant DATA_SIZE : integer   := SPI_ADDRESS_BITS+SPI_DATA_BITS+1; -- Total data size = read/write bit + address + data = 13
    
     type input_data_type is array (integer range 0 to 15) of std_logic_vector(DATA_SIZE - 1 downto 0);
