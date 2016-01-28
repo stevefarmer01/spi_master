@@ -128,7 +128,7 @@ reg_map_gen : if not make_all_addresses_writeable_for_testing generate
             else
                 ---Set values of read only registers if they are constants.....
             
-                --gdrb_ctrl_data_array_s(to_integer(unsigned(SensorStatusAddr_addr_c))) <= ; -- Read only --These have no constant value as they come from discrete pins
+                gdrb_ctrl_data_array_s(to_integer(unsigned(SensorStatusAddr_addr_c))) <= discrete_reg_map_array_from_pins(to_integer(unsigned(SensorStatusAddr_addr_c))); -- Read only --These have no constant value as they come from discrete pins
                 --gdrb_ctrl_data_array_s(to_integer(unsigned(FaultAddr_addr_c)))        <= ; -- Read only --These have no constant value as they come from discrete pins
                 gdrb_ctrl_data_array_s(to_integer(unsigned(MDRB_UES1Addr_addr_c)))    <= std_logic_vector(resize(unsigned(UES_1_c),SPI_DATA_BITS)); -- Read only
                 gdrb_ctrl_data_array_s(to_integer(unsigned(MDRB_UES2Addr_addr_c)))    <= std_logic_vector(resize(unsigned(UES_2_c),SPI_DATA_BITS)); -- Read only
@@ -194,6 +194,10 @@ reg_map_gen : if not make_all_addresses_writeable_for_testing generate
     end process;
 
 end generate reg_map_gen;
+
+
+
+discrete_reg_map_array_to_pins <= gdrb_ctrl_data_array_s;
 
 ------------------------------------------------------This is for testbenching only------------------------------------------------------------.
 --Allows testbench to simple write and read to all addresses disregarding those specified in gdrb_ctrl_address_pkg.vhd

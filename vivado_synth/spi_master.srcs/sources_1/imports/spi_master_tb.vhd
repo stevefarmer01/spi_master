@@ -371,6 +371,9 @@ spi_reg_map_gen : if DUT_TYPE /= "spi_slave" generate
                 discrete_reg_map_array_to_pins => discrete_reg_map_array_to_pins_s     -- : out gdrb_ctrl_address_type
                 );
 
+    discrete_reg_map_array_from_pins_s(to_integer(unsigned(SensorStatusAddr_addr_c))) <= std_logic_vector(to_unsigned(16#1#,SPI_DATA_BITS)); -- Read only --These have no constant value as they come from discrete pins
+
+
 end generate spi_reg_map_gen;
 
 
@@ -442,6 +445,11 @@ gdrb_ctrl_reg_map_test_gen : if DUT_TYPE = "gdrb_ctrl_reg_map_test" generate
             --Check initialised value
             address_to_spi := 16#0#;
             check_data_from_spi := 16#0#;
+            reg_map_r_check(address_to_spi, check_data_from_spi, rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, stop_clks);
+
+            --Check initialised value
+            address_to_spi := 16#1#;
+            check_data_from_spi := 16#1#;
             reg_map_r_check(address_to_spi, check_data_from_spi, rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, stop_clks);
 
             --Check initialised value
