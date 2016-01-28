@@ -12,6 +12,8 @@ use ieee.numeric_std.all;
 use work.spi_package.ALL;
 use work.spi_package_diagnostics.ALL;
 
+use work.gdrb_ctrl_address_pkg.ALL;
+
 entity spi_master_tb is
 end spi_master_tb;
 
@@ -103,7 +105,10 @@ component gdrb_ctrl_reg_map_top is
             sclk : in STD_LOGIC;
             ss_n : in STD_LOGIC;
             mosi : in STD_LOGIC;
-            miso : out STD_LOGIC
+            miso : out STD_LOGIC;
+            --Discrete signals
+            discrete_reg_map_array_from_pins : in gdrb_ctrl_address_type := (others => (others => '0'));
+            discrete_reg_map_array_to_pins : out gdrb_ctrl_address_type
             );
 end component;
 
@@ -226,9 +231,9 @@ end component;
             send_to_spi_master('0', address_to_spi, data_to_spi, rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i); -- Do a write
             wait for TIME_PERIOD_CLK*2000;                                                                                 -- Wait to show a big gap in simulation waveform
             --------Reading loop --------.
-            for j in 0 to 1 loop                                                                                           -- need to send 2 packets to perform a read on SPI
+            --for j in 0 to 1 loop                                                                                           -- need to send 2 packets to perform a read on SPI
             send_to_spi_master('1', address_to_spi, data_to_spi, rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i); -- Do a read (twice due to nature of SPI interface)
-            end loop;
+            --end loop;
             
             wait for TIME_PERIOD_CLK*2000;                                                                                 -- Wait to show a big gap in simulation waveform
         
@@ -307,23 +312,16 @@ end component;
                 --------Writing loop --------.
             send_to_spi_master('0', address_to_spi, data_to_spi, rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i); -- Do a write
             wait for TIME_PERIOD_CLK*2000;                                                                                 -- Wait to show a big gap in simulation waveform
---.            --------Reading loop --------.
---.            for j in 0 to 1 loop                                                                                           -- need to send 2 packets to perform a read on SPI
---.            send_to_spi_master('1', address_to_spi, data_to_spi, rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i); -- Do a read (twice due to nature of SPI interface)
---.            end loop;
---.            
---.            wait for TIME_PERIOD_CLK*2000;                                                                                 -- Wait to show a big gap in simulation waveform
---.        
---.            assert not (rx_data_from_spi /= check_data_from_spi)                                                                -- Check for correct data back and that there has actually been some data received
---.                report "FAIL - Master SPI recieved different to expected" severity failure;
---.            assert not (rx_data_from_spi = check_data_from_spi)                                                                 -- Check for correct data back and that there has actually been some data received
---.                report "PASS - Master SPI recieved as expected" severity failure;
---.            if (rx_data_from_spi /= check_data_from_spi) then stop_clks <= TRUE; end if;
 
     end procedure reg_map_w_check;
 
-    
+--.    signal test_int : natural;
+
+    signal discrete_reg_map_array_from_pins_s, discrete_reg_map_array_to_pins_s : gdrb_ctrl_address_type := (others => (others => '0'));
+
 begin
+
+--.            test_int <= to_integer(unsigned(Position_c) & unsigned(VersionNo_c));
 
 ---reset and clocks
 reset_proc : process
@@ -361,14 +359,16 @@ spi_reg_map_gen : if DUT_TYPE /= "spi_slave" generate
                 make_all_addresses_writeable_for_testing => make_all_addresses_writeable_for_testing -- :     natural := 16
                 )
         Port map(  
-                clk => dut_sys_clk_i,  -- : std_logic;
-                reset => sys_rst_i,    -- : std_logic;
+                clk => dut_sys_clk_i,                                                  -- : std_logic;
+                reset => sys_rst_i,                                                    -- : std_logic;
                 ---Slave SPI interface pins
-                sclk => sclk_i,        -- : in STD_LOGIC;
-                ss_n => ss_i,          -- : in STD_LOGIC;
-                mosi => mosi_i,        -- : in STD_LOGIC;
-                miso => miso--,          -- : out STD_LOGIC
-                --gdrb_ctrl_data_array => gdrb_ctrl_data_array_tb_s -- : in gdrb_ctrl_address_type
+                sclk => sclk_i,                                                        -- : in STD_LOGIC;
+                ss_n => ss_i,                                                          -- : in STD_LOGIC;
+                mosi => mosi_i,                                                        -- : in STD_LOGIC;
+                miso => miso,                                                          -- : out STD_LOGIC;
+                --Discrete signals
+                discrete_reg_map_array_from_pins => discrete_reg_map_array_from_pins_s,-- : in gdrb_ctrl_address_type := (others => (others => '0'));
+                discrete_reg_map_array_to_pins => discrete_reg_map_array_to_pins_s     -- : out gdrb_ctrl_address_type
                 );
 
 end generate spi_reg_map_gen;
@@ -454,14 +454,44 @@ gdrb_ctrl_reg_map_test_gen : if DUT_TYPE = "gdrb_ctrl_reg_map_test" generate
             data_to_spi := 16#AA#;
             check_data_from_spi := 16#AA#;
             reg_map_rw_check(address_to_spi, data_to_spi, check_data_from_spi, rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, stop_clks);
-            --Check back written value
+
+            --Check address can be written and read
+            address_to_spi := 16#2#;
+            data_to_spi := 16#55#;
+            check_data_from_spi := 16#55#;
+            reg_map_rw_check(address_to_spi, data_to_spi, check_data_from_spi, rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, stop_clks);
+
+            --Check address can be written and read
+            address_to_spi := 16#3#;
+            reg_map_rw_check(address_to_spi, data_to_spi, check_data_from_spi, rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, stop_clks);
+
+            address_to_spi := 16#5#;
+            reg_map_rw_check(address_to_spi, data_to_spi, check_data_from_spi, rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, stop_clks);
+
+--.            address_to_spi := 16#6#;
+--.            reg_map_rw_check(address_to_spi, data_to_spi, check_data_from_spi, rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, stop_clks);
+--.
+--.            address_to_spi := 16#7#;
+--.            reg_map_rw_check(address_to_spi, data_to_spi, check_data_from_spi, rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, stop_clks);
+--.
+--.            address_to_spi := 16#8#;
+--.            reg_map_rw_check(address_to_spi, data_to_spi, check_data_from_spi, rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, stop_clks);
+--.
+--.            address_to_spi := 16#9#;
+--.            reg_map_rw_check(address_to_spi, data_to_spi, check_data_from_spi, rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, stop_clks);
+
+            address_to_spi := 16#A#;
+            reg_map_rw_check(address_to_spi, data_to_spi, check_data_from_spi, rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, stop_clks);
+
+            --Check initialised value
+            address_to_spi := 16#B#;
+            check_data_from_spi := to_integer(unsigned(Position_c) & unsigned(VersionNo_c));
             reg_map_r_check(address_to_spi, check_data_from_spi, rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, stop_clks);
 
---.            assert not (rx_data_from_spi /= rx_check_data_from_spi)                                                                -- Check for correct data back and that there has actually been some data received
---.                report "FAIL - Master SPI recieved different to expected" severity Note;
---.            assert not (rx_data_from_spi = rx_check_data_from_spi)                                                                 -- Check for correct data back and that there has actually been some data received
---.                report "PASS - Master SPI recieved as expected" severity Note;
-
+            --Check initialised value
+            address_to_spi := 16#C#;
+            check_data_from_spi := to_integer(unsigned(Day_c) & unsigned(Month_c) & unsigned(Year_c));
+            reg_map_r_check(address_to_spi, check_data_from_spi, rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, stop_clks);
 
 ------------------------------FINSHED SIMULATION------------------------------.
         stop_clks <= TRUE;                                                                  -- Always stop simulator when al tests have completed - this works for ISIM but not modelsim and so use...
@@ -471,9 +501,6 @@ gdrb_ctrl_reg_map_test_gen : if DUT_TYPE = "gdrb_ctrl_reg_map_test" generate
 
     end process;
 end generate gdrb_ctrl_reg_map_test_gen;
-
-
-
 
 
 

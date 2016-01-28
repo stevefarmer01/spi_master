@@ -12,7 +12,7 @@
          </top_modules>
       </db_ref>
    </db_ref_list>
-   <WVObjectSize size="22" />
+   <WVObjectSize size="28" />
    <wvobject db_ref_id="1" fp_name="/spi_master_tb/sys_clk_i" type="logic">
       <obj_property name="ElementShortName">sys_clk_i</obj_property>
       <obj_property name="ObjectShortName">sys_clk_i</obj_property>
@@ -83,12 +83,12 @@
       <obj_property name="ObjectShortName">o_rx_ready_master</obj_property>
    </wvobject>
    <wvobject db_ref_id="1" fp_name="/spi_master_tb/data_i_master_tx" type="array">
-      <obj_property name="ElementShortName">data_i_master_tx[12:0]</obj_property>
-      <obj_property name="ObjectShortName">data_i_master_tx[12:0]</obj_property>
+      <obj_property name="ElementShortName">data_i_master_tx[20:0]</obj_property>
+      <obj_property name="ObjectShortName">data_i_master_tx[20:0]</obj_property>
    </wvobject>
    <wvobject db_ref_id="1" fp_name="/spi_master_tb/o_data_master" type="array">
-      <obj_property name="ElementShortName">o_data_master[12:0]</obj_property>
-      <obj_property name="ObjectShortName">o_data_master[12:0]</obj_property>
+      <obj_property name="ElementShortName">o_data_master[20:0]</obj_property>
+      <obj_property name="ObjectShortName">o_data_master[20:0]</obj_property>
    </wvobject>
    <wvobject db_ref_id="1" fp_name="/spi_master_tb/rx_data_from_spi" type="other">
       <obj_property name="ElementShortName">rx_data_from_spi</obj_property>
@@ -100,7 +100,35 @@
       <obj_property name="ObjectShortName">master_to_slave_rx_match_latch</obj_property>
    </wvobject>
    <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_reg_map_gen/reg_map_proc/gdrb_ctrl_data_array_s" type="array">
-      <obj_property name="ElementShortName">gdrb_ctrl_data_array_s[0:15][7:0]</obj_property>
-      <obj_property name="ObjectShortName">gdrb_ctrl_data_array_s[0:15][7:0]</obj_property>
+      <obj_property name="ElementShortName">gdrb_ctrl_data_array_s[0:15][15:0]</obj_property>
+      <obj_property name="ObjectShortName">gdrb_ctrl_data_array_s[0:15][15:0]</obj_property>
+   </wvobject>
+   <wvobject type="divider" fp_name="divider67">
+      <obj_property name="label">DUT</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_reg_map_gen/reg_map_proc/reg_map_spi_slave_inst/rx_read_write_bit_s" type="logic">
+      <obj_property name="ElementShortName">rx_read_write_bit_s</obj_property>
+      <obj_property name="ObjectShortName">rx_read_write_bit_s</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_reg_map_gen/reg_map_proc/reg_map_spi_slave_inst/rx_address_s" type="array">
+      <obj_property name="ElementShortName">rx_address_s[3:0]</obj_property>
+      <obj_property name="ObjectShortName">rx_address_s[3:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_reg_map_gen/reg_map_proc/reg_map_spi_slave_inst/rx_data_s" type="array">
+      <obj_property name="ElementShortName">rx_data_s[15:0]</obj_property>
+      <obj_property name="ObjectShortName">rx_data_s[15:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_reg_map_gen/reg_map_proc/reg_map_spi_slave_inst/read_data_s" type="array">
+      <obj_property name="ElementShortName">read_data_s[15:0]</obj_property>
+      <obj_property name="ObjectShortName">read_data_s[15:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/test_int" type="other">
+      <obj_property name="ElementShortName">test_int</obj_property>
+      <obj_property name="ObjectShortName">test_int</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
    </wvobject>
 </wave_config>

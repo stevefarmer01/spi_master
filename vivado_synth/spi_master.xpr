@@ -135,6 +135,7 @@
         <Option Name="DesignMode" Val="RTL"/>
         <Option Name="TopModule" Val="spi_master_tb"/>
         <Option Name="TopLib" Val="xil_defaultlib"/>
+        <Option Name="SimulationRunTime" Val="all"/>
         <Option Name="SrcSet" Val="sources_1"/>
         <Option Name="XSimWcfgFile" Val="$PPRDIR/spi_master_tb_behav.wcfg"/>
       </Config>

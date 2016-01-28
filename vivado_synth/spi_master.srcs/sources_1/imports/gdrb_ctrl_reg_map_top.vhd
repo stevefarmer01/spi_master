@@ -36,7 +36,7 @@ use work.gdrb_ctrl_address_pkg.ALL;
 --use UNISIM.VComponents.all;
 
 entity gdrb_ctrl_reg_map_top is
-    generic ( make_all_addresses_writeable_for_testing : boolean := FALSE );
+    generic ( make_all_addresses_writeable_for_testing : boolean := FALSE ); -- This is for testbenching only
     Port (  
             clk : in std_logic;
             reset : in std_logic;
@@ -44,7 +44,10 @@ entity gdrb_ctrl_reg_map_top is
             sclk : in STD_LOGIC;
             ss_n : in STD_LOGIC;
             mosi : in STD_LOGIC;
-            miso : out STD_LOGIC
+            miso : out STD_LOGIC;
+            --Discrete signals
+            discrete_reg_map_array_from_pins : in gdrb_ctrl_address_type := (others => (others => '0'));
+            discrete_reg_map_array_to_pins : out gdrb_ctrl_address_type
             );
 end gdrb_ctrl_reg_map_top;
 
@@ -80,7 +83,8 @@ signal rx_data_s, read_data_s : std_logic_vector(SPI_DATA_BITS-1 downto 0) := (o
 signal write_enable_from_spi_s : std_logic := '0';
 
 -----Array of data spanning entire address range declared and initialised in 'spi_package'
-signal gdrb_ctrl_data_array_s : gdrb_ctrl_address_type := gdrb_ctrl_data_array_initalise;
+--signal gdrb_ctrl_data_array_s : gdrb_ctrl_address_type := gdrb_ctrl_data_array_initalise;
+signal gdrb_ctrl_data_array_s : gdrb_ctrl_address_type := (others => (others => '0'));
 
 begin
 
@@ -114,6 +118,7 @@ write_enable_from_spi_s <= '1' when (rx_valid_s = '1' and rx_read_write_bit_s = 
 
 --Limit read writes as per those declared in gdrb_ctrl_address_pkg.vhd
 reg_map_gen : if not make_all_addresses_writeable_for_testing generate
+
     ---Put write data receieved from SPI into reg map array
     spi_write_to_reg_map_proc : process(clk)
     begin
@@ -121,15 +126,64 @@ reg_map_gen : if not make_all_addresses_writeable_for_testing generate
             if reset_s = '1' then
                 gdrb_ctrl_data_array_s <= gdrb_ctrl_data_array_initalise;                -- reset reg map array with a function (allows pre_loading of data values which could be useful for testing and operation)
             else
-                if write_enable_from_spi_s = '1' then
+                ---Set values of read only registers if they are constants.....
+            
+                --gdrb_ctrl_data_array_s(to_integer(unsigned(SensorStatusAddr_addr_c))) <= ; -- Read only --These have no constant value as they come from discrete pins
+                --gdrb_ctrl_data_array_s(to_integer(unsigned(FaultAddr_addr_c)))        <= ; -- Read only --These have no constant value as they come from discrete pins
+                gdrb_ctrl_data_array_s(to_integer(unsigned(MDRB_UES1Addr_addr_c)))    <= std_logic_vector(resize(unsigned(UES_1_c),SPI_DATA_BITS)); -- Read only
+                gdrb_ctrl_data_array_s(to_integer(unsigned(MDRB_UES2Addr_addr_c)))    <= std_logic_vector(resize(unsigned(UES_2_c),SPI_DATA_BITS)); -- Read only
+                --gdrb_ctrl_data_array_s(to_integer(unsigned(COMMUT_UES1Addr_addr_c)))  <= ; -- Read only --These have no constant value as they come from discrete pins
+                --gdrb_ctrl_data_array_s(to_integer(unsigned(COMMUT_UES2Addr_addr_c)))  <= ; -- Read only --These have no constant value as they come from discrete pins
+ 
+                if write_enable_from_spi_s = '1' then -- Write enable from SPI
                 
                     case rx_address_s is
-    
-                    when gdrb_ctrl_example0_addr_c =>
+
+
+                    when LEDControlAddr_addr_c =>
                         gdrb_ctrl_data_array_s(to_integer(unsigned(rx_address_s))) <= rx_data_s; -- This is a write and so update reg map array with data received
     
-                    when gdrb_ctrl_example1_addr_c =>
+                    --.when SensorStatusAddr_addr_c =>
+                    --.    gdrb_ctrl_data_array_s(to_integer(unsigned(rx_address_s))) <= rx_data_s; -- Read only
+    
+                    when SensorEdgeAddr_addr_c =>
                         gdrb_ctrl_data_array_s(to_integer(unsigned(rx_address_s))) <= rx_data_s; -- This is a write and so update reg map array with data received
+    
+                    when IntMaskAddr_addr_c =>
+                        gdrb_ctrl_data_array_s(to_integer(unsigned(rx_address_s))) <= rx_data_s; -- This is a write and so update reg map array with data received
+    
+                    --.when FaultAddr_addr_c =>
+                    --.    gdrb_ctrl_data_array_s(to_integer(unsigned(rx_address_s))) <= rx_data_s; -- Read only
+    
+                    when MotionCont1Addr_addr_c =>
+                        gdrb_ctrl_data_array_s(to_integer(unsigned(rx_address_s))) <= rx_data_s; -- This is a write and so update reg map array with data received
+    
+                    --.when MotionCont2Addr_addr_c =>
+                    --.    gdrb_ctrl_data_array_s(to_integer(unsigned(rx_address_s))) <= rx_data_s; -- This is a write and so update reg map array with data received
+    
+                    --.when MotionCont3Addr_addr_c =>
+                    --.    gdrb_ctrl_data_array_s(to_integer(unsigned(rx_address_s))) <= rx_data_s; -- This is a write and so update reg map array with data received
+    
+                    --.when ScanLEDAddr_addr_c =>
+                    --.    gdrb_ctrl_data_array_s(to_integer(unsigned(rx_address_s))) <= rx_data_s; -- This is a write and so update reg map array with data received
+    
+                    --.when OViewLEDAddr_addr_c =>
+                    --.    gdrb_ctrl_data_array_s(to_integer(unsigned(rx_address_s))) <= rx_data_s; -- This is a write and so update reg map array with data received
+    
+                    when CPLDProgAddr_addr_c =>
+                        gdrb_ctrl_data_array_s(to_integer(unsigned(rx_address_s))) <= rx_data_s; -- This is a write and so update reg map array with data received
+    
+                    --.when MDRB_UES1Addr_addr_c =>
+                    --.    gdrb_ctrl_data_array_s(to_integer(unsigned(rx_address_s))) <= rx_data_s; -- Read only
+    
+                    --.when MDRB_UES2Addr_addr_c =>
+                    --.    gdrb_ctrl_data_array_s(to_integer(unsigned(rx_address_s))) <= rx_data_s; -- Read only
+    
+                    --.when COMMUT_UES1Addr_addr_c =>
+                    --.    gdrb_ctrl_data_array_s(to_integer(unsigned(rx_address_s))) <= rx_data_s; -- Read only
+    
+                    --.when COMMUT_UES2Addr_addr_c =>
+                    --.    gdrb_ctrl_data_array_s(to_integer(unsigned(rx_address_s))) <= rx_data_s; -- Read only
     
                     when others =>
     
@@ -141,7 +195,7 @@ reg_map_gen : if not make_all_addresses_writeable_for_testing generate
 
 end generate reg_map_gen;
 
-
+------------------------------------------------------This is for testbenching only------------------------------------------------------------.
 --Allows testbench to simple write and read to all addresses disregarding those specified in gdrb_ctrl_address_pkg.vhd
 testbenching_gen : if make_all_addresses_writeable_for_testing generate
     
