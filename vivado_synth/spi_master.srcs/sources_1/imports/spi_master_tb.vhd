@@ -280,6 +280,48 @@ end component;
 
     end procedure reg_map_r_check;
 
+    procedure reg_map_w_check(
+             constant address_to_spi : in natural;
+             constant data_to_spi : in natural;
+             constant check_data_from_spi : in natural;
+             signal rx_data_from_spi : inout natural;
+             signal data_i : out std_logic_vector(DATA_SIZE - 1 downto 0);
+             signal spi_start_i : out std_logic;
+             signal wr_i : out std_logic;
+             signal rd_i : out std_logic;
+             signal stop_clks : out boolean
+         );
+
+    procedure reg_map_w_check(
+             constant address_to_spi : in natural;
+             constant data_to_spi : in natural;
+             constant check_data_from_spi : in natural;
+             signal rx_data_from_spi : inout natural;
+             signal data_i : out std_logic_vector(DATA_SIZE - 1 downto 0);
+             signal spi_start_i : out std_logic;
+             signal wr_i : out std_logic;
+             signal rd_i : out std_logic;
+             signal stop_clks : out boolean
+         ) is
+    begin
+                --------Writing loop --------.
+            send_to_spi_master('0', address_to_spi, data_to_spi, rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i); -- Do a write
+            wait for TIME_PERIOD_CLK*2000;                                                                                 -- Wait to show a big gap in simulation waveform
+--.            --------Reading loop --------.
+--.            for j in 0 to 1 loop                                                                                           -- need to send 2 packets to perform a read on SPI
+--.            send_to_spi_master('1', address_to_spi, data_to_spi, rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i); -- Do a read (twice due to nature of SPI interface)
+--.            end loop;
+--.            
+--.            wait for TIME_PERIOD_CLK*2000;                                                                                 -- Wait to show a big gap in simulation waveform
+--.        
+--.            assert not (rx_data_from_spi /= check_data_from_spi)                                                                -- Check for correct data back and that there has actually been some data received
+--.                report "FAIL - Master SPI recieved different to expected" severity failure;
+--.            assert not (rx_data_from_spi = check_data_from_spi)                                                                 -- Check for correct data back and that there has actually been some data received
+--.                report "PASS - Master SPI recieved as expected" severity failure;
+--.            if (rx_data_from_spi /= check_data_from_spi) then stop_clks <= TRUE; end if;
+
+    end procedure reg_map_w_check;
+
     
 begin
 
