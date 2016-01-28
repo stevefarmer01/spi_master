@@ -36,6 +36,7 @@ use work.gdrb_ctrl_address_pkg.ALL;
 --use UNISIM.VComponents.all;
 
 entity gdrb_ctrl_reg_map_top is
+    generic ( make_all_addresses_writeable_for_testing : boolean := FALSE );
     Port (  
             clk : in std_logic;
             reset : in std_logic;
@@ -44,7 +45,7 @@ entity gdrb_ctrl_reg_map_top is
             ss_n : in STD_LOGIC;
             mosi : in STD_LOGIC;
             miso : out STD_LOGIC
-        	);
+            );
 end gdrb_ctrl_reg_map_top;
 
 architecture Behavioral of gdrb_ctrl_reg_map_top is
@@ -111,33 +112,55 @@ reg_map_spi_slave_inst : reg_map_spi_slave
 
 write_enable_from_spi_s <= '1' when (rx_valid_s = '1' and rx_read_write_bit_s = '0') else '0';
 
----Put write data receieved from SPI into reg map array
-spi_write_to_reg_map_proc : process(clk)
-begin
-    if rising_edge(clk) then
-        if reset_s = '1' then
-            gdrb_ctrl_data_array_s <= gdrb_ctrl_data_array_initalise;                -- reset reg map array with a function (allows pre_loading of data values which could be useful for testing and operation)
-        else
-        	if write_enable_from_spi_s = '1' then
-        	
-        		case rx_address_s is
-
-        		when gdrb_ctrl_example0_addr_c =>
-                	gdrb_ctrl_data_array_s(to_integer(unsigned(rx_address_s))) <= rx_data_s; -- This is a write and so update reg map array with data received
-
-        		when gdrb_ctrl_example1_addr_c =>
-                	gdrb_ctrl_data_array_s(to_integer(unsigned(rx_address_s))) <= rx_data_s; -- This is a write and so update reg map array with data received
-
-                when others =>
-
-                end case;
-			end if;
+--Limit read writes as per those declared in gdrb_ctrl_address_pkg.vhd
+reg_map_gen : if not make_all_addresses_writeable_for_testing generate
+    ---Put write data receieved from SPI into reg map array
+    spi_write_to_reg_map_proc : process(clk)
+    begin
+        if rising_edge(clk) then
+            if reset_s = '1' then
+                gdrb_ctrl_data_array_s <= gdrb_ctrl_data_array_initalise;                -- reset reg map array with a function (allows pre_loading of data values which could be useful for testing and operation)
+            else
+                if write_enable_from_spi_s = '1' then
+                
+                    case rx_address_s is
+    
+                    when gdrb_ctrl_example0_addr_c =>
+                        gdrb_ctrl_data_array_s(to_integer(unsigned(rx_address_s))) <= rx_data_s; -- This is a write and so update reg map array with data received
+    
+                    when gdrb_ctrl_example1_addr_c =>
+                        gdrb_ctrl_data_array_s(to_integer(unsigned(rx_address_s))) <= rx_data_s; -- This is a write and so update reg map array with data received
+    
+                    when others =>
+    
+                    end case;
+                end if;
+            end if;
         end if;
-    end if;
-end process;
+    end process;
 
---	gdrb_ctrl_example0_addr_c : std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) 		:= std_logic_vector(to_unsigned(16#0#,SPI_ADDRESS_BITS));
---	gdrb_ctrl_example1_addr_c : std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) 		:= std_logic_vector(to_unsigned(16#1#,SPI_ADDRESS_BITS));
+end generate reg_map_gen;
+
+
+--Allows testbench to simple write and read to all addresses disregarding those specified in gdrb_ctrl_address_pkg.vhd
+testbenching_gen : if make_all_addresses_writeable_for_testing generate
+    
+    ---Put write data receieved from SPI into reg map array
+    spi_write_to_reg_map_proc : process(clk)
+    begin
+        if rising_edge(clk) then
+            if reset_s = '1' then
+                gdrb_ctrl_data_array_s <= gdrb_ctrl_data_array_initalise;                -- reset reg map array with a function (allows pre_loading of data values which could be useful for testing and operation)
+            else
+                if write_enable_from_spi_s = '1' then
+                
+                    gdrb_ctrl_data_array_s(to_integer(unsigned(rx_address_s))) <= rx_data_s; -- This is a write and so update reg map array with data received
+                end if;
+            end if;
+        end if;
+    end process;
+
+end generate testbenching_gen;
 
 
 end Behavioral;

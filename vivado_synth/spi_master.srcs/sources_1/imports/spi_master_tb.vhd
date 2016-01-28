@@ -18,9 +18,17 @@ end spi_master_tb;
 architecture behave of spi_master_tb is
 
     constant FIFO_REQ  : Boolean   := FALSE;
+
 --.    constant DUT_TYPE : string := "write_and_then_read_an_address"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board
+--.    constant make_all_addresses_writeable_for_testing : boolean := TRUE;
+
 --.    constant DUT_TYPE : string := "spi_reg_map_simple"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board unsing simple read write proceedures
+--.    constant make_all_addresses_writeable_for_testing : boolean := TRUE;
+
     constant DUT_TYPE : string := "gdrb_ctrl_reg_map_test"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board unsing simple read write proceedures
+    constant make_all_addresses_writeable_for_testing : boolean := FALSE;
+
+
 ----------------these routines below are more diagnostics routine for initial designing of interface than an actual functional test and so shouldn't be run----------
 --.    constant DUT_TYPE : string := "spi_slave"; -- Simple test of just the low level spi_slave.vhd
 --.    constant DUT_TYPE : string := "spi_reg_map"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board
@@ -87,6 +95,7 @@ component spi_slave is
 end component;
 
 component gdrb_ctrl_reg_map_top is
+    generic ( make_all_addresses_writeable_for_testing : boolean := FALSE );
     Port (  
             clk : in std_logic;
             reset : in std_logic;
@@ -224,9 +233,9 @@ end component;
             wait for TIME_PERIOD_CLK*2000;                                                                                 -- Wait to show a big gap in simulation waveform
         
             assert not (rx_data_from_spi /= check_data_from_spi)                                                                -- Check for correct data back and that there has actually been some data received
-                report "FAIL - Master SPI recieved different to expected" severity Note;
+                report "FAIL - Master SPI recieved different to expected" severity failure;
             assert not (rx_data_from_spi = check_data_from_spi)                                                                 -- Check for correct data back and that there has actually been some data received
-                report "PASS - Master SPI recieved as expected" severity Note;
+                report "PASS - Master SPI recieved as expected" severity note;
             if (rx_data_from_spi /= check_data_from_spi) then stop_clks <= TRUE; end if;
 
     end procedure reg_map_rw_check;
@@ -264,9 +273,9 @@ end component;
             wait for TIME_PERIOD_CLK*2000;                                                                                 -- Wait to show a big gap in simulation waveform
         
             assert not (rx_data_from_spi /= check_data_from_spi)                                                                -- Check for correct data back and that there has actually been some data received
-                report "FAIL - Master SPI recieved different to expected" severity Note;
+                report "FAIL - Master SPI recieved different to expected" severity failure;
             assert not (rx_data_from_spi = check_data_from_spi)                                                                 -- Check for correct data back and that there has actually been some data received
-                report "PASS - Master SPI recieved as expected" severity Note;
+                report "PASS - Master SPI recieved as expected" severity note;
             if (rx_data_from_spi /= check_data_from_spi) then stop_clks <= TRUE; end if;
 
     end procedure reg_map_r_check;
@@ -302,14 +311,13 @@ begin
 end process;
 
 
-
 --------------------------Register Map SPI DUT----------------------------
 spi_reg_map_gen : if DUT_TYPE /= "spi_slave" generate
 
     reg_map_proc : gdrb_ctrl_reg_map_top
---.        generic map(
---.                DATA_SIZE => DATA_SIZE -- :     natural := 16
---.                )
+        generic map(
+                make_all_addresses_writeable_for_testing => make_all_addresses_writeable_for_testing -- :     natural := 16
+                )
         Port map(  
                 clk => dut_sys_clk_i,  -- : std_logic;
                 reset => sys_rst_i,    -- : std_logic;
@@ -352,8 +360,8 @@ data_i_master_tx <= (data_i(data_i'HIGH downto 1) & '1') when induce_fault_maste
             i_lsb_first    => '0',               -- : in  std_logic;                                    -- lsb first when '1' /msb first when
             i_spi_start    => spi_start_i,       -- : in  std_logic;                                    -- START SPI Master Transactions
             i_clk_period   => "01100100",        -- : in  std_logic_vector(7 downto 0);                 -- SCL clock period in terms of i_sys_clk
-            i_setup_cycles => "00000111",        -- : in  std_logic_vector(7 downto 0);                 -- SPIM setup time  in terms of i_sys_clk
-            i_hold_cycles  => "00000111",        -- : in  std_logic_vector(7 downto 0);                 -- SPIM hold time  in terms of i_sys_clk
+            i_setup_cycles => "00011111",        -- : in  std_logic_vector(7 downto 0);                 -- SPIM setup time  in terms of i_sys_clk
+            i_hold_cycles  => "00011111",        -- : in  std_logic_vector(7 downto 0);                 -- SPIM hold time  in terms of i_sys_clk
             i_tx2tx_cycles => tx2tx_cycles_i,        -- : in  std_logic_vector(7 downto 0);                 -- SPIM interval between data transactions in terms of i_sys_clk
             o_slave_csn    => slave_csn_i,       -- : out std_logic_vector(3 downto 0);                 -- SPI Slave select (chip select) active low
             o_mosi         => mosi_i,            -- : out std_logic;                                    -- Master output to Slave
@@ -412,8 +420,13 @@ gdrb_ctrl_reg_map_test_gen : if DUT_TYPE = "gdrb_ctrl_reg_map_test" generate
 --.            assert not (rx_data_from_spi = rx_check_data_from_spi)                                                                 -- Check for correct data back and that there has actually been some data received
 --.                report "PASS - Master SPI recieved as expected" severity Note;
 
-        stop_clks <= TRUE;  ----------FINSHED SIMULATION----------.
+
+------------------------------FINSHED SIMULATION------------------------------.
+        stop_clks <= TRUE;                                                                  -- Always stop simulator when al tests have completed - this works for ISIM but not modelsim and so use...
+        assert not TRUE                                                                     -- ...this to stop simulation in modelsim not as nice but effective (probably due to us using old modelsim version 6.6)
+            report "PASS - All tests have passed" severity failure;
         wait;
+
     end process;
 end generate gdrb_ctrl_reg_map_test_gen;
 
@@ -459,8 +472,12 @@ spi_write_and_then_read_gen : if DUT_TYPE = "write_and_then_read_an_address" gen
                 report "FAIL - Master SPI recieved different to expected" severity Note;
             assert not (rx_data_from_spi = tx_data_to_spi)                                                                 -- Check for correct data back and that there has actually been some data received
                 report "PASS - Master SPI recieved as expected" severity Note;
-        stop_clks <= TRUE;  ----------FINSHED SIMULATION----------.
-        wait;
+------------------------------FINSHED SIMULATION------------------------------.
+            stop_clks <= TRUE;                                                                  -- Always stop simulator when al tests have completed - this works for ISIM but not modelsim and so use...
+            assert not TRUE                                                                     -- ...this to stop simulation in modelsim not as nice but effective (probably due to us using old modelsim version 6.6)
+                report "PASS - All tests have passed" severity failure;
+            wait;
+
     end process;
 end generate spi_write_and_then_read_gen;
 
@@ -474,6 +491,9 @@ spi_reg_map_test_simple_gen : if DUT_TYPE = "spi_reg_map_simple" generate
         variable tx_address_to_spi : natural := 0;
         variable tx_data_to_spi : natural := 0;
     begin
+
+--        make_all_addresses_writeable_for_testing <= TRUE; -- Stop DUT internal address_map package from limiting address range
+
         while TRUE loop                                                                         -- Will loop forever unless failure detected due to increaseing DUT frequency
             TIME_PERIOD_CLK_DUT_S <= TIME_PERIOD_CLK_DUT_S + 1 ns;
             dut_clk_ratio_to_testbench <= integer(TIME_PERIOD_CLK_DUT_S/TIME_PERIOD_CLK);
@@ -521,7 +541,12 @@ spi_reg_map_test_simple_gen : if DUT_TYPE = "spi_reg_map_simple" generate
             wait for TIME_PERIOD_CLK*2000; -- Wait to show a big gap in simulation waveform
         
         end loop;
-        stop_clks <= TRUE;  ----------FINSHED SIMULATION----------.
+------------------------------FINSHED SIMULATION------------------------------.
+            stop_clks <= TRUE;                                                                  -- Always stop simulator when al tests have completed - this works for ISIM but not modelsim and so use...
+            assert not TRUE                                                                     -- ...this to stop simulation in modelsim not as nice but effective (probably due to us using old modelsim version 6.6)
+                report "PASS - All tests have passed" severity failure;
+            wait;
+
         wait;
     end process;
 end generate spi_reg_map_test_simple_gen;
