@@ -352,6 +352,8 @@ end component;
 
 begin
 
+hey I made a change
+
 file_io_proc : process
     file F : text;
     variable L : line;
