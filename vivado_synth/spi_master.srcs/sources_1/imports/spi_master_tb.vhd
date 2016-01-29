@@ -9,6 +9,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use std.textio.all;
+use ieee.std_logic_textio.all;
 
 use work.spi_package.ALL;
 use work.spi_package_diagnostics.ALL;
@@ -357,6 +358,12 @@ begin
 --.    wait;
 --.end process;
 
+--.        signal address_to_spi : natural := 0;
+--.        signal data_to_spi : natural := 16#AA#;
+--.        signal check_data_from_spi : natural := 16#AA#;
+
+--.    constant SPI_ADDRESS_BITS : integer := 4;
+--.    constant SPI_DATA_BITS : integer := 16;
 
 file_io_proc : process
     file F : text;
@@ -369,7 +376,14 @@ begin
     else
         while not(stop_clks = TRUE) loop
             wait until stop_clks'transaction'event;
-            WRITE (L, NOW);
+            WRITE (L, string'("ADDRESS= "));
+            HWRITE (L, std_logic_vector(to_unsigned(address_to_spi,SPI_ADDRESS_BITS)), left, 10);
+            WRITE (L, string'("EXPECTED= "));
+            HWRITE (L, std_logic_vector(to_unsigned(data_to_spi,SPI_DATA_BITS)), left, 10);
+            WRITE (L, string'("RECEIVED= "));
+            HWRITE (L, std_logic_vector(to_unsigned(check_data_from_spi,SPI_DATA_BITS)), left, 10);
+            WRITE (L, string'("at time  "));
+            WRITE (L, NOW, right, 16);
             WRITELINE (F, L);
         end loop;
         FILE_CLOSE(F);
