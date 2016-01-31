@@ -115,6 +115,7 @@ component gdrb_ctrl_reg_map_top is
 end component;
 
     signal a_test_has_failed : boolean := FALSE;
+    signal stop_sim_on_fail : boolean := TRUE;
 
         signal address_to_spi : natural := 0;
         signal data_to_spi : natural := 16#AA#;
@@ -226,8 +227,8 @@ end component;
                 report "FAIL - Master SPI recieved different to expected" severity note;
             assert not (rx_data_from_spi = check_data_from_spi)                                                                 -- Check for correct data back and that there has actually been some data received
                 report "PASS - Master SPI recieved as expected" severity note;
-            if (rx_data_from_spi /= check_data_from_spi) then 
-                stop_clks <= TRUE; 
+            if (rx_data_from_spi /= check_data_from_spi) and stop_sim_on_fail then 
+                stop_clks <= TRUE; -- Stop simulation when a failure is detected when running tests which increment the DUT clk speed and will eventually fail to show the lowest DUT clk speed that SPI will still work at
             else
                 stop_clks <= FALSE; 
             end if;
@@ -261,10 +262,9 @@ end component;
             send_to_spi_master('1', rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i); -- Do a read (twice due to nature of SPI interface)
             --end loop;
             
+            check_result(rx_data_from_spi, stop_clks);
             wait for TIME_PERIOD_CLK*2000;                                                                                 -- Wait to show a big gap in simulation waveform
         
-            check_result(rx_data_from_spi, stop_clks);
-
     end procedure reg_map_rw_check;
 
     procedure reg_map_r_check(
@@ -291,10 +291,9 @@ end component;
                 send_to_spi_master('1', rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i); -- Do a read (twice due to nature of SPI interface)
             end loop;
             
+            check_result(rx_data_from_spi, stop_clks);
             wait for TIME_PERIOD_CLK*2000;                                                                                 -- Wait to show a big gap in simulation waveform
 
-            check_result(rx_data_from_spi, stop_clks);
-        
     end procedure reg_map_r_check;
 
     procedure reg_map_w_check(
@@ -376,21 +375,33 @@ begin
     else
         while not(stop_clks = TRUE) loop
             wait until stop_clks'transaction'event;
+            if (rx_data_from_spi /= check_data_from_spi) then
+                WRITE (L, string'("ERROR "), left, 10);
+                a_test_has_failed <= TRUE;
+            else
+                WRITE (L, string'("PASS "), left, 10);
+            end if;
             WRITE (L, string'("ADDRESS= "));
             HWRITE (L, std_logic_vector(to_unsigned(address_to_spi,SPI_ADDRESS_BITS)), left, 10);
             WRITE (L, string'("EXPECTED= "));
-            HWRITE (L, std_logic_vector(to_unsigned(data_to_spi,SPI_DATA_BITS)), left, 10);
-            WRITE (L, string'("RECEIVED= "));
             HWRITE (L, std_logic_vector(to_unsigned(check_data_from_spi,SPI_DATA_BITS)), left, 10);
+            WRITE (L, string'("RECEIVED= "));
+            HWRITE (L, std_logic_vector(to_unsigned(rx_data_from_spi,SPI_DATA_BITS)), left, 10);
             WRITE (L, string'("at time  "));
             WRITE (L, NOW, right, 16);
             WRITELINE (F, L);
         end loop;
+            if a_test_has_failed then
+                WRITE (L, string'("Error - There have been one or more ERRORS, search the text above for the word ERROR"));
+            else
+                WRITE (L, string'("Pass - All test completed with no fails"));
+            end if;
+            WRITELINE (F, L);
         FILE_CLOSE(F);
     end if;
 
     assert not a_test_has_failed                                                                     -- ...this to stop simulation in modelsim not as nice but effective (probably due to us using old modelsim version 6.6)
-        report "Error - Testing has been interupted by a fail" severity failure;
+        report "Error - There have been one or more ERRORS" severity failure;
     assert a_test_has_failed                                                                     -- ...this to stop simulation in modelsim not as nice but effective (probably due to us using old modelsim version 6.6)
         report "Pass - All test completed with no fails" severity failure;
                                                                           -- Always stop simulator when al tests have completed - this works for ISIM but not modelsim and so use...
@@ -509,6 +520,9 @@ ss_i <= slave_csn_i(0) and slave_csn_i(1) and slave_csn_i(2) and slave_csn_i(3);
 
 ------------------------------Register Map specific test------------------------------.
 gdrb_ctrl_reg_map_test_gen : if DUT_TYPE = "gdrb_ctrl_reg_map_test" generate
+
+    stop_sim_on_fail <= FALSE;
+
     main_control_proc : process
     begin
             TIME_PERIOD_CLK_DUT_S <= TIME_PERIOD_CLK_DUT_S + 1 ns;                                                         -- Auto increment when loop this routine to check lowest clk frequency DUT can run at and still work this SPI interface
