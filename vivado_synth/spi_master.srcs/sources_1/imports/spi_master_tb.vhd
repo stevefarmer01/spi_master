@@ -23,12 +23,15 @@ architecture behave of spi_master_tb is
 
     constant FIFO_REQ  : Boolean   := FALSE;
 
+--.Test using  input file
+    constant DUT_TYPE : string := "input_vector_file_test"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board unsing simple read write proceedures
+    constant make_all_addresses_writeable_for_testing : boolean := FALSE;
 --.Test actual register map
 --.    constant DUT_TYPE : string := "gdrb_ctrl_reg_map_test"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board unsing simple read write proceedures
 --.    constant make_all_addresses_writeable_for_testing : boolean := FALSE;
 --.Simple read write as an example
-    constant DUT_TYPE : string := "write_and_then_read_an_address"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board
-    constant make_all_addresses_writeable_for_testing : boolean := TRUE;
+--.    constant DUT_TYPE : string := "write_and_then_read_an_address"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board
+--.    constant make_all_addresses_writeable_for_testing : boolean := TRUE;
 --.Full write/read test with a decreasing sclk frequency to DUT to check what frequency th eSPI link will work down to
 --.    constant DUT_TYPE : string := "spi_reg_map_simple"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board unsing simple read write proceedures
 --.    constant make_all_addresses_writeable_for_testing : boolean := TRUE;
@@ -121,6 +124,9 @@ end component;
     signal data_to_spi : natural := 16#AA#;
     signal check_data_from_spi : natural := 16#AA#;
 
+    signal rx_data_from_spi : natural;
+    signal check_data_mask : natural := (2**DATA_SIZE)-1; -- Default to all '1's so that all bits of the result are checked unless mask set otherwise by input testing parameters
+
     signal   sys_clk_i       : std_logic                     := '0';  -- system clock
     signal   sys_rst_i       : std_logic                     := '1';  -- system reset
     signal   csn_i           : std_logic                     := '1';  -- SPI Master chip select
@@ -154,8 +160,6 @@ end component;
     signal master_to_slave_rx_match_latch, slave_to_master_rx_match_latch : boolean := TRUE;
     signal o_rx_ready_slave, o_tx_ready_slave : std_logic := '0';
     signal o_tx_ready_master, o_rx_ready_master : std_logic := '0';
-    signal rx_data_from_spi : natural;
-    signal check_data_mask : natural := (2**DATA_SIZE)-1; -- Default to all '1's so that all bits of the result are checked unless mask set otherwise by input testing parameters
     signal master_rx_activity : boolean := FALSE;
     signal slave_to_master_rx_match_latch_result, slave_to_master_tx_match_latch_result : boolean;
     signal test_0, test_1 : std_logic_vector(7 downto 0);
@@ -361,6 +365,7 @@ end component;
 --.    end procedure ;
 
 
+
 begin
 
 --.my_proc : process
@@ -380,25 +385,6 @@ begin
 --.    my_test;
 --.    wait;
 --.end process;
-
-file_input_proc : process
-    file F : text;
-    variable L : line;
-    variable status : file_open_status;
-begin
-    FILE_OPEN(status, F, "input_test.txt", READ_MODE);
-    if status /= OPEN_OK then
-        assert FALSE
-            report "Failed to open file" severity failure;
-    else
-        while not ENDFILE(F) loop
-            READLINE(F, L);
-            wait for 10 ns;
-        end loop;
-        FILE_CLOSE(F);
-    end if;
-    wait;
-end process;
 
 
 file_output_proc : process
@@ -566,6 +552,62 @@ end process;
 
 
 ss_i <= slave_csn_i(0) and slave_csn_i(1) and slave_csn_i(2) and slave_csn_i(3);
+
+
+--.            address_to_spi <= 16#0#;
+--.            data_to_spi <= 16#0#;
+--.            check_data_from_spi <= 16#0#;
+--.            check_data_mask <= 16#FFFF#; -- Check all bits back in rx reply
+--.            reg_map_r_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
+    --signal rx_data_from_spi : natural;
+
+            --------Writing --------.
+            address_to_spi <= 16#0#;
+            data_to_spi <= 16#5555#;
+            check_data_from_spi <= 16#5555#;
+            check_data_mask <= 16#0000#; -- Don't tend to check data back from a write
+            reg_map_w_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
+
+------------------------------Register Map tests using input file for vectors------------------------------.
+input_vector_file_test_gen : if DUT_TYPE = "input_vector_file_test" generate
+
+    file_input_proc : process
+        file F : text;
+        variable L : line;
+        variable status : file_open_status;
+        variable input_command_v : character;
+        variable address_to_spi_v : natural := 0;
+        variable data_to_spi_v : natural := 16#AA#;
+        variable check_data_from_spi_v : natural := 16#AA#;
+        variable check_data_mask_v : natural := (2**DATA_SIZE)-1; -- Default to all '1's so that all bits of the result are checked unless mask set otherwise by input testing parameters
+    begin
+        FILE_OPEN(status, F, "input_test.txt", READ_MODE);
+        if status /= OPEN_OK then
+            assert FALSE
+                report "Failed to open file" severity failure;
+        else
+            while not ENDFILE(F) loop
+                READLINE(F, L);
+                wait for 10 ns;
+                READ(L, input_command_v);
+                READ(L, address_to_spi_v);
+                READ(L, data_to_spi_v);
+--.                address_to_spi <= address_to_spi_v;
+--.                data_to_spi <= data_to_spi_v;
+--.                check_data_from_spi <= 16#0000#; -- Don't tend to check data back from a write
+--.                check_data_mask <= 16#0000#; -- Don't tend to check data back from a write
+--.            reg_map_w_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
+--.    
+                wait for 10 ns;
+            end loop;
+            FILE_CLOSE(F);
+        end if;
+------------------------------FINSHED SIMULATION------------------------------.
+        stop_clks <= TRUE;                                                                  -- Always stop simulator when all tests have completed
+        wait;
+    end process;
+
+end generate input_vector_file_test_gen;
 
 
 ------------------------------Register Map specific test------------------------------.
