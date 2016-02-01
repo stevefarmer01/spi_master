@@ -24,14 +24,14 @@ architecture behave of spi_master_tb is
     constant FIFO_REQ  : Boolean   := FALSE;
 
 --.Test actual register map
-    constant DUT_TYPE : string := "gdrb_ctrl_reg_map_test"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board unsing simple read write proceedures
-    constant make_all_addresses_writeable_for_testing : boolean := FALSE;
+--.    constant DUT_TYPE : string := "gdrb_ctrl_reg_map_test"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board unsing simple read write proceedures
+--.    constant make_all_addresses_writeable_for_testing : boolean := FALSE;
 --.Simple read write as an example
 --.    constant DUT_TYPE : string := "write_and_then_read_an_address"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board
 --.    constant make_all_addresses_writeable_for_testing : boolean := TRUE;
 --.Full write/read test with a decreasing sclk frequency to DUT to check what frequency th eSPI link will work down to
---.    constant DUT_TYPE : string := "spi_reg_map_simple"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board unsing simple read write proceedures
---.    constant make_all_addresses_writeable_for_testing : boolean := TRUE;
+    constant DUT_TYPE : string := "spi_reg_map_simple"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board unsing simple read write proceedures
+    constant make_all_addresses_writeable_for_testing : boolean := TRUE;
 
 ----------------these routines below are more diagnostics routine for initial designing of interface than an actual functional test and so shouldn't be run----------
 --.    constant DUT_TYPE : string := "spi_slave"; -- Simple test of just the low level spi_slave.vhd
@@ -114,15 +114,12 @@ component gdrb_ctrl_reg_map_top is
             );
 end component;
 
-    signal a_test_has_failed : boolean := FALSE;
     signal stop_sim_on_fail : boolean := TRUE;
+    signal report_spi_access_type : string(1 to 10);
 
-        signal address_to_spi : natural := 0;
-        signal data_to_spi : natural := 16#AA#;
-        signal check_data_from_spi : natural := 16#AA#;
-
-        signal tx_address_to_spi : natural := 0;
-        signal tx_data_to_spi : natural := 16#AA#;
+    signal address_to_spi : natural := 0;
+    signal data_to_spi : natural := 16#AA#;
+    signal check_data_from_spi : natural := 16#AA#;
 
     signal   sys_clk_i       : std_logic                     := '0';  -- system clock
     signal   sys_rst_i       : std_logic                     := '1';  -- system reset
@@ -143,7 +140,7 @@ end component;
     shared variable cnt      : integer                       := 0;
 
     constant induce_fault_master_tx_c : boolean := FALSE;
-    constant induce_fault_slave_tx_c : boolean := FALSE;
+--.    constant induce_fault_slave_tx_c : boolean := FALSE;
 
     signal TIME_PERIOD_CLK_S : time := 10 ns;
     signal TIME_PERIOD_CLK_DUT_S : time := 50 ns;
@@ -158,6 +155,7 @@ end component;
     signal o_rx_ready_slave, o_tx_ready_slave : std_logic := '0';
     signal o_tx_ready_master, o_rx_ready_master : std_logic := '0';
     signal rx_data_from_spi : natural;
+    signal check_data_mask : natural := (2**DATA_SIZE)-1; -- Default to all '1's so that all bits of the result are checked unless mask set otherwise by input testing parameters
     signal master_rx_activity : boolean := FALSE;
     signal slave_to_master_rx_match_latch_result, slave_to_master_tx_match_latch_result : boolean;
     signal test_0, test_1 : std_logic_vector(7 downto 0);
@@ -221,13 +219,20 @@ end component;
              signal rx_data_from_spi : inout natural;
              signal stop_clks : out boolean
         ) is
+        variable rx_and_expected_same : boolean := FALSE;
     begin
 
-            assert not (rx_data_from_spi /= check_data_from_spi)                                                                -- Check for correct data back and that there has actually been some data received
+            if (((to_unsigned(rx_data_from_spi,DATA_SIZE)) and (to_unsigned(check_data_mask,DATA_SIZE))) = ((to_unsigned(check_data_from_spi,DATA_SIZE)) and (to_unsigned(check_data_mask,DATA_SIZE)))) then
+                rx_and_expected_same := TRUE;
+            else
+                rx_and_expected_same := FALSE;
+            end if;
+            --assert not (rx_data_from_spi /= check_data_from_spi)                                                                -- Check for correct data back and that there has actually been some data received
+            assert not rx_and_expected_same                                                                -- Check for correct data back and that there has actually been some data received
                 report "FAIL - Master SPI recieved different to expected" severity note;
-            assert not (rx_data_from_spi = check_data_from_spi)                                                                 -- Check for correct data back and that there has actually been some data received
+            assert rx_and_expected_same                                                                  -- Check for correct data back and that there has actually been some data received
                 report "PASS - Master SPI recieved as expected" severity note;
-            if (rx_data_from_spi /= check_data_from_spi) and stop_sim_on_fail then 
+            if (not rx_and_expected_same) and stop_sim_on_fail then 
                 stop_clks <= TRUE; -- Stop simulation when a failure is detected when running tests which increment the DUT clk speed and will eventually fail to show the lowest DUT clk speed that SPI will still work at
             else
                 stop_clks <= FALSE; 
@@ -242,6 +247,7 @@ end component;
              signal spi_start_i : out std_logic;
              signal wr_i : out std_logic;
              signal rd_i : out std_logic;
+             signal report_spi_access_type : out string(1 to 10);
              signal stop_clks : out boolean
          );
 
@@ -251,6 +257,7 @@ end component;
              signal spi_start_i : out std_logic;
              signal wr_i : out std_logic;
              signal rd_i : out std_logic;
+             signal report_spi_access_type : out string(1 to 10);
              signal stop_clks : out boolean
          ) is
     begin
@@ -262,7 +269,11 @@ end component;
             send_to_spi_master('1', rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i); -- Do a read (twice due to nature of SPI interface)
             --end loop;
             
+            --report_spi_access_type <= (others => ' ');
+            report_spi_access_type <= "WRITE READ";
+
             check_result(rx_data_from_spi, stop_clks);
+
             wait for TIME_PERIOD_CLK*2000;                                                                                 -- Wait to show a big gap in simulation waveform
         
     end procedure reg_map_rw_check;
@@ -273,6 +284,7 @@ end component;
              signal spi_start_i : out std_logic;
              signal wr_i : out std_logic;
              signal rd_i : out std_logic;
+             signal report_spi_access_type : out string(1 to 10);
              signal stop_clks : out boolean
          );
 
@@ -282,6 +294,7 @@ end component;
              signal spi_start_i : out std_logic;
              signal wr_i : out std_logic;
              signal rd_i : out std_logic;
+             signal report_spi_access_type : out string(1 to 10);
              signal stop_clks : out boolean
          ) is
     begin
@@ -291,7 +304,11 @@ end component;
                 send_to_spi_master('1', rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i); -- Do a read (twice due to nature of SPI interface)
             end loop;
             
+            --report_spi_access_type <= (others => ' ');
+            report_spi_access_type <= "READ      ";
+
             check_result(rx_data_from_spi, stop_clks);
+
             wait for TIME_PERIOD_CLK*2000;                                                                                 -- Wait to show a big gap in simulation waveform
 
     end procedure reg_map_r_check;
@@ -302,6 +319,7 @@ end component;
              signal spi_start_i : out std_logic;
              signal wr_i : out std_logic;
              signal rd_i : out std_logic;
+             signal report_spi_access_type : out string(1 to 10);
              signal stop_clks : out boolean
          );
 
@@ -311,11 +329,18 @@ end component;
              signal spi_start_i : out std_logic;
              signal wr_i : out std_logic;
              signal rd_i : out std_logic;
+             signal report_spi_access_type : out string(1 to 10);
              signal stop_clks : out boolean
          ) is
     begin
                 --------Writing loop --------.
             send_to_spi_master('0', rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i); -- Do a write
+
+            --report_spi_access_type <= (others => ' ');
+            report_spi_access_type <= "WRITE     ";
+
+            check_result(rx_data_from_spi, stop_clks);
+
             wait for TIME_PERIOD_CLK*2000;                                                                                 -- Wait to show a big gap in simulation waveform
 
     end procedure reg_map_w_check;
@@ -338,7 +363,6 @@ end component;
 
 begin
 
-
 --.my_proc : process
 --.begin
 --.    wait;
@@ -357,17 +381,14 @@ begin
 --.    wait;
 --.end process;
 
---.        signal address_to_spi : natural := 0;
---.        signal data_to_spi : natural := 16#AA#;
---.        signal check_data_from_spi : natural := 16#AA#;
 
---.    constant SPI_ADDRESS_BITS : integer := 4;
---.    constant SPI_DATA_BITS : integer := 16;
 
 file_io_proc : process
     file F : text;
     variable L : line;
     variable status : file_open_status;
+    variable rx_and_expected_same : boolean := FALSE;
+    variable a_test_has_failed : boolean := FALSE;
 begin
     FILE_OPEN(F, "test.txt", WRITE_MODE);
     if status /= open_ok then
@@ -375,16 +396,29 @@ begin
     else
         while not(stop_clks = TRUE) loop
             wait until stop_clks'transaction'event;
-            if (rx_data_from_spi /= check_data_from_spi) then
-                WRITE (L, string'("ERROR "), left, 10);
-                a_test_has_failed <= TRUE;
+            if (stop_clks = TRUE) then exit; end if;
+
+            if (((to_unsigned(rx_data_from_spi,DATA_SIZE)) and (to_unsigned(check_data_mask,DATA_SIZE))) = ((to_unsigned(check_data_from_spi,DATA_SIZE)) and (to_unsigned(check_data_mask,DATA_SIZE)))) then
+                rx_and_expected_same := TRUE;
             else
-                WRITE (L, string'("PASS "), left, 10);
+                rx_and_expected_same := FALSE;
             end if;
+
+            if not rx_and_expected_same then
+                WRITE (L, string'("ERROR "), left, 6);
+                a_test_has_failed := TRUE;
+            else
+                WRITE (L, string'("PASS  "), left, 6);
+            end if;
+
+            WRITE (L, report_spi_access_type, left, 14);
+
             WRITE (L, string'("ADDRESS= "));
             HWRITE (L, std_logic_vector(to_unsigned(address_to_spi,SPI_ADDRESS_BITS)), left, 10);
             WRITE (L, string'("EXPECTED= "));
             HWRITE (L, std_logic_vector(to_unsigned(check_data_from_spi,SPI_DATA_BITS)), left, 10);
+            WRITE (L, string'("MASKED= "));
+            HWRITE (L, std_logic_vector(to_unsigned(check_data_mask,SPI_DATA_BITS)), left, 10);
             WRITE (L, string'("RECEIVED= "));
             HWRITE (L, std_logic_vector(to_unsigned(rx_data_from_spi,SPI_DATA_BITS)), left, 10);
             WRITE (L, string'("at time  "));
@@ -408,8 +442,6 @@ begin
     wait;
 end process;
 
-
---.            test_int <= to_integer(unsigned(Position_c) & unsigned(VersionNo_c));
 
 ---reset and clocks
 reset_proc : process
@@ -534,55 +566,56 @@ gdrb_ctrl_reg_map_test_gen : if DUT_TYPE = "gdrb_ctrl_reg_map_test" generate
             address_to_spi <= 16#0#;
             data_to_spi <= 16#0#;
             check_data_from_spi <= 16#0#;
-            reg_map_r_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, stop_clks);
+            check_data_mask <= 16#FFFF#; -- Check all bits back in rx reply
+            reg_map_r_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
 
             --Check initialised value
             address_to_spi <= 16#1#;
             data_to_spi <= 16#0#;
             check_data_from_spi <= 16#1#;
-            reg_map_r_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, stop_clks);
+            reg_map_r_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
 
             --Check initialised value
             address_to_spi <= 16#2#;
             data_to_spi <= 16#0#;
             check_data_from_spi <= 16#2#;
-            reg_map_r_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, stop_clks);
+            reg_map_r_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
 
             --Check address can be written and read
             address_to_spi <= 16#0#;
             data_to_spi <= 16#AAAA#;
             check_data_from_spi <= 16#AAAA#;
-            reg_map_rw_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, stop_clks);
+            reg_map_rw_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
 
             --Check address can be written and read
             address_to_spi <= 16#2#;
             data_to_spi <= 16#5555#;
             check_data_from_spi <= 16#5555#;
-            reg_map_rw_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, stop_clks);
+            reg_map_rw_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
 
             --Check address can be written and read
             address_to_spi <= 16#3#;
-            reg_map_rw_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, stop_clks);
+            reg_map_rw_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
 
             address_to_spi <= 16#5#;
-            reg_map_rw_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, stop_clks);
+            reg_map_rw_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
 
 
             address_to_spi <= 16#A#;
-            reg_map_rw_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, stop_clks);
+            reg_map_rw_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
 
             --Check initialised value
             address_to_spi <= 16#B#;
             check_data_from_spi <= to_integer(unsigned(Position_c) & unsigned(VersionNo_c));
-            reg_map_r_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, stop_clks);
+            reg_map_r_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
 
             --Check initialised value
             address_to_spi <= 16#C#;
             check_data_from_spi <= to_integer(unsigned(Day_c) & unsigned(Month_c) & unsigned(Year_c));
-            reg_map_r_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, stop_clks);
+            reg_map_r_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
 
 ------------------------------FINSHED SIMULATION------------------------------.
-        stop_clks <= TRUE;                                                                  -- Always stop simulator when all tests have completed - this works for ISIM but not modelsim and so use...
+        stop_clks <= TRUE;                                                                  -- Always stop simulator when all tests have completed
         wait;
 
     end process;
@@ -590,119 +623,84 @@ end generate gdrb_ctrl_reg_map_test_gen;
 
 
 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------.
+----------------these routines below are more diagnostics routine for testing full range of SPI rather than full specific module register map testing as the one above is----------.
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------.
+--------------------------Slave SPI DUT----------------------------.
+------------------------------Simple single write read to help show how testbench works------------------------------.
+spi_write_and_then_read_gen : if DUT_TYPE = "write_and_then_read_an_address" generate
+    main_control_proc : process
+    begin
+            TIME_PERIOD_CLK_DUT_S <= TIME_PERIOD_CLK_DUT_S + 1 ns;                                                         -- Auto increment when loop this routine to check lowest clk frequency DUT can run at and still work this SPI interface
+            dut_clk_ratio_to_testbench <= integer(TIME_PERIOD_CLK_DUT_S/TIME_PERIOD_CLK);                                  -- Ratio for getting delays in testbench correct when DUT clk frequency is slowed down by line above
+
+            wait for TIME_PERIOD_CLK* 20 * dut_clk_ratio_to_testbench;                                                     -- Wait for sys_rst_i to propagate through DUT especially if DUT is running a much slower clock
+            
+            --------Writing --------.
+            address_to_spi <= 16#0#;
+            data_to_spi <= 16#5555#;
+            check_data_from_spi <= 16#5555#;
+            check_data_mask <= 16#0000#; -- Don't tend to check data back from a write
+            reg_map_w_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
+
+            --------Reading --------.
+            check_data_mask <= 16#FFFF#; -- Check data back from a read
+            reg_map_r_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
+
+------------------------------FINSHED SIMULATION------------------------------.
+            stop_clks <= TRUE;                                                                  -- Always stop simulator when al tests have completed - this works for ISIM but not modelsim and so use...
+
+    end process;
+end generate spi_write_and_then_read_gen;
 
 
---.------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------.
---.----------------these routines below are more diagnostics routine for testing full range of SPI rather than full specific module register map testing as the one above is----------.
---.------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------.
---.--------------------------Slave SPI DUT----------------------------.
---.------------------------------Simple single write read to help show how testbench works------------------------------.
---.spi_write_and_then_read_gen : if DUT_TYPE = "write_and_then_read_an_address" generate
---.    main_control_proc : process
---.    begin
---.            TIME_PERIOD_CLK_DUT_S <= TIME_PERIOD_CLK_DUT_S + 1 ns;                                                         -- Auto increment when loop this routine to check lowest clk frequency DUT can run at and still work this SPI interface
---.            dut_clk_ratio_to_testbench <= integer(TIME_PERIOD_CLK_DUT_S/TIME_PERIOD_CLK);                                  -- Ratio for getting delays in testbench correct when DUT clk frequency is slowed down by line above
---.
---.            wait for TIME_PERIOD_CLK* 20 * dut_clk_ratio_to_testbench;                                                     -- Wait for sys_rst_i to propagate through DUT especially if DUT is running a much slower clock
---.            
---.            --------Writing loop --------.
---.            --tx_address_to_spi := 0;
---.            --tx_data_to_spi := 16#AA#;
---.            send_to_spi_master('0', tx_address_to_spi, tx_data_to_spi, rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i); -- Do a write
---.            
---.            wait for TIME_PERIOD_CLK*2000;                                                                                 -- Wait to show a big gap in simulation waveform
---.            
---.            --------Reading loop --------.
---.            --tx_address_to_spi := 0;
---.            --tx_data_to_spi := 16#00#;                                                                                    -- random value just to show that data in has no effect during a read
---.            for j in 0 to 1 loop                                                                                           -- need to send 2 packets to perform a read on SPI
---.            send_to_spi_master('1', tx_address_to_spi, tx_data_to_spi, rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i); -- Do a read (twice due to nature of SPI interface)
---.            end loop;
---.            
---.            wait for TIME_PERIOD_CLK*2000;                                                                                 -- Wait to show a big gap in simulation waveform
---.        
---.            assert not (rx_data_from_spi /= tx_data_to_spi)                                                                -- Check for correct data back and that there has actually been some data received
---.                report "FAIL - Master SPI recieved different to expected" severity Note;
---.            assert not (rx_data_from_spi = tx_data_to_spi)                                                                 -- Check for correct data back and that there has actually been some data received
---.                report "PASS - Master SPI recieved as expected" severity Note;
---.------------------------------FINSHED SIMULATION------------------------------.
---.            stop_clks <= TRUE;                                                                  -- Always stop simulator when al tests have completed - this works for ISIM but not modelsim and so use...
---.            assert not TRUE                                                                     -- ...this to stop simulation in modelsim not as nice but effective (probably due to us using old modelsim version 6.6)
---.                report "PASS - All tests have passed" severity failure;
---.            wait;
---.
---.    end process;
---.end generate spi_write_and_then_read_gen;
---.
---.
---.
---.------------------------------Multiple write and read routine with decreasing DUT clk frequency which will exit simulation when it fail------------------------------.
---.spi_reg_map_test_simple_gen : if DUT_TYPE = "spi_reg_map_simple" generate
---.    main_control_proc : process
---.        variable slave_to_master_rx_match_latch_V : boolean := TRUE;
---.        variable slave_to_master_tx_match_latch_V : boolean := TRUE;
---.--        variable tx_address_to_spi : natural := 0;
---.--        variable tx_data_to_spi : natural := 0;
---.    begin
---.
---.--        make_all_addresses_writeable_for_testing <= TRUE; -- Stop DUT internal address_map package from limiting address range
---.
---.        while TRUE loop                                                                         -- Will loop forever unless failure detected due to increaseing DUT frequency
---.            TIME_PERIOD_CLK_DUT_S <= TIME_PERIOD_CLK_DUT_S + 1 ns;
---.            dut_clk_ratio_to_testbench <= integer(TIME_PERIOD_CLK_DUT_S/TIME_PERIOD_CLK);
---.
---.            wait for TIME_PERIOD_CLK* 20 * dut_clk_ratio_to_testbench; -- Wait for sys_rst_i to propagate through DUT especially if DUT is running a much slower clock
---.            
---.            --------Writing loop --------.
---.            for i in 0 to (SPI_ADDRESS_BITS**2)-1 loop
---.                tx_address_to_spi <= i;
---.                tx_data_to_spi <= i+16#10#;                            -- tx data that will be checked
---.                    send_to_spi_master('0', tx_address_to_spi, tx_data_to_spi, rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i);
---.            end loop;
---.            wait for TIME_PERIOD_CLK*2000;                             -- Wait to show a big gap in simulation waveform
---.            
---.            --------Reading loop --------.
---.            for i in 0 to (SPI_ADDRESS_BITS**2)-1 loop
---.                tx_address_to_spi <= i;
---.                tx_data_to_spi <= 16#55#;                                                          -- random value just to show that data in has no effect during a read
---.                for j in 0 to 1 loop                                                               -- need to send 2 packets to perform a read on SPI
---.                    send_to_spi_master('1', tx_address_to_spi, tx_data_to_spi, rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i);
---.                end loop;
---.                if rx_data_from_spi /= i+16#10# then                    -- check same data rx'd that was tx'd
---.                    slave_to_master_rx_match_latch_V := FALSE;
---.                end if;
---.                assert not slave_to_master_rx_match_latch_V = FALSE
---.                    report "FAIL - Master SPI recieved different to expected" severity Note;
---.                assert not slave_to_master_tx_match_latch_V = FALSE
---.                    report "FAIL - Master SPI transmit error" severity Note;
---.                assert not master_rx_activity = FALSE
---.                    report "FAIL - Master SPI has had no receive activity" severity Note;
---.                assert not (slave_to_master_rx_match_latch_V = TRUE and master_rx_activity = TRUE) -- Check for correct data back and that there has actually been some data received
---.                    report "PASS - Master SPI recieved as expected" severity Note;
---.                if slave_to_master_rx_match_latch_V = FALSE or slave_to_master_tx_match_latch_V = FALSE then
---.                    stop_clks <= TRUE;  ----------FINSHED SIMULATION----------.
---.                    wait;
---.                end if;
---.            end loop;
---.            
---.            --------Erasing loop --------.
---.            for i in 0 to (SPI_ADDRESS_BITS**2)-1 loop
---.                tx_address_to_spi <= i;
---.                tx_data_to_spi <= 0;
---.                    send_to_spi_master('0', tx_address_to_spi, tx_data_to_spi, rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i);
---.            end loop;
---.            wait for TIME_PERIOD_CLK*2000; -- Wait to show a big gap in simulation waveform
---.        
---.        end loop;
---.------------------------------FINSHED SIMULATION------------------------------.
---.            stop_clks <= TRUE;                                                                  -- Always stop simulator when al tests have completed - this works for ISIM but not modelsim and so use...
---.            assert not TRUE                                                                     -- ...this to stop simulation in modelsim not as nice but effective (probably due to us using old modelsim version 6.6)
---.                report "PASS - All tests have passed" severity failure;
---.            wait;
---.
---.        wait;
---.    end process;
---.end generate spi_reg_map_test_simple_gen;
+
+------------------------------Multiple write and read routine with decreasing DUT clk frequency which will exit simulation when it eventually fails------------------------------.
+spi_reg_map_test_simple_gen : if DUT_TYPE = "spi_reg_map_simple" generate
+    main_control_proc : process
+        variable slave_to_master_rx_match_latch_V : boolean := TRUE;
+        variable slave_to_master_tx_match_latch_V : boolean := TRUE;
+    begin
+
+        while TRUE loop                                                                         -- Will loop forever unless failure detected due to increaseing DUT frequency
+            TIME_PERIOD_CLK_DUT_S <= TIME_PERIOD_CLK_DUT_S + 1 ns;
+            dut_clk_ratio_to_testbench <= integer(TIME_PERIOD_CLK_DUT_S/TIME_PERIOD_CLK);
+
+            wait for TIME_PERIOD_CLK* 20 * dut_clk_ratio_to_testbench; -- Wait for sys_rst_i to propagate through DUT especially if DUT is running a much slower clock
+            
+            --------Writing loop --------.
+            for i in 0 to (SPI_ADDRESS_BITS**2)-1 loop
+                address_to_spi <= i;
+                data_to_spi <= i+16#10#;                            -- tx data that will be checked
+                check_data_mask <= 16#0000#; -- Don't tend to check data back from a write
+                    reg_map_w_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
+            end loop;
+            wait for TIME_PERIOD_CLK*2000;                             -- Wait to show a big gap in simulation waveform
+            
+            --------Reading loop --------.
+            for i in 0 to (SPI_ADDRESS_BITS**2)-1 loop
+                address_to_spi <= i;
+                data_to_spi <= 16#55#;                                                          -- random value just to show that data in has no effect during a read
+                check_data_mask <= 16#FFFF#;
+                check_data_from_spi <= i+16#10#;
+                    reg_map_r_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
+            end loop;
+            
+            --------Erasing loop --------.
+            for i in 0 to (SPI_ADDRESS_BITS**2)-1 loop
+                address_to_spi <= i;
+                data_to_spi <= 0;
+                check_data_mask <= 16#0000#; -- Don't tend to check data back from a write
+                    reg_map_w_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
+            end loop;
+
+            wait for TIME_PERIOD_CLK*2000; -- Wait to show a big gap in simulation waveform
+        
+        end loop;
+
+        wait;
+    end process;
+end generate spi_reg_map_test_simple_gen;
 
 
 --.------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------.
