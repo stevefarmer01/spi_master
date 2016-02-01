@@ -27,11 +27,11 @@ architecture behave of spi_master_tb is
 --.    constant DUT_TYPE : string := "gdrb_ctrl_reg_map_test"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board unsing simple read write proceedures
 --.    constant make_all_addresses_writeable_for_testing : boolean := FALSE;
 --.Simple read write as an example
---.    constant DUT_TYPE : string := "write_and_then_read_an_address"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board
---.    constant make_all_addresses_writeable_for_testing : boolean := TRUE;
---.Full write/read test with a decreasing sclk frequency to DUT to check what frequency th eSPI link will work down to
-    constant DUT_TYPE : string := "spi_reg_map_simple"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board unsing simple read write proceedures
+    constant DUT_TYPE : string := "write_and_then_read_an_address"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board
     constant make_all_addresses_writeable_for_testing : boolean := TRUE;
+--.Full write/read test with a decreasing sclk frequency to DUT to check what frequency th eSPI link will work down to
+--.    constant DUT_TYPE : string := "spi_reg_map_simple"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board unsing simple read write proceedures
+--.    constant make_all_addresses_writeable_for_testing : boolean := TRUE;
 
 ----------------these routines below are more diagnostics routine for initial designing of interface than an actual functional test and so shouldn't be run----------
 --.    constant DUT_TYPE : string := "spi_slave"; -- Simple test of just the low level spi_slave.vhd
@@ -381,16 +381,34 @@ begin
 --.    wait;
 --.end process;
 
+file_input_proc : process
+    file F : text;
+    variable L : line;
+    variable status : file_open_status;
+begin
+    FILE_OPEN(status, F, "input_test.txt", READ_MODE);
+    if status /= OPEN_OK then
+        assert FALSE
+            report "Failed to open file" severity failure;
+    else
+        while not ENDFILE(F) loop
+            READLINE(F, L);
+            wait for 10 ns;
+        end loop;
+        FILE_CLOSE(F);
+    end if;
+    wait;
+end process;
 
 
-file_io_proc : process
+file_output_proc : process
     file F : text;
     variable L : line;
     variable status : file_open_status;
     variable rx_and_expected_same : boolean := FALSE;
     variable a_test_has_failed : boolean := FALSE;
 begin
-    FILE_OPEN(F, "test.txt", WRITE_MODE);
+    FILE_OPEN(F, "output_test.txt", WRITE_MODE);
     if status /= open_ok then
         report "Failed to open file";
     else
