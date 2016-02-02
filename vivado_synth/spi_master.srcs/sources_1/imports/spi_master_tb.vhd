@@ -5,6 +5,33 @@
 ---Integrate text IO, maybe start with output rporting first
 ---Random seed testing option
 
+--.        loop
+--.
+--. 
+--.
+--.            if endfile(cmdfile) then  -- Check EOF
+--.
+--.                assert false
+--.
+--.                    report "End of file encountered; exiting."
+--.
+--.                    severity NOTE;
+--.
+--.                exit;
+--.
+--.            end if;
+--.
+--. 
+--.
+--.            readline(cmdfile,line_in);     -- Read a line from the file
+--.
+--.            next when line_in'length = 0;  -- Skip empty lines
+
+--.    --Set sizes of data and addresse as required for particular application
+--.    constant SPI_ADDRESS_BITS : integer := 4;
+--.    constant SPI_DATA_BITS : integer := 16;
+--.    constant DATA_SIZE : integer   := SPI_ADDRESS_BITS+SPI_DATA_BITS+1;                             -- Total data size = read/write bit + address + data
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -394,7 +421,7 @@ file_output_proc : process
     variable rx_and_expected_same : boolean := FALSE;
     variable a_test_has_failed : boolean := FALSE;
 begin
-    FILE_OPEN(F, "output_test.txt", WRITE_MODE);
+    FILE_OPEN(F, "..\..\..\output_test.txt", WRITE_MODE);
     if status /= open_ok then
         report "Failed to open file";
     else
@@ -561,12 +588,12 @@ ss_i <= slave_csn_i(0) and slave_csn_i(1) and slave_csn_i(2) and slave_csn_i(3);
 --.            reg_map_r_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
     --signal rx_data_from_spi : natural;
 
-            --------Writing --------.
-            address_to_spi <= 16#0#;
-            data_to_spi <= 16#5555#;
-            check_data_from_spi <= 16#5555#;
-            check_data_mask <= 16#0000#; -- Don't tend to check data back from a write
-            reg_map_w_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
+--.            --------Writing --------.
+--.            address_to_spi <= 16#0#;
+--.            data_to_spi <= 16#5555#;
+--.            check_data_from_spi <= 16#5555#;
+--.            check_data_mask <= 16#0000#; -- Don't tend to check data back from a write
+--.            reg_map_w_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
 
 ------------------------------Register Map tests using input file for vectors------------------------------.
 input_vector_file_test_gen : if DUT_TYPE = "input_vector_file_test" generate
@@ -574,30 +601,63 @@ input_vector_file_test_gen : if DUT_TYPE = "input_vector_file_test" generate
     file_input_proc : process
         file F : text;
         variable L : line;
+        variable good : boolean;
         variable status : file_open_status;
         variable input_command_v : character;
+--.        variable address_to_spi_v : natural := 0;
+--.        variable data_to_spi_v : natural := 16#AA#;
+--.        variable check_data_from_spi_v : natural := 16#AA#;
+--.        variable check_data_mask_v : natural := (2**DATA_SIZE)-1; -- Default to all '1's so that all bits of the result are checked unless mask set otherwise by input testing parameters
         variable address_to_spi_v : natural := 0;
         variable data_to_spi_v : natural := 16#AA#;
         variable check_data_from_spi_v : natural := 16#AA#;
-        variable check_data_mask_v : natural := (2**DATA_SIZE)-1; -- Default to all '1's so that all bits of the result are checked unless mask set otherwise by input testing parameters
+        variable check_data_mask_v : std_ulogic_vector(SPI_DATA_BITS - 1 downto 0) := (others => '1'); -- Default to all '1's so that all bits of the result are checked unless mask set otherwise by input testing parameters
     begin
-        FILE_OPEN(status, F, "input_test.txt", READ_MODE);
+        FILE_OPEN(status, F, "..\..\..\input_test.txt", READ_MODE);
         if status /= OPEN_OK then
             assert FALSE
                 report "Failed to open file" severity failure;
         else
+            stop_sim_on_fail <= FALSE;
+
+            wait for TIME_PERIOD_CLK* 20 * dut_clk_ratio_to_testbench;                                                     -- Wait for sys_rst_i to propagate through DUT especially if DUT is running a much slower clock
+            
             while not ENDFILE(F) loop
                 READLINE(F, L);
                 wait for 10 ns;
                 READ(L, input_command_v);
                 READ(L, address_to_spi_v);
                 READ(L, data_to_spi_v);
---.                address_to_spi <= address_to_spi_v;
---.                data_to_spi <= data_to_spi_v;
+                READ(L, check_data_from_spi_v);
+--                READ(L, check_data_mask_v, good);
+                HREAD(L, check_data_mask_v, good);
+
+--.            read(line_in,CI,good);     -- Read the CI input
+--.
+
+--.            assert good
+--.
+--.                report "Text I/O read error"
+--.
+--.                severity FAILURE;
+
+ 
+
+                address_to_spi <= address_to_spi_v;
+                data_to_spi <= data_to_spi_v;
+                check_data_from_spi <= check_data_from_spi_v; 
+--                check_data_mask <= ((check_data_mask_v));
+                check_data_mask <= to_integer(unsigned(check_data_mask_v));
+
+
+--.                address_to_spi <= 16#0000#;
+--.                data_to_spi <= 16#0000#;
 --.                check_data_from_spi <= 16#0000#; -- Don't tend to check data back from a write
 --.                check_data_mask <= 16#0000#; -- Don't tend to check data back from a write
---.            reg_map_w_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
---.    
+
+--            reg_map_w_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
+            reg_map_r_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
+    
                 wait for 10 ns;
             end loop;
             FILE_CLOSE(F);
