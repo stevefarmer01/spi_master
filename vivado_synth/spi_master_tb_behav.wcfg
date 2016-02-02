@@ -12,7 +12,7 @@
          </top_modules>
       </db_ref>
    </db_ref_list>
-   <WVObjectSize size="24" />
+   <WVObjectSize size="25" />
    <wvobject db_ref_id="1" fp_name="/spi_master_tb/sys_clk_i" type="logic">
       <obj_property name="ElementShortName">sys_clk_i</obj_property>
       <obj_property name="ObjectShortName">sys_clk_i</obj_property>
@@ -109,6 +109,11 @@
    <wvobject db_ref_id="1" fp_name="/spi_master_tb/data_to_spi" type="other">
       <obj_property name="ElementShortName">data_to_spi</obj_property>
       <obj_property name="ObjectShortName">data_to_spi</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_reg_map_gen/reg_map_proc/gdrb_ctrl_data_array_s" type="array">
+      <obj_property name="ElementShortName">gdrb_ctrl_data_array_s[0:15][15:0]</obj_property>
+      <obj_property name="ObjectShortName">gdrb_ctrl_data_array_s[0:15][15:0]</obj_property>
       <obj_property name="Radix">HEXRADIX</obj_property>
    </wvobject>
 </wave_config>

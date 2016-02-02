@@ -50,9 +50,13 @@ architecture behave of spi_master_tb is
 
     constant FIFO_REQ  : Boolean   := FALSE;
 
---.Test using  input file
+--.--.Test using  input file
+--.    constant DUT_TYPE : string := "input_vector_file_test"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board unsing simple read write proceedures
+--.    constant make_all_addresses_writeable_for_testing : boolean := FALSE;
+
+--.Test using  input file - DIAGNOSTICE AS IT HAS ALL ADDRESSES SET TO READ/WRITABLE
     constant DUT_TYPE : string := "input_vector_file_test"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board unsing simple read write proceedures
-    constant make_all_addresses_writeable_for_testing : boolean := FALSE;
+    constant make_all_addresses_writeable_for_testing : boolean := TRUE;
 --.Test actual register map
 --.    constant DUT_TYPE : string := "gdrb_ctrl_reg_map_test"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board unsing simple read write proceedures
 --.    constant make_all_addresses_writeable_for_testing : boolean := FALSE;
@@ -442,15 +446,17 @@ begin
                 WRITE (L, string'("PASS  "), left, 6);
             end if;
 
-            WRITE (L, report_spi_access_type, left, 14);
+            WRITE (L, report_spi_access_type, left, 6);
 
-            WRITE (L, string'("ADDRESS= "));
+            WRITE (L, string'("Address = "));
             HWRITE (L, std_logic_vector(to_unsigned(address_to_spi,SPI_ADDRESS_BITS)), left, 10);
-            WRITE (L, string'("EXPECTED= "));
-            HWRITE (L, std_logic_vector(to_unsigned(check_data_from_spi,SPI_DATA_BITS)), left, 10);
-            WRITE (L, string'("MASKED= "));
-            HWRITE (L, std_logic_vector(to_unsigned(check_data_mask,SPI_DATA_BITS)), left, 10);
-            WRITE (L, string'("RECEIVED= "));
+            WRITE (L, string'("Write Data = "));
+            HWRITE (L, std_logic_vector(to_unsigned(data_to_spi,SPI_DATA_BITS)), left, 10);
+            WRITE (L, string'("Expected read data = "));
+            HWRITE (L, std_logic_vector(to_unsigned(check_data_from_spi,SPI_DATA_BITS)), left, 16);
+            WRITE (L, string'("Read data mask = "));
+            HWRITE (L, std_logic_vector(to_unsigned(check_data_mask,SPI_DATA_BITS)), left, 12);
+            WRITE (L, string'("Read data = "));
             HWRITE (L, std_logic_vector(to_unsigned(rx_data_from_spi,SPI_DATA_BITS)), left, 10);
             WRITE (L, string'("at time  "));
             WRITE (L, NOW, right, 16);
@@ -581,20 +587,6 @@ end process;
 ss_i <= slave_csn_i(0) and slave_csn_i(1) and slave_csn_i(2) and slave_csn_i(3);
 
 
---.            address_to_spi <= 16#0#;
---.            data_to_spi <= 16#0#;
---.            check_data_from_spi <= 16#0#;
---.            check_data_mask <= 16#FFFF#; -- Check all bits back in rx reply
---.            reg_map_r_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
-    --signal rx_data_from_spi : natural;
-
---.            --------Writing --------.
---.            address_to_spi <= 16#0#;
---.            data_to_spi <= 16#5555#;
---.            check_data_from_spi <= 16#5555#;
---.            check_data_mask <= 16#0000#; -- Don't tend to check data back from a write
---.            reg_map_w_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
-
 ------------------------------Register Map tests using input file for vectors------------------------------.
 input_vector_file_test_gen : if DUT_TYPE = "input_vector_file_test" generate
 
@@ -603,15 +595,11 @@ input_vector_file_test_gen : if DUT_TYPE = "input_vector_file_test" generate
         variable L : line;
         variable good : boolean;
         variable status : file_open_status;
-        variable input_command_v : character;
---.        variable address_to_spi_v : natural := 0;
---.        variable data_to_spi_v : natural := 16#AA#;
---.        variable check_data_from_spi_v : natural := 16#AA#;
---.        variable check_data_mask_v : natural := (2**DATA_SIZE)-1; -- Default to all '1's so that all bits of the result are checked unless mask set otherwise by input testing parameters
-        variable address_to_spi_v : natural := 0;
-        variable data_to_spi_v : natural := 16#AA#;
-        variable check_data_from_spi_v : natural := 16#AA#;
-        variable check_data_mask_v : std_ulogic_vector(SPI_DATA_BITS - 1 downto 0) := (others => '1'); -- Default to all '1's so that all bits of the result are checked unless mask set otherwise by input testing parameters
+        variable input_command_v : string(1 to 4);
+        variable address_to_spi_v : std_logic_vector(SPI_ADDRESS_BITS - 1 downto 0) := (others => '1');
+        variable data_to_spi_v : std_logic_vector(SPI_DATA_BITS - 1 downto 0) := (others => '1');
+        variable check_data_from_spi_v : std_logic_vector(SPI_DATA_BITS - 1 downto 0) := (others => '1');
+        variable check_data_mask_v : std_logic_vector(SPI_DATA_BITS - 1 downto 0) := (others => '1'); -- Default to all '1's so that all bits of the result are checked unless mask set otherwise by input testing parameters
     begin
         FILE_OPEN(status, F, "..\..\..\input_test.txt", READ_MODE);
         if status /= OPEN_OK then
@@ -624,39 +612,31 @@ input_vector_file_test_gen : if DUT_TYPE = "input_vector_file_test" generate
             
             while not ENDFILE(F) loop
                 READLINE(F, L);
-                wait for 10 ns;
+                next when L'length = 0;                                                     -- Skip empty lines
                 READ(L, input_command_v);
-                READ(L, address_to_spi_v);
-                READ(L, data_to_spi_v);
-                READ(L, check_data_from_spi_v);
---                READ(L, check_data_mask_v, good);
-                HREAD(L, check_data_mask_v, good);
-
---.            read(line_in,CI,good);     -- Read the CI input
---.
-
---.            assert good
---.
---.                report "Text I/O read error"
---.
---.                severity FAILURE;
-
- 
-
-                address_to_spi <= address_to_spi_v;
-                data_to_spi <= data_to_spi_v;
-                check_data_from_spi <= check_data_from_spi_v; 
---                check_data_mask <= ((check_data_mask_v));
-                check_data_mask <= to_integer(unsigned(check_data_mask_v));
-
-
---.                address_to_spi <= 16#0000#;
---.                data_to_spi <= 16#0000#;
---.                check_data_from_spi <= 16#0000#; -- Don't tend to check data back from a write
---.                check_data_mask <= 16#0000#; -- Don't tend to check data back from a write
-
---            reg_map_w_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
-            reg_map_r_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
+                if input_command_v = "####"  then                                           -- Comment
+                    next;
+                elsif input_command_v = "Read" or input_command_v = "Writ"  then            -- Read or Write command
+                    HREAD(L, address_to_spi_v, good);
+                    assert good report "Text input file format read error" severity FAILURE;
+                    HREAD(L, data_to_spi_v, good);
+                    assert good report "Text input file format read error" severity FAILURE;
+                    HREAD(L, check_data_from_spi_v, good);
+                    assert good report "Text input file format read error" severity FAILURE;
+                    HREAD(L, check_data_mask_v, good);
+                    assert good report "Text input file format read error" severity FAILURE;
+                    address_to_spi <= to_integer(unsigned(address_to_spi_v));
+                    data_to_spi <= to_integer(unsigned(data_to_spi_v));
+                    check_data_from_spi <= to_integer(unsigned(check_data_from_spi_v));
+                    check_data_mask <= to_integer(unsigned(check_data_mask_v));
+                    if input_command_v = "Read" then
+                        reg_map_r_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
+                    elsif input_command_v = "Writ"  then
+                        reg_map_w_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
+                    end if;
+                else
+                    assert false report "Text input file format read error" severity FAILURE;
+                end if;
     
                 wait for 10 ns;
             end loop;

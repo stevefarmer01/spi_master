@@ -1,0 +1,14 @@
+Read
+Writ
+WrRd
+Wait
+Stop
+Star
+Stor
+Reca
+Save
+Quit
+Rest
+Bloc
+Name
+####

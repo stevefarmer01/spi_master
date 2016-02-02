@@ -32,4 +32,4 @@
 !*.wcfg
 
 ##### input test script which is being developed in conjunction with vivado_synth/spi_master.srcs/sources_1/imports/spi_master_tb.vhd ######
-!/spi_master.sim/sim_1/behav/input_test.txt
+!/**/input_test.txt
