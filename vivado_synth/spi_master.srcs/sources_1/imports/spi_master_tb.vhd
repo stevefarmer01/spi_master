@@ -1,31 +1,61 @@
+----------------------------------------------------------------------------------
+-- Company: 
+-- Engineer: 
+-- 
+-- Create Date: 27.01.2016 08:56:18
+-- Design Name: 
+-- Module Name: spi_master_tb.vhd - Behavioral
+-- Project Name: 
+-- Target Devices: 
+-- Tool Versions: 
+-- Description: 
+-- 
+-- Dependencies: 
+-- 
+-- Revision:
+-- Revision 0.01 - File Created
+-- Additional Comments:
+--
+-- This testbench is for testing a slave SPI interface which will be fitted intially into the Griffin GDRB board with the master in the Begalbone-ARM processor.
+-- It has a protocol described in 'spi_package.vhd' and the GDRB paperwork, this can be changed and this tesbench and all supporting code should be able to cope
+-- with any width address and data.
+--
+-- The slave interface (reg_map_proc) is tested via master SPI interface (spi_master_inst) using the 6 procedures declared in the architecture of this file.
+-- The text input is done by process 'file_input_proc' and the text output by process 'file_output_proc'.
+-- 
+-- Testing is done via the input file 'input_test.txt', an example of this file is shown in 'input_test_example.txt' with comments.
+-- Results are recorded in file 'output_test.txt', an example of this file is shown in 'output_test_example.txt' which is the results from 'input_test_example.txt'
+-- with top level constans set to...
+--    constant DUT_TYPE : string := "input_vector_file_test"; 
+--    constant make_all_addresses_writeable_for_testing : boolean := TRUE;
+-- ...and 'spi_package.vhd' set to....
+--    constant SPI_ADDRESS_BITS : integer := 4;
+--    constant SPI_DATA_BITS : integer := 16;
+-- 
+-- Testing of a real register map is done with the top level constants set to...
+--    constant DUT_TYPE : string := "input_vector_file_test";
+--    constant make_all_addresses_writeable_for_testing : boolean := FALSE;
+-- ...this will allow parts of the register map to be either read/write, read only (constants) or read only (discrete input pins) as controlled in 'gdrb_ctrl_reg_map_top.vhd'
+-- and 'spi_package.vhd'.
+--
+-- A simple read write test (no textio input file required) is accessed with the top level constants set to...
+--    constant DUT_TYPE : string := "write_and_then_read_an_address";
+--    constant make_all_addresses_writeable_for_testing : boolean := TRUE;
+-- ....this may not be maintained during future development.
+--
+-- A test of how slow the DUT clk can be and still maintain the integrity of the SPI link is accessed with the top level constants set to...
+--    constant DUT_TYPE : string := "spi_reg_map_simple";
+--    constant make_all_addresses_writeable_for_testing : boolean := TRUE;
+-- ..it will continue to run decreasing the DUT clk frequency until it detects an error.
+-- This may not be maintained during future development.
+--
+----------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------------------
 ---Next Tasks.....
----Report back pass/fail at end of sim
----Integrate register map
----Integrate text IO, maybe start with output rporting first
+---Report back pass/fail at end of sim - done
+---Integrate register map - done
+---Integrate text IO, maybe start with output rporting first - done
 ---Random seed testing option
-
---.        loop
---.
---. 
---.
---.            if endfile(cmdfile) then  -- Check EOF
---.
---.                assert false
---.
---.                    report "End of file encountered; exiting."
---.
---.                    severity NOTE;
---.
---.                exit;
---.
---.            end if;
---.
---. 
---.
---.            readline(cmdfile,line_in);     -- Read a line from the file
---.
---.            next when line_in'length = 0;  -- Skip empty lines
 
 --.    --Set sizes of data and addresse as required for particular application
 --.    constant SPI_ADDRESS_BITS : integer := 4;
@@ -52,22 +82,22 @@ architecture behave of spi_master_tb is
 
 --.--.Test using  input file
 --.    constant DUT_TYPE : string := "input_vector_file_test"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board unsing simple read write proceedures
---.    constant make_all_addresses_writeable_for_testing : boolean := FALSE;
+--.    constant make_all_addresses_writeable_for_testing : boolean := FALSE; -- This allows entire register map read write access for testbench testing of a non-module specific register map
 
---.Test using  input file - DIAGNOSTICE AS IT HAS ALL ADDRESSES SET TO READ/WRITABLE
+--.Test using  input file - DIAGNOSTICS AS IT HAS ALL ADDRESSES SET TO READ/WRITABLE via 'make_all_addresses_writeable_for_testing'
     constant DUT_TYPE : string := "input_vector_file_test"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board unsing simple read write proceedures
-    constant make_all_addresses_writeable_for_testing : boolean := TRUE;
---.Test actual register map
---.    constant DUT_TYPE : string := "gdrb_ctrl_reg_map_test"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board unsing simple read write proceedures
---.    constant make_all_addresses_writeable_for_testing : boolean := FALSE;
---.Simple read write as an example
+    constant make_all_addresses_writeable_for_testing : boolean := TRUE; -- This allows entire register map read write access for testbench testing of a non-module specific register map
+--.Simple read write as an example - without textio
 --.    constant DUT_TYPE : string := "write_and_then_read_an_address"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board
---.    constant make_all_addresses_writeable_for_testing : boolean := TRUE;
+--.    constant make_all_addresses_writeable_for_testing : boolean := TRUE; -- This allows entire register map read write access for testbench testing of a non-module specific register map
 --.Full write/read test with a decreasing sclk frequency to DUT to check what frequency th eSPI link will work down to
 --.    constant DUT_TYPE : string := "spi_reg_map_simple"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board unsing simple read write proceedures
---.    constant make_all_addresses_writeable_for_testing : boolean := TRUE;
+--.    constant make_all_addresses_writeable_for_testing : boolean := TRUE; -- This allows entire register map read write access for testbench testing of a non-module specific register map
 
 ----------------these routines below are more diagnostics routine for initial designing of interface than an actual functional test and so shouldn't be run----------
+--.Test actual register map
+--.    constant DUT_TYPE : string := "gdrb_ctrl_reg_map_test"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board unsing simple read write proceedures
+--.    constant make_all_addresses_writeable_for_testing : boolean := FALSE; -- This allows entire register map read write access for testbench testing of a non-module specific register map
 --.    constant DUT_TYPE : string := "spi_slave"; -- Simple test of just the low level spi_slave.vhd
 --.    constant DUT_TYPE : string := "spi_reg_map"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board
 
@@ -197,7 +227,6 @@ end component;
 
     ---Array of data spanning entire address range declared and initialised in 'spi_package' has offset to make i's contents different from that held in DUT
     --signal gdrb_ctrl_data_array_tb_s : gdrb_ctrl_address_type := gdrb_ctrl_data_array_initalise_offset;
-
     signal discrete_reg_map_array_from_pins_s, discrete_reg_map_array_to_pins_s : gdrb_ctrl_address_type := (others => (others => '0'));
 
 
@@ -262,7 +291,7 @@ end component;
             else
                 rx_and_expected_same := FALSE;
             end if;
-            --assert not (rx_data_from_spi /= check_data_from_spi)                                                                -- Check for correct data back and that there has actually been some data received
+
             assert not rx_and_expected_same                                                                -- Check for correct data back and that there has actually been some data received
                 report "FAIL - Master SPI recieved different to expected" severity note;
             assert rx_and_expected_same                                                                  -- Check for correct data back and that there has actually been some data received
@@ -304,7 +333,6 @@ end component;
             send_to_spi_master('1', rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i); -- Do a read (twice due to nature of SPI interface)
             --end loop;
             
-            --report_spi_access_type <= (others => ' ');
             report_spi_access_type <= "WRITE READ";
 
             check_result(rx_data_from_spi, stop_clks);
@@ -312,6 +340,7 @@ end component;
             wait for TIME_PERIOD_CLK*2000;                                                                                 -- Wait to show a big gap in simulation waveform
         
     end procedure reg_map_rw_check;
+
 
     procedure reg_map_r_check(
              signal rx_data_from_spi : inout natural;
@@ -339,7 +368,6 @@ end component;
                 send_to_spi_master('1', rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i); -- Do a read (twice due to nature of SPI interface)
             end loop;
             
-            --report_spi_access_type <= (others => ' ');
             report_spi_access_type <= "READ      ";
 
             check_result(rx_data_from_spi, stop_clks);
@@ -347,6 +375,7 @@ end component;
             wait for TIME_PERIOD_CLK*2000;                                                                                 -- Wait to show a big gap in simulation waveform
 
     end procedure reg_map_r_check;
+
 
     procedure reg_map_w_check(
              signal rx_data_from_spi : inout natural;
@@ -371,7 +400,6 @@ end component;
                 --------Writing loop --------.
             send_to_spi_master('0', rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i); -- Do a write
 
-            --report_spi_access_type <= (others => ' ');
             report_spi_access_type <= "WRITE     ";
 
             check_result(rx_data_from_spi, stop_clks);
@@ -381,43 +409,183 @@ end component;
     end procedure reg_map_w_check;
 
 
---.    signal my_test_0, my_test_1 :natural := 0;
---.    signal my_test_01 :natural := 1;
---.    signal my_test_11 :natural := 0;
---.
---.    procedure my_test(
---.             signal my_test_1 : out natural -- declared in architecture and so only out parameters need declaring
---.        );
---.    procedure my_test(
---.             signal my_test_1 : out natural
---.        ) is
---.    begin
---.        my_test_1 <= my_test_0;
---.    end procedure ;
-
-
-
 begin
 
---.my_proc : process
---.begin
---.    wait;
---.    my_test(my_test_1);
---.end process;
---.
---.my_proc1 : process
---.
---.    procedure my_test is -- declared in process and so only no parameters need declaring
---.    begin
---.        my_test_11 <= my_test_01;
---.    end procedure ;
---.
---.begin
---.    my_test;
---.    wait;
---.end process;
+---reset and clocks
+reset_proc : process
+begin
+    sys_rst_i <= '1';
+    wait for 10 * TIME_PERIOD_CLK;
+    sys_rst_i <= '0';
+    wait until trigger_another_reset_s;
+end process;
+
+clk_gen_proc : process
+begin
+    while not stop_clks loop
+        wait for TIME_PERIOD_CLK/2;
+        sys_clk_i <= not sys_clk_i;
+    end loop;
+    wait;
+end process;
+
+clk_gen_dut_proc : process
+begin
+    while not stop_clks loop
+        wait for TIME_PERIOD_CLK_DUT_S/2;
+        dut_sys_clk_i <= not dut_sys_clk_i;
+    end loop;
+    wait;
+end process;
 
 
+--------------------------Register Map SPI DUT----------------------------.
+
+spi_reg_map_gen : if DUT_TYPE /= "spi_slave" generate
+
+    reg_map_proc : gdrb_ctrl_reg_map_top
+        generic map(
+                make_all_addresses_writeable_for_testing => make_all_addresses_writeable_for_testing -- :     natural := 16
+                )
+        Port map(  
+                clk => dut_sys_clk_i,                                                  -- : std_logic;
+                reset => sys_rst_i,                                                    -- : std_logic;
+                ---Slave SPI interface pins
+                sclk => sclk_i,                                                        -- : in STD_LOGIC;
+                ss_n => ss_i,                                                          -- : in STD_LOGIC;
+                mosi => mosi_i,                                                        -- : in STD_LOGIC;
+                miso => miso,                                                          -- : out STD_LOGIC;
+                --Discrete signals
+                discrete_reg_map_array_from_pins => discrete_reg_map_array_from_pins_s,-- : in gdrb_ctrl_address_type := (others => (others => '0'));
+                discrete_reg_map_array_to_pins => discrete_reg_map_array_to_pins_s     -- : out gdrb_ctrl_address_type
+                );
+
+    discrete_reg_map_array_from_pins_s(to_integer(unsigned(SensorStatusAddr_addr_c))) <= std_logic_vector(to_unsigned(16#1#,SPI_DATA_BITS)); -- Read only --These have no constant value as they come from discrete pins
+
+
+end generate spi_reg_map_gen;
+
+
+--------------------------MASTER SPI----------------------------.
+
+--.Induce fault to check test bench if desired
+data_i_master_tx <= (data_i(data_i'HIGH downto 1) & '1') when induce_fault_master_tx_c else data_i;
+
+    spi_master_inst : spi_master_top
+        generic map(
+            DATA_SIZE      => DATA_SIZE,         -- :     integer := 16;
+            FIFO_REQ       => FIFO_REQ           -- :     Boolean := True
+            )
+        port map(
+            i_sys_clk      => sys_clk_i,         -- : in  std_logic;                                    -- system clock
+            i_sys_rst      => sys_rst_i,         -- : in  std_logic;                                    -- system reset
+            i_csn          => '0',               -- : in  std_logic;                                    -- chip select for SPI master
+            i_data         => data_i_master_tx,  -- : in  std_logic_vector(15 downto 0);                -- Input data
+            i_wr           => wr_i,              -- : in  std_logic;                                    -- Active Low Write, Active High Read
+            i_rd           => rd_i,              -- : in  std_logic;                                    -- Active Low Write, Active High Read
+            o_data         => o_data_master,     -- : out std_logic_vector(15 downto 0);  --output data
+            o_tx_ready     => o_tx_ready_master, -- : out std_logic;                                    -- Transmitter ready, can write another
+            o_rx_ready     => o_rx_ready_master, -- : out std_logic;                                    -- Receiver ready, can read data
+            o_tx_error     => open,              -- : out std_logic;                                    -- Transmitter error
+            o_rx_error     => open,              -- : out std_logic;                                    -- Receiver error
+            i_slave_addr   => slave_addr_i,      -- : in  std_logic_vector(1 downto 0);                 -- Slave Address
+            i_cpol         => '0',               -- : in  std_logic;                                    -- CPOL value - 0 or 1
+            i_cpha         => '0',               -- : in  std_logic;                                    -- CPHA value - 0 or 1
+            i_lsb_first    => '0',               -- : in  std_logic;                                    -- lsb first when '1' /msb first when
+            i_spi_start    => spi_start_i,       -- : in  std_logic;                                    -- START SPI Master Transactions
+            i_clk_period   => "01100100",        -- : in  std_logic_vector(7 downto 0);                 -- SCL clock period in terms of i_sys_clk
+            i_setup_cycles => "00011111",        -- : in  std_logic_vector(7 downto 0);                 -- SPIM setup time  in terms of i_sys_clk
+            i_hold_cycles  => "00011111",        -- : in  std_logic_vector(7 downto 0);                 -- SPIM hold time  in terms of i_sys_clk
+            i_tx2tx_cycles => tx2tx_cycles_i,        -- : in  std_logic_vector(7 downto 0);                 -- SPIM interval between data transactions in terms of i_sys_clk
+            o_slave_csn    => slave_csn_i,       -- : out std_logic_vector(3 downto 0);                 -- SPI Slave select (chip select) active low
+            o_mosi         => mosi_i,            -- : out std_logic;                                    -- Master output to Slave
+            i_miso         => miso,              -- : in  std_logic;                                    -- Master input from Slave
+            o_sclk         => sclk_i             -- : out std_logic;                                    -- Master clock
+            );
+
+--.Instantaneous check if tx/rx values agree
+slave_master_match <= TRUE when data_i = o_data_master else FALSE;
+--.Latch the failure if when rx ready goes high and tx/rx values don't agree
+latch_match_2_proc : process
+begin
+    wait until o_rx_ready_master = '1';
+    master_rx_activity <= TRUE; -- show that there have been some master data recieved (shows link has been active)
+    if not (data_i = o_data_master) then
+        slave_to_master_rx_match_latch <= FALSE;
+    end if;
+end process;
+
+ss_i <= slave_csn_i(0) and slave_csn_i(1) and slave_csn_i(2) and slave_csn_i(3);
+
+
+--------------------------------------------------------.
+--------------------------Inputs------------------------.
+--------------------------------------------------------.
+------------------------------Register Map tests using input file for vectors------------------------------.
+input_vector_file_test_gen : if DUT_TYPE = "input_vector_file_test" generate
+
+    file_input_proc : process
+        file F : text;
+        variable L : line;
+        variable good : boolean;
+        variable status : file_open_status;
+        variable input_command_v : string(1 to 4);
+        variable address_to_spi_v : std_logic_vector(SPI_ADDRESS_BITS - 1 downto 0) := (others => '1');
+        variable data_to_spi_v : std_logic_vector(SPI_DATA_BITS - 1 downto 0) := (others => '1');
+        variable check_data_from_spi_v : std_logic_vector(SPI_DATA_BITS - 1 downto 0) := (others => '1');
+        variable check_data_mask_v : std_logic_vector(SPI_DATA_BITS - 1 downto 0) := (others => '1'); -- Default to all '1's so that all bits of the result are checked unless mask set otherwise by input testing parameters
+    begin
+        FILE_OPEN(status, F, "..\..\..\input_test.txt", READ_MODE);
+        if status /= OPEN_OK then
+            assert FALSE
+                report "Failed to open file" severity failure;
+        else
+            stop_sim_on_fail <= FALSE;
+
+            wait for TIME_PERIOD_CLK* 20 * dut_clk_ratio_to_testbench;                                                     -- Wait for sys_rst_i to propagate through DUT especially if DUT is running a much slower clock
+            
+            while not ENDFILE(F) loop
+                READLINE(F, L);
+                next when L'length = 0;                                                     -- Skip empty lines
+                READ(L, input_command_v);
+                if input_command_v = "####"  then                                           -- Comment
+                    next;
+                elsif input_command_v = "Read" or input_command_v = "Writ"  then            -- Read or Write command
+                    HREAD(L, address_to_spi_v, good);
+                    assert good report "Text input file format read error" severity FAILURE;
+                    HREAD(L, data_to_spi_v, good);
+                    assert good report "Text input file format read error" severity FAILURE;
+                    HREAD(L, check_data_from_spi_v, good);
+                    assert good report "Text input file format read error" severity FAILURE;
+                    HREAD(L, check_data_mask_v, good);
+                    assert good report "Text input file format read error" severity FAILURE;
+                    address_to_spi <= to_integer(unsigned(address_to_spi_v));
+                    data_to_spi <= to_integer(unsigned(data_to_spi_v));
+                    check_data_from_spi <= to_integer(unsigned(check_data_from_spi_v));
+                    check_data_mask <= to_integer(unsigned(check_data_mask_v));
+                    if input_command_v = "Read" then
+                        reg_map_r_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
+                    elsif input_command_v = "Writ"  then
+                        reg_map_w_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
+                    end if;
+                else
+                    assert false report "Text input file format read error" severity FAILURE;
+                end if;
+    
+--                wait for 10 ns;
+            end loop;
+            FILE_CLOSE(F);
+        end if;
+------------------------------FINSHED SIMULATION------------------------------.
+        stop_clks <= TRUE;                                                                  -- Always stop simulator when all tests have completed
+        wait;
+    end process;
+
+end generate input_vector_file_test_gen;
+
+---------------------------------------------------------.
+--------------------------Outputs------------------------.
+---------------------------------------------------------.
 file_output_proc : process
     file F : text;
     variable L : line;
@@ -480,253 +648,13 @@ begin
 end process;
 
 
----reset and clocks
-reset_proc : process
-begin
-    sys_rst_i <= '1';
-    wait for 10 * TIME_PERIOD_CLK;
-    sys_rst_i <= '0';
-    wait until trigger_another_reset_s;
-end process;
-
-clk_gen_proc : process
-begin
-    while not stop_clks loop
-        wait for TIME_PERIOD_CLK/2;
-        sys_clk_i <= not sys_clk_i;
-    end loop;
-    wait;
-end process;
-
-clk_gen_dut_proc : process
-begin
-    while not stop_clks loop
-        wait for TIME_PERIOD_CLK_DUT_S/2;
-        dut_sys_clk_i <= not dut_sys_clk_i;
-    end loop;
-    wait;
-end process;
-
-
---------------------------Register Map SPI DUT----------------------------
-spi_reg_map_gen : if DUT_TYPE /= "spi_slave" generate
-
-    reg_map_proc : gdrb_ctrl_reg_map_top
-        generic map(
-                make_all_addresses_writeable_for_testing => make_all_addresses_writeable_for_testing -- :     natural := 16
-                )
-        Port map(  
-                clk => dut_sys_clk_i,                                                  -- : std_logic;
-                reset => sys_rst_i,                                                    -- : std_logic;
-                ---Slave SPI interface pins
-                sclk => sclk_i,                                                        -- : in STD_LOGIC;
-                ss_n => ss_i,                                                          -- : in STD_LOGIC;
-                mosi => mosi_i,                                                        -- : in STD_LOGIC;
-                miso => miso,                                                          -- : out STD_LOGIC;
-                --Discrete signals
-                discrete_reg_map_array_from_pins => discrete_reg_map_array_from_pins_s,-- : in gdrb_ctrl_address_type := (others => (others => '0'));
-                discrete_reg_map_array_to_pins => discrete_reg_map_array_to_pins_s     -- : out gdrb_ctrl_address_type
-                );
-
-    discrete_reg_map_array_from_pins_s(to_integer(unsigned(SensorStatusAddr_addr_c))) <= std_logic_vector(to_unsigned(16#1#,SPI_DATA_BITS)); -- Read only --These have no constant value as they come from discrete pins
-
-
-end generate spi_reg_map_gen;
-
-
---------------------------MASTER SPI DUT----------------------------
-
---.Induce fault to check test bench if desired
-data_i_master_tx <= (data_i(data_i'HIGH downto 1) & '1') when induce_fault_master_tx_c else data_i;
-
-    spi_master_inst : spi_master_top
-        generic map(
-            DATA_SIZE      => DATA_SIZE,         -- :     integer := 16;
-            FIFO_REQ       => FIFO_REQ           -- :     Boolean := True
-            )
-        port map(
-            i_sys_clk      => sys_clk_i,         -- : in  std_logic;                                    -- system clock
-            i_sys_rst      => sys_rst_i,         -- : in  std_logic;                                    -- system reset
-            i_csn          => '0',               -- : in  std_logic;                                    -- chip select for SPI master
-            i_data         => data_i_master_tx,  -- : in  std_logic_vector(15 downto 0);                -- Input data
-            i_wr           => wr_i,              -- : in  std_logic;                                    -- Active Low Write, Active High Read
-            i_rd           => rd_i,              -- : in  std_logic;                                    -- Active Low Write, Active High Read
-            o_data         => o_data_master,     -- : out std_logic_vector(15 downto 0);  --output data
-            o_tx_ready     => o_tx_ready_master, -- : out std_logic;                                    -- Transmitter ready, can write another
-            o_rx_ready     => o_rx_ready_master, -- : out std_logic;                                    -- Receiver ready, can read data
-            o_tx_error     => open,              -- : out std_logic;                                    -- Transmitter error
-            o_rx_error     => open,              -- : out std_logic;                                    -- Receiver error
-            i_slave_addr   => slave_addr_i,      -- : in  std_logic_vector(1 downto 0);                 -- Slave Address
-            i_cpol         => '0',               -- : in  std_logic;                                    -- CPOL value - 0 or 1
-            i_cpha         => '0',               -- : in  std_logic;                                    -- CPHA value - 0 or 1
-            i_lsb_first    => '0',               -- : in  std_logic;                                    -- lsb first when '1' /msb first when
-            i_spi_start    => spi_start_i,       -- : in  std_logic;                                    -- START SPI Master Transactions
-            i_clk_period   => "01100100",        -- : in  std_logic_vector(7 downto 0);                 -- SCL clock period in terms of i_sys_clk
-            i_setup_cycles => "00011111",        -- : in  std_logic_vector(7 downto 0);                 -- SPIM setup time  in terms of i_sys_clk
-            i_hold_cycles  => "00011111",        -- : in  std_logic_vector(7 downto 0);                 -- SPIM hold time  in terms of i_sys_clk
-            i_tx2tx_cycles => tx2tx_cycles_i,        -- : in  std_logic_vector(7 downto 0);                 -- SPIM interval between data transactions in terms of i_sys_clk
-            o_slave_csn    => slave_csn_i,       -- : out std_logic_vector(3 downto 0);                 -- SPI Slave select (chip select) active low
-            o_mosi         => mosi_i,            -- : out std_logic;                                    -- Master output to Slave
-            i_miso         => miso,              -- : in  std_logic;                                    -- Master input from Slave
-            o_sclk         => sclk_i             -- : out std_logic;                                    -- Master clock
-            );
-
---.Instantaneous check if tx/rx values agree
-slave_master_match <= TRUE when data_i = o_data_master else FALSE;
---.Latch the failure if when rx ready goes high and tx/rx values don't agree
-latch_match_2_proc : process
-begin
-    wait until o_rx_ready_master = '1';
-    master_rx_activity <= TRUE; -- show that there have been some master data recieved (shows link has been active)
-    if not (data_i = o_data_master) then
-        slave_to_master_rx_match_latch <= FALSE;
-    end if;
-end process;
-
-
-ss_i <= slave_csn_i(0) and slave_csn_i(1) and slave_csn_i(2) and slave_csn_i(3);
-
-
-------------------------------Register Map tests using input file for vectors------------------------------.
-input_vector_file_test_gen : if DUT_TYPE = "input_vector_file_test" generate
-
-    file_input_proc : process
-        file F : text;
-        variable L : line;
-        variable good : boolean;
-        variable status : file_open_status;
-        variable input_command_v : string(1 to 4);
-        variable address_to_spi_v : std_logic_vector(SPI_ADDRESS_BITS - 1 downto 0) := (others => '1');
-        variable data_to_spi_v : std_logic_vector(SPI_DATA_BITS - 1 downto 0) := (others => '1');
-        variable check_data_from_spi_v : std_logic_vector(SPI_DATA_BITS - 1 downto 0) := (others => '1');
-        variable check_data_mask_v : std_logic_vector(SPI_DATA_BITS - 1 downto 0) := (others => '1'); -- Default to all '1's so that all bits of the result are checked unless mask set otherwise by input testing parameters
-    begin
-        FILE_OPEN(status, F, "..\..\..\input_test.txt", READ_MODE);
-        if status /= OPEN_OK then
-            assert FALSE
-                report "Failed to open file" severity failure;
-        else
-            stop_sim_on_fail <= FALSE;
-
-            wait for TIME_PERIOD_CLK* 20 * dut_clk_ratio_to_testbench;                                                     -- Wait for sys_rst_i to propagate through DUT especially if DUT is running a much slower clock
-            
-            while not ENDFILE(F) loop
-                READLINE(F, L);
-                next when L'length = 0;                                                     -- Skip empty lines
-                READ(L, input_command_v);
-                if input_command_v = "####"  then                                           -- Comment
-                    next;
-                elsif input_command_v = "Read" or input_command_v = "Writ"  then            -- Read or Write command
-                    HREAD(L, address_to_spi_v, good);
-                    assert good report "Text input file format read error" severity FAILURE;
-                    HREAD(L, data_to_spi_v, good);
-                    assert good report "Text input file format read error" severity FAILURE;
-                    HREAD(L, check_data_from_spi_v, good);
-                    assert good report "Text input file format read error" severity FAILURE;
-                    HREAD(L, check_data_mask_v, good);
-                    assert good report "Text input file format read error" severity FAILURE;
-                    address_to_spi <= to_integer(unsigned(address_to_spi_v));
-                    data_to_spi <= to_integer(unsigned(data_to_spi_v));
-                    check_data_from_spi <= to_integer(unsigned(check_data_from_spi_v));
-                    check_data_mask <= to_integer(unsigned(check_data_mask_v));
-                    if input_command_v = "Read" then
-                        reg_map_r_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
-                    elsif input_command_v = "Writ"  then
-                        reg_map_w_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
-                    end if;
-                else
-                    assert false report "Text input file format read error" severity FAILURE;
-                end if;
-    
-                wait for 10 ns;
-            end loop;
-            FILE_CLOSE(F);
-        end if;
-------------------------------FINSHED SIMULATION------------------------------.
-        stop_clks <= TRUE;                                                                  -- Always stop simulator when all tests have completed
-        wait;
-    end process;
-
-end generate input_vector_file_test_gen;
-
-
-------------------------------Register Map specific test------------------------------.
-gdrb_ctrl_reg_map_test_gen : if DUT_TYPE = "gdrb_ctrl_reg_map_test" generate
-
-    stop_sim_on_fail <= FALSE;
-
-    main_control_proc : process
-    begin
-            TIME_PERIOD_CLK_DUT_S <= TIME_PERIOD_CLK_DUT_S + 1 ns;                                                         -- Auto increment when loop this routine to check lowest clk frequency DUT can run at and still work this SPI interface
-            dut_clk_ratio_to_testbench <= integer(TIME_PERIOD_CLK_DUT_S/TIME_PERIOD_CLK);                                  -- Ratio for getting delays in testbench correct when DUT clk frequency is slowed down by line above
-
-            wait for TIME_PERIOD_CLK* 20 * dut_clk_ratio_to_testbench;                                                     -- Wait for sys_rst_i to propagate through DUT especially if DUT is running a much slower clock
-            
-            --Check initialised value
-            address_to_spi <= 16#0#;
-            data_to_spi <= 16#0#;
-            check_data_from_spi <= 16#0#;
-            check_data_mask <= 16#FFFF#; -- Check all bits back in rx reply
-            reg_map_r_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
-
-            --Check initialised value
-            address_to_spi <= 16#1#;
-            data_to_spi <= 16#0#;
-            check_data_from_spi <= 16#1#;
-            reg_map_r_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
-
-            --Check initialised value
-            address_to_spi <= 16#2#;
-            data_to_spi <= 16#0#;
-            check_data_from_spi <= 16#2#;
-            reg_map_r_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
-
-            --Check address can be written and read
-            address_to_spi <= 16#0#;
-            data_to_spi <= 16#AAAA#;
-            check_data_from_spi <= 16#AAAA#;
-            reg_map_rw_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
-
-            --Check address can be written and read
-            address_to_spi <= 16#2#;
-            data_to_spi <= 16#5555#;
-            check_data_from_spi <= 16#5555#;
-            reg_map_rw_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
-
-            --Check address can be written and read
-            address_to_spi <= 16#3#;
-            reg_map_rw_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
-
-            address_to_spi <= 16#5#;
-            reg_map_rw_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
-
-
-            address_to_spi <= 16#A#;
-            reg_map_rw_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
-
-            --Check initialised value
-            address_to_spi <= 16#B#;
-            check_data_from_spi <= to_integer(unsigned(Position_c) & unsigned(VersionNo_c));
-            reg_map_r_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
-
-            --Check initialised value
-            address_to_spi <= 16#C#;
-            check_data_from_spi <= to_integer(unsigned(Day_c) & unsigned(Month_c) & unsigned(Year_c));
-            reg_map_r_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
-
-------------------------------FINSHED SIMULATION------------------------------.
-        stop_clks <= TRUE;                                                                  -- Always stop simulator when all tests have completed
-        wait;
-
-    end process;
-end generate gdrb_ctrl_reg_map_test_gen;
-
-
-
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------.
 ----------------these routines below are more diagnostics routine for testing full range of SPI rather than full specific module register map testing as the one above is----------.
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------.
---------------------------Slave SPI DUT----------------------------.
+
+--------------------------------------------------------.
+--------------------------Inputs------------------------.
+--------------------------------------------------------.
 ------------------------------Simple single write read to help show how testbench works------------------------------.
 spi_write_and_then_read_gen : if DUT_TYPE = "write_and_then_read_an_address" generate
     main_control_proc : process
@@ -755,6 +683,9 @@ end generate spi_write_and_then_read_gen;
 
 
 
+--------------------------------------------------------.
+--------------------------Inputs------------------------.
+--------------------------------------------------------.
 ------------------------------Multiple write and read routine with decreasing DUT clk frequency which will exit simulation when it eventually fails------------------------------.
 spi_reg_map_test_simple_gen : if DUT_TYPE = "spi_reg_map_simple" generate
     main_control_proc : process
@@ -801,6 +732,79 @@ spi_reg_map_test_simple_gen : if DUT_TYPE = "spi_reg_map_simple" generate
         wait;
     end process;
 end generate spi_reg_map_test_simple_gen;
+
+
+
+--.------------------------------Register Map specific test------------------------------.
+--.gdrb_ctrl_reg_map_test_gen : if DUT_TYPE = "gdrb_ctrl_reg_map_test" generate
+--.
+--.    stop_sim_on_fail <= FALSE;
+--.
+--.    main_control_proc : process
+--.    begin
+--.            TIME_PERIOD_CLK_DUT_S <= TIME_PERIOD_CLK_DUT_S + 1 ns;                                                         -- Auto increment when loop this routine to check lowest clk frequency DUT can run at and still work this SPI interface
+--.            dut_clk_ratio_to_testbench <= integer(TIME_PERIOD_CLK_DUT_S/TIME_PERIOD_CLK);                                  -- Ratio for getting delays in testbench correct when DUT clk frequency is slowed down by line above
+--.
+--.            wait for TIME_PERIOD_CLK* 20 * dut_clk_ratio_to_testbench;                                                     -- Wait for sys_rst_i to propagate through DUT especially if DUT is running a much slower clock
+--.            
+--.            --Check initialised value
+--.            address_to_spi <= 16#0#;
+--.            data_to_spi <= 16#0#;
+--.            check_data_from_spi <= 16#0#;
+--.            check_data_mask <= 16#FFFF#; -- Check all bits back in rx reply
+--.            reg_map_r_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
+--.
+--.            --Check initialised value
+--.            address_to_spi <= 16#1#;
+--.            data_to_spi <= 16#0#;
+--.            check_data_from_spi <= 16#1#;
+--.            reg_map_r_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
+--.
+--.            --Check initialised value
+--.            address_to_spi <= 16#2#;
+--.            data_to_spi <= 16#0#;
+--.            check_data_from_spi <= 16#2#;
+--.            reg_map_r_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
+--.
+--.            --Check address can be written and read
+--.            address_to_spi <= 16#0#;
+--.            data_to_spi <= 16#AAAA#;
+--.            check_data_from_spi <= 16#AAAA#;
+--.            reg_map_rw_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
+--.
+--.            --Check address can be written and read
+--.            address_to_spi <= 16#2#;
+--.            data_to_spi <= 16#5555#;
+--.            check_data_from_spi <= 16#5555#;
+--.            reg_map_rw_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
+--.
+--.            --Check address can be written and read
+--.            address_to_spi <= 16#3#;
+--.            reg_map_rw_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
+--.
+--.            address_to_spi <= 16#5#;
+--.            reg_map_rw_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
+--.
+--.
+--.            address_to_spi <= 16#A#;
+--.            reg_map_rw_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
+--.
+--.            --Check initialised value
+--.            address_to_spi <= 16#B#;
+--.            check_data_from_spi <= to_integer(unsigned(Position_c) & unsigned(VersionNo_c));
+--.            reg_map_r_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
+--.
+--.            --Check initialised value
+--.            address_to_spi <= 16#C#;
+--.            check_data_from_spi <= to_integer(unsigned(Day_c) & unsigned(Month_c) & unsigned(Year_c));
+--.            reg_map_r_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
+--.
+--.------------------------------FINSHED SIMULATION------------------------------.
+--.        stop_clks <= TRUE;                                                                  -- Always stop simulator when all tests have completed
+--.        wait;
+--.
+--.    end process;
+--.end generate gdrb_ctrl_reg_map_test_gen;
 
 
 --.------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------.
