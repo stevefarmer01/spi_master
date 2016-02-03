@@ -46,7 +46,6 @@ package spi_package is
     function initalise_gdrb_ctrl_data_array(inc_values_enable : boolean; inc_data_start_value : natural ) return gdrb_ctrl_address_type;
     --Deferred constants below
     constant gdrb_ctrl_data_array_initalise : gdrb_ctrl_address_type;
-    constant gdrb_ctrl_data_array_initalise_offset : gdrb_ctrl_address_type;
 
 end spi_package;
 
@@ -56,16 +55,17 @@ package body spi_package is
     function initalise_gdrb_ctrl_data_array(inc_values_enable : boolean; inc_data_start_value : natural ) return gdrb_ctrl_address_type is
         variable gdrb_ctrl_data_array : gdrb_ctrl_address_type := (others => (others => '0'));
     begin
-        for i in gdrb_ctrl_data_array'RANGE loop
-            gdrb_ctrl_data_array(i) := std_logic_vector(to_unsigned(inc_data_start_value+i,SPI_DATA_BITS)); -- Automatically incrementing values with an offset if required
-        end loop;
-            gdrb_ctrl_data_array(0) := std_logic_vector(to_unsigned(16#0#,SPI_DATA_BITS));                  -- Example of how to manually set defualt values(these will overwrite incremented values above)
-            gdrb_ctrl_data_array(1) := std_logic_vector(to_unsigned(16#1#,SPI_DATA_BITS));                  -- Example of how to manually set defualt values(these will overwrite incremented values above)
+        if inc_values_enable then
+            for i in gdrb_ctrl_data_array'RANGE loop
+                gdrb_ctrl_data_array(i) := std_logic_vector(to_unsigned(inc_data_start_value+i,SPI_DATA_BITS)); -- Automatically incrementing values with an offset if required
+            end loop;
+                gdrb_ctrl_data_array(0) := std_logic_vector(to_unsigned(16#0#,SPI_DATA_BITS));                  -- Example of how to manually set defualt values(these will overwrite incremented values above)
+                gdrb_ctrl_data_array(1) := std_logic_vector(to_unsigned(16#1#,SPI_DATA_BITS));                  -- Example of how to manually set defualt values(these will overwrite incremented values above)
+            end if;
         return gdrb_ctrl_data_array;
     end;
+    
     --Pre-load register map array for testing and possible other uses
-    constant gdrb_ctrl_data_array_initalise : gdrb_ctrl_address_type := initalise_gdrb_ctrl_data_array(inc_values_enable => TRUE, inc_data_start_value => 0);
-    --This version has an offset of 0x10
-    constant gdrb_ctrl_data_array_initalise_offset : gdrb_ctrl_address_type := initalise_gdrb_ctrl_data_array(inc_values_enable => TRUE, inc_data_start_value => 16#10#);
+    constant gdrb_ctrl_data_array_initalise : gdrb_ctrl_address_type := initalise_gdrb_ctrl_data_array(inc_values_enable => FALSE, inc_data_start_value => 0);
 
 end;

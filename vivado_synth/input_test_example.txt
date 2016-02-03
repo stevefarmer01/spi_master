@@ -3,23 +3,24 @@
 
 #### address  input data  read data  read data mask ####
 
+#### Vanilla test of register map with 'constant make_all_addresses_writeable_for_testing : boolean := TRUE' in testbench
 #### Test all reads
 Read 	0 		0000 		0000 		FFFF
-Read 	1 		0000 		0001 		FFFF
-Read 	2 		0000 		0002 		FFFF
-Read 	3 		0000 		0003 		FFFF
-Read 	4 		0000 		0004 		FFFF
-Read 	5 		0000 		0005 		FFFF
-Read 	6 		0000 		0006 		FFFF
-Read 	7 		0000 		0007 		FFFF
-Read 	8 		0000 		0008 		FFFF
-Read 	9 		0000 		0009 		FFFF
-Read 	A 		0000 		000A 		FFFF
-Read 	B 		0000 		000B 		FFFF
-Read 	C 		0000 		000C 		FFFF
-Read 	D 		0000 		000D 		FFFF
-Read 	E 		0000 		000E 		FFFF
-Read 	F 		0000 		000F 		FFFF
+Read 	1 		0000 		0000 		FFFF
+Read 	2 		0000 		0000 		FFFF
+Read 	3 		0000 		0000 		FFFF
+Read 	4 		0000 		0000 		FFFF
+Read 	5 		0000 		0000 		FFFF
+Read 	6 		0000 		0000 		FFFF
+Read 	7 		0000 		0000 		FFFF
+Read 	8 		0000 		0000 		FFFF
+Read 	9 		0000 		0000 		FFFF
+Read 	A 		0000 		0000 		FFFF
+Read 	B 		0000 		0000 		FFFF
+Read 	C 		0000 		0000 		FFFF
+Read 	D 		0000 		0000 		FFFF
+Read 	E 		0000 		0000 		FFFF
+Read 	F 		0000 		0000 		FFFF
 ####Read 	10 		0000 		0010 		FFFF #### generates an 'Text input file format read error' as input address out of 4 bit range
 
 #### Test all write then read them (set MSb just as an extra test)
@@ -73,4 +74,3 @@ Read 	C 		8CCC 		8CCC 		FFFF
 Read 	D 		8DDD 		8DDD 		FFFF
 Read 	E 		8EEE 		8EEE 		FFFF
 Read 	F 		8FFF 		8FFF 		FFFF
-

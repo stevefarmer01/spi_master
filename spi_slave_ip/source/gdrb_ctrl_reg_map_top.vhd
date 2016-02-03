@@ -46,8 +46,10 @@ entity gdrb_ctrl_reg_map_top is
             mosi : in STD_LOGIC;
             miso : out STD_LOGIC;
             --Discrete signals
-            discrete_reg_map_array_from_pins : in gdrb_ctrl_address_type := (others => (others => '0'));
-            discrete_reg_map_array_to_pins : out gdrb_ctrl_address_type
+            test_input : in std_logic_vector(SPI_DATA_BITS - 1 downto 0);
+            test_output : out std_logic_vector(SPI_DATA_BITS - 1 downto 0)--;
+--            test_reg_map_array_from_pins : in gdrb_ctrl_address_type := (others => (others => '0'));
+--            test_reg_map_array_to_pins : out gdrb_ctrl_address_type
             );
 end gdrb_ctrl_reg_map_top;
 
@@ -88,33 +90,13 @@ signal gdrb_ctrl_data_array_s : gdrb_ctrl_address_type := (others => (others => 
 
 begin
 
-sync_reset_proc : process(clk)
-begin
-    if rising_edge(clk) then
-        reset_domain_cross_s <= reset_domain_cross_s(reset_domain_cross_s'LEFT-1 downto 0) & reset;
-        reset_s <= reset_domain_cross_s(reset_domain_cross_s'LEFT);
-    end if;
-end process;
+--Map register map array bits to relavent discrete output bits
+test_output <= gdrb_ctrl_data_array_s(to_integer(unsigned(LEDControlAddr_addr_c))); -- 0
 
-reg_map_spi_slave_inst : reg_map_spi_slave
-    Port map(  
-            clk => clk,                                    -- : in std_logic;
-            reset => reset_s,                              -- : in std_logic;
-            ---Slave SPI interface pins
-            sclk => sclk,                                  -- : in STD_LOGIC;
-            ss_n => ss_n,                                  -- : in STD_LOGIC;
-            mosi => mosi,                                  -- : in STD_LOGIC;
-            miso => miso,                                  -- : out STD_LOGIC;
-            --register map interface
-            rx_valid => rx_valid_s,                        -- : out std_logic;
-            rx_read_write_bit => rx_read_write_bit_s,      -- : out std_logic;
-            rx_address => rx_address_s,                    -- : out std_logic_vector(SPI_ADDRESS_BITS-1 downto 0);
-            rx_data => rx_data_s,                          -- : out std_logic_vector(SPI_DATA_BITS-1 downto 0);
-            ---Array of data spanning entire address range declared and initialised in 'spi_package'
-            gdrb_ctrl_data_array => gdrb_ctrl_data_array_s -- : in gdrb_ctrl_address_type
-            );
 
-write_enable_from_spi_s <= '1' when (rx_valid_s = '1' and rx_read_write_bit_s = '0') else '0';
+
+
+
 
 --Limit read writes as per those declared in gdrb_ctrl_address_pkg.vhd
 reg_map_gen : if not make_all_addresses_writeable_for_testing generate
@@ -126,9 +108,11 @@ reg_map_gen : if not make_all_addresses_writeable_for_testing generate
             if reset_s = '1' then
                 gdrb_ctrl_data_array_s <= gdrb_ctrl_data_array_initalise;                -- reset reg map array with a function (allows pre_loading of data values which could be useful for testing and operation)
             else
-                ---Set values of read only registers if they are constants.....
+                ---Set values of read only registers either from constants or input pins.....
             
-                gdrb_ctrl_data_array_s(to_integer(unsigned(SensorStatusAddr_addr_c))) <= discrete_reg_map_array_from_pins(to_integer(unsigned(SensorStatusAddr_addr_c))); -- Read only --These have no constant value as they come from discrete pins
+                gdrb_ctrl_data_array_s(to_integer(unsigned(SensorStatusAddr_addr_c))) <= test_input; -- 1
+
+                --gdrb_ctrl_data_array_s(to_integer(unsigned(SensorStatusAddr_addr_c))) <= discrete_reg_map_array_from_pins(to_integer(unsigned(SensorStatusAddr_addr_c))); -- Read only --These have no constant value as they come from discrete pins
                 --gdrb_ctrl_data_array_s(to_integer(unsigned(FaultAddr_addr_c)))        <= ; -- Read only --These have no constant value as they come from discrete pins
                 gdrb_ctrl_data_array_s(to_integer(unsigned(MDRB_UES1Addr_addr_c)))    <= std_logic_vector(resize(unsigned(UES_1_c),SPI_DATA_BITS)); -- Read only
                 gdrb_ctrl_data_array_s(to_integer(unsigned(MDRB_UES2Addr_addr_c)))    <= std_logic_vector(resize(unsigned(UES_2_c),SPI_DATA_BITS)); -- Read only
@@ -195,9 +179,37 @@ reg_map_gen : if not make_all_addresses_writeable_for_testing generate
 
 end generate reg_map_gen;
 
+--discrete_reg_map_array_to_pins <= gdrb_ctrl_data_array_s;
 
 
-discrete_reg_map_array_to_pins <= gdrb_ctrl_data_array_s;
+sync_reset_proc : process(clk)
+begin
+    if rising_edge(clk) then
+        reset_domain_cross_s <= reset_domain_cross_s(reset_domain_cross_s'LEFT-1 downto 0) & reset;
+        reset_s <= reset_domain_cross_s(reset_domain_cross_s'LEFT);
+    end if;
+end process;
+
+reg_map_spi_slave_inst : reg_map_spi_slave
+    Port map(  
+            clk => clk,                                    -- : in std_logic;
+            reset => reset_s,                              -- : in std_logic;
+            ---Slave SPI interface pins
+            sclk => sclk,                                  -- : in STD_LOGIC;
+            ss_n => ss_n,                                  -- : in STD_LOGIC;
+            mosi => mosi,                                  -- : in STD_LOGIC;
+            miso => miso,                                  -- : out STD_LOGIC;
+            --register map interface
+            rx_valid => rx_valid_s,                        -- : out std_logic;
+            rx_read_write_bit => rx_read_write_bit_s,      -- : out std_logic;
+            rx_address => rx_address_s,                    -- : out std_logic_vector(SPI_ADDRESS_BITS-1 downto 0);
+            rx_data => rx_data_s,                          -- : out std_logic_vector(SPI_DATA_BITS-1 downto 0);
+            ---Array of data spanning entire address range declared and initialised in 'spi_package'
+            gdrb_ctrl_data_array => gdrb_ctrl_data_array_s -- : in gdrb_ctrl_address_type
+            );
+
+write_enable_from_spi_s <= '1' when (rx_valid_s = '1' and rx_read_write_bit_s = '0') else '0';
+
 
 ------------------------------------------------------This is for testbenching only------------------------------------------------------------.
 --Allows testbench to simple write and read to all addresses disregarding those specified in gdrb_ctrl_address_pkg.vhd
