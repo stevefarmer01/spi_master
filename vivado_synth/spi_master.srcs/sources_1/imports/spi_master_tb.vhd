@@ -81,12 +81,12 @@ architecture behave of spi_master_tb is
     constant FIFO_REQ  : Boolean   := FALSE;
 
 --.--.Test using  input file
-    constant DUT_TYPE : string := "input_vector_file_test"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board unsing simple read write proceedures
-    constant make_all_addresses_writeable_for_testing : boolean := FALSE; -- This allows entire register map read write access for testbench testing of a non-module specific register map
+--.    constant DUT_TYPE : string := "input_vector_file_test"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board unsing simple read write proceedures
+--.    constant make_all_addresses_writeable_for_testing : boolean := FALSE; -- This allows entire register map read write access for testbench testing of a non-module specific register map
 
 --.Test using  input file - DIAGNOSTICS AS IT HAS ALL ADDRESSES SET TO READ/WRITABLE via 'make_all_addresses_writeable_for_testing'
---.    constant DUT_TYPE : string := "input_vector_file_test"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board unsing simple read write proceedures
---.    constant make_all_addresses_writeable_for_testing : boolean := TRUE; -- This allows entire register map read write access for testbench testing of a non-module specific register map
+    constant DUT_TYPE : string := "input_vector_file_test"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board unsing simple read write proceedures
+    constant make_all_addresses_writeable_for_testing : boolean := FALSE; -- This allows entire register map read write access for testbench testing of a non-module specific register map
 --.Simple read write as an example - without textio
 --.    constant DUT_TYPE : string := "write_and_then_read_an_address"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board
 --.    constant make_all_addresses_writeable_for_testing : boolean := TRUE; -- This allows entire register map read write access for testbench testing of a non-module specific register map
@@ -173,10 +173,10 @@ component gdrb_ctrl_reg_map_top is
             mosi : in STD_LOGIC;
             miso : out STD_LOGIC;
             --Discrete signals
-            test_input : in std_logic_vector(SPI_DATA_BITS - 1 downto 0);
-            test_output : out std_logic_vector(SPI_DATA_BITS - 1 downto 0)
---            discrete_reg_map_array_from_pins : in gdrb_ctrl_address_type := (others => (others => '0'));
---            discrete_reg_map_array_to_pins : out gdrb_ctrl_address_type
+--            test_input : in std_logic_vector(SPI_DATA_BITS - 1 downto 0);
+--            test_output : out std_logic_vector(SPI_DATA_BITS - 1 downto 0);
+            reg_map_array_from_pins : in gdrb_ctrl_address_type := (others => (others => '0'));
+            reg_map_array_to_pins : out gdrb_ctrl_address_type
             );
 end component;
 
@@ -229,14 +229,14 @@ end component;
 
     ---Array of data spanning entire address range declared and initialised in 'spi_package' has offset to make i's contents different from that held in DUT
     --signal gdrb_ctrl_data_array_tb_s : gdrb_ctrl_address_type := gdrb_ctrl_data_array_initalise_offset;
-    signal discrete_reg_map_array_from_pins_s, discrete_reg_map_array_to_pins_s : gdrb_ctrl_address_type := (others => (others => '0'));
+    signal discrete_reg_map_array_to_script_s, discrete_reg_map_array_from_script_s, discrete_reg_map_array_from_pins_s, discrete_reg_map_array_to_pins_s : gdrb_ctrl_address_type := (others => (others => '0'));
 
     type command_t is (read_write_spi_cmd, read_port_cmd, write_port_cmd);
     signal input_command_type : command_t;
 
 
-    signal test_input_s  : std_logic_vector(SPI_DATA_BITS - 1 downto 0) := (others => '0');
-    signal test_output_s : std_logic_vector(SPI_DATA_BITS - 1 downto 0) := (others => '0');
+--    signal test_input_s  : std_logic_vector(SPI_DATA_BITS - 1 downto 0) := (others => '0');
+--    signal test_output_s : std_logic_vector(SPI_DATA_BITS - 1 downto 0) := (others => '0');
 
 
     procedure send_to_spi_master(
@@ -457,25 +457,19 @@ spi_reg_map_gen : if DUT_TYPE /= "spi_slave" generate
                 make_all_addresses_writeable_for_testing => make_all_addresses_writeable_for_testing -- :     natural := 16
                 )
         Port map(  
-                clk => dut_sys_clk_i,                                                  -- : std_logic;
-                reset => sys_rst_i,                                                    -- : std_logic;
+                clk => dut_sys_clk_i,                                          -- : std_logic;
+                reset => sys_rst_i,                                            -- : std_logic;
                 ---Slave SPI interface pins
-                sclk => sclk_i,                                                        -- : in STD_LOGIC;
-                ss_n => ss_i,                                                          -- : in STD_LOGIC;
-                mosi => mosi_i,                                                        -- : in STD_LOGIC;
-                miso => miso,                                                          -- : out STD_LOGIC;
+                sclk => sclk_i,                                                -- : in STD_LOGIC;
+                ss_n => ss_i,                                                  -- : in STD_LOGIC;
+                mosi => mosi_i,                                                -- : in STD_LOGIC;
+                miso => miso,                                                  -- : out STD_LOGIC;
                 --Discrete signals
-                test_input => test_input_s, -- : in std_logic_vector(SPI_DATA_BITS - 1 downto 0);
-                test_output => test_output_s -- : out std_logic_vector(SPI_DATA_BITS - 1 downto 0)
---                discrete_reg_map_array_from_pins => discrete_reg_map_array_from_pins_s,-- : in gdrb_ctrl_address_type := (others => (others => '0'));
---                discrete_reg_map_array_to_pins => discrete_reg_map_array_to_pins_s     -- : out gdrb_ctrl_address_type
+--                test_input => test_input_s,                                    -- : in std_logic_vector(SPI_DATA_BITS - 1 downto 0);
+--                test_output => test_output_s,                                  -- : out std_logic_vector(SPI_DATA_BITS - 1 downto 0)
+                reg_map_array_from_pins => discrete_reg_map_array_from_script_s, -- : in gdrb_ctrl_address_type := (others => (others => '0'));
+                reg_map_array_to_pins => discrete_reg_map_array_to_script_s      -- : out gdrb_ctrl_address_type
                 );
-
---Manually map discrete input and output ports to test array depending on whether on how they are actually connected in DUT
---These read/writeable by test script commands "RdPo" and "WrPo"
-discrete_reg_map_array_from_pins_s(0) <= test_output_s;
-test_input_s <= discrete_reg_map_array_to_pins_s(1);
-
 
 end generate spi_reg_map_gen;
 
@@ -601,7 +595,7 @@ input_vector_file_test_gen : if DUT_TYPE = "input_vector_file_test" generate
                     if input_command_v = "RdPo" then
                         --Do nothing, check results in textio output
                     elsif input_command_v = "WrPo" then
-                        discrete_reg_map_array_to_pins_s(to_integer(unsigned(address_of_port_v))) <= data_of_port_v;
+                        discrete_reg_map_array_from_script_s(to_integer(unsigned(address_of_port_v))) <= data_of_port_v;
                     end if;
                     address_of_port <= to_integer(unsigned(address_of_port_v));
                     data_of_port <= to_integer(unsigned(data_of_port_v));
@@ -682,7 +676,7 @@ begin
                 if (input_command_type = write_port_cmd) then
                     WRITE (L, string'("PASS  "), left, 6);
                     WRITE (L, string'("Write Pins"), left, 12);
-                elsif (input_command_type = read_port_cmd) and (to_integer(unsigned(discrete_reg_map_array_from_pins_s(address_of_port))) = data_of_port) then
+                elsif (input_command_type = read_port_cmd) and (to_integer(unsigned(discrete_reg_map_array_to_script_s(address_of_port))) = data_of_port) then
                     WRITE (L, string'("PASS  "), left, 6);
                     WRITE (L, string'("Read Pins"), left, 12);
                 else
@@ -698,7 +692,7 @@ begin
 
                 if (input_command_type = read_port_cmd) then
                     WRITE (L, string'("Read data = "));
-                    HWRITE (L, std_logic_vector(to_unsigned(to_integer(unsigned(discrete_reg_map_array_from_pins_s(address_of_port))), SPI_DATA_BITS)), left, 10);
+                    HWRITE (L, std_logic_vector(to_unsigned(to_integer(unsigned(discrete_reg_map_array_to_script_s(address_of_port))), SPI_DATA_BITS)), left, 10);
                 end if;
 
                 WRITELINE (F, L);

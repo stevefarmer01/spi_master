@@ -57,9 +57,15 @@ package gdrb_ctrl_address_pkg is
 --.    constant gdrb_ctrl_example0_addr_c : std_logic_vector(SPI_ADDRESS_BITS-1 downto 0)      := std_logic_vector(to_unsigned(16#0#,SPI_ADDRESS_BITS));
 --.    constant gdrb_ctrl_example1_addr_c : std_logic_vector(SPI_ADDRESS_BITS-1 downto 0)      := std_logic_vector(to_unsigned(16#1#,SPI_ADDRESS_BITS));
 
-    constant LEDControlAddr_addr_c   : std_logic_vector(SPI_ADDRESS_BITS-1 downto 0)      := std_logic_vector(to_unsigned(16#0#,SPI_ADDRESS_BITS));
-    constant SensorStatusAddr_addr_c : std_logic_vector(SPI_ADDRESS_BITS-1 downto 0)      := std_logic_vector(to_unsigned(16#1#,SPI_ADDRESS_BITS));
-    constant SensorEdgeAddr_addr_c   : std_logic_vector(SPI_ADDRESS_BITS-1 downto 0)      := std_logic_vector(to_unsigned(16#2#,SPI_ADDRESS_BITS));
+    constant SENSOR_STATUS_ADDR_C   : std_logic_vector(SPI_ADDRESS_BITS-1 downto 0)      := std_logic_vector(to_unsigned(16#0#,SPI_ADDRESS_BITS));
+    constant SENSOR_EDGE_ADDR_C     : std_logic_vector(SPI_ADDRESS_BITS-1 downto 0)      := std_logic_vector(to_unsigned(16#1#,SPI_ADDRESS_BITS));
+    constant SENSOR_INT_MASK_ADDR_C   : std_logic_vector(SPI_ADDRESS_BITS-1 downto 0)      := std_logic_vector(to_unsigned(16#2#,SPI_ADDRESS_BITS));
+
+    constant MDRB_UES1Addr_addr_c    : std_logic_vector(SPI_ADDRESS_BITS-1 downto 0)      := std_logic_vector(to_unsigned(16#B#,SPI_ADDRESS_BITS));
+    constant MDRB_UES2Addr_addr_c    : std_logic_vector(SPI_ADDRESS_BITS-1 downto 0)      := std_logic_vector(to_unsigned(16#C#,SPI_ADDRESS_BITS));
+
+
+
     constant IntMaskAddr_addr_c      : std_logic_vector(SPI_ADDRESS_BITS-1 downto 0)      := std_logic_vector(to_unsigned(16#3#,SPI_ADDRESS_BITS));
     constant FaultAddr_addr_c        : std_logic_vector(SPI_ADDRESS_BITS-1 downto 0)      := std_logic_vector(to_unsigned(16#4#,SPI_ADDRESS_BITS));
     constant MotionCont1Addr_addr_c  : std_logic_vector(SPI_ADDRESS_BITS-1 downto 0)      := std_logic_vector(to_unsigned(16#5#,SPI_ADDRESS_BITS));
@@ -68,8 +74,6 @@ package gdrb_ctrl_address_pkg is
 --    constant ScanLEDAddr_addr_c      : std_logic_vector(SPI_ADDRESS_BITS-1 downto 0)      := std_logic_vector(to_unsigned(16#8#,SPI_ADDRESS_BITS));
 --    constant OViewLEDAddr_addr_c     : std_logic_vector(SPI_ADDRESS_BITS-1 downto 0)      := std_logic_vector(to_unsigned(16#9#,SPI_ADDRESS_BITS));
     constant CPLDProgAddr_addr_c     : std_logic_vector(SPI_ADDRESS_BITS-1 downto 0)      := std_logic_vector(to_unsigned(16#A#,SPI_ADDRESS_BITS));
-    constant MDRB_UES1Addr_addr_c    : std_logic_vector(SPI_ADDRESS_BITS-1 downto 0)      := std_logic_vector(to_unsigned(16#B#,SPI_ADDRESS_BITS));
-    constant MDRB_UES2Addr_addr_c    : std_logic_vector(SPI_ADDRESS_BITS-1 downto 0)      := std_logic_vector(to_unsigned(16#C#,SPI_ADDRESS_BITS));
     constant COMMUT_UES1Addr_addr_c  : std_logic_vector(SPI_ADDRESS_BITS-1 downto 0)      := std_logic_vector(to_unsigned(16#D#,SPI_ADDRESS_BITS));
     constant COMMUT_UES2Addr_addr_c  : std_logic_vector(SPI_ADDRESS_BITS-1 downto 0)      := std_logic_vector(to_unsigned(16#E#,SPI_ADDRESS_BITS));
 

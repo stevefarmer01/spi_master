@@ -44,13 +44,9 @@ entity reg_map_spi_slave is
             ss_n : in STD_LOGIC;
             mosi : in STD_LOGIC;
             miso : out STD_LOGIC;
-            --register map interface
-            rx_valid : out std_logic; -- High pulse when spi receives packet
-            rx_read_write_bit : out std_logic;
-            rx_address : out std_logic_vector(SPI_ADDRESS_BITS-1 downto 0);
-            rx_data : out std_logic_vector(SPI_DATA_BITS-1 downto 0);
             ---Array of data spanning entire address range declared and initialised in 'spi_package'
-            gdrb_ctrl_data_array : in gdrb_ctrl_address_type
+            reg_map_array_from_pins : in gdrb_ctrl_address_type;
+            reg_map_array_to_pins : out gdrb_ctrl_address_type
             );
 
 end reg_map_spi_slave;
@@ -101,6 +97,8 @@ signal rx_data_s, read_data_s : std_logic_vector(SPI_DATA_BITS-1 downto 0) := (o
 --signal gdrb_ctrl_data_array : gdrb_ctrl_address_type := gdrb_ctrl_data_array_initalise;
 
 signal wr_en_to_spi_slave_s : std_logic := '0';
+
+signal write_enable_from_spi_s : std_logic := '0';
 
 begin
 
@@ -153,11 +151,11 @@ begin
 end process;
 
 ---Extract read data from reg map array and send it back across SPI to master
-read_data_s <= gdrb_ctrl_data_array(to_integer(unsigned(rx_address_s)));           -- Use address received  to extract read data from reg map array to send back on next tx
+read_data_s <= reg_map_array_from_pins(to_integer(unsigned(rx_address_s)));           -- Use address received  to extract read data from reg map array to send back on next tx
 tx_data_s(tx_data_s'LEFT downto (tx_data_s'LEFT-read_data_s'LEFT)) <= read_data_s; -- Read data goes into MSb's of data sent back (no address or Read/Write bit sent back as per protocol)
 
 ---When valid data recieved load read data from reg map into spi interface to be sent back during next spi transaction (spi reads are always sent back during next spi transaction as per standard spi protocol)
-spi_write_to_reg_map_proc : process(clk)
+spi_read_from_reg_map_proc : process(clk)
 begin
     if rising_edge(clk) then
         if reset = '1' then
@@ -171,11 +169,22 @@ begin
     end if;
 end process;
 
---Reg map outputs
-rx_valid <= rx_valid_S;
-rx_read_write_bit <= rx_read_write_bit_s;
-rx_address <= rx_address_s;
-rx_data <= rx_data_s;
+write_enable_from_spi_s <= '1' when (rx_valid_s = '1' and rx_read_write_bit_s = '0') else '0';
+
+
+---Put write data receieved from SPI into reg map array
+spi_write_to_reg_map_proc : process(clk)
+begin
+    if rising_edge(clk) then
+        if reset = '1' then
+            reg_map_array_to_pins <= gdrb_ctrl_data_array_initalise;                -- reset reg map array with a function (allows pre_loading of data values which could be useful for testing and operation)
+        else
+            if write_enable_from_spi_s = '1' then
+                reg_map_array_to_pins(to_integer(unsigned(rx_address_s))) <= rx_data_s; -- This is a write and so update reg map array with data received
+            end if;
+        end if;
+    end if;
+end process;
 
 
 end Behavioral;

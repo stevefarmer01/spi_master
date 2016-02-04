@@ -3,24 +3,34 @@
 
 #### address  input data  read data  read data mask ####
 
-#### Test all reads
-Read 	0 		0000 		0000 		FFFF # Write through SPI to Discrete output pins
-Writ 	0 		0001 		0000 		0000
-Read 	0 		0000 		0001 		FFFF
+#### Finished Tests ####
 
-RdPo	0 		0001 # Read discrete pins that have been written to over SPI
-
-WrPo	1		005A # Write to discrete pins so that they can be read over SPI
-
-Read 	1 		0000 		005A 		FFFF # Read SPI of Discrete input - these are read only (obviously)
-Writ 	1 		0000 		0000 		0000
-Read 	1 		0000 		005A 		FFFF
-
-WrPo	2		005A # Write to discrete pins so that they can be read over SPI
-
+#### constant Test
 Read 	B 		0000 		FF10 		FFFF # Read SPI constant read only register MDRB_UES1Addr_addr_c
-
+#### constant Test
 Read 	C 		0000 		0126 		FFFF # Read SPI constant read only register MDRB_UES2Addr_addr_c
+
+#### in pin Test - SENSOR_STATUS_ADDR_C
+Read 	0 		0000 		0000 		FFFF 	# Read default value
+Writ 	0 		1111 		0000 		0000 	# Test a write does....
+Read 	0 		0000 		0000 		FFFF 	# ....nothing
+WrPo	0		2222 							# Write to discrete pins so that they can be read over SPI
+Read 	0 		0000 		2222 		FFFF 	# Read pin values
+
+#### Tests in development
+
+
+
+
+####RdPo	0 		0001 # Read discrete pins that have been written to over SPI
+####
+####WrPo	1		005A # Write to discrete pins so that they can be read over SPI
+####
+####Read 	1 		0000 		005A 		FFFF # Read SPI of Discrete input - these are read only (obviously)
+####Writ 	1 		0000 		0000 		0000
+####Read 	1 		0000 		005A 		FFFF
+####
+####WrPo	2		005A # Write to discrete pins so that they can be read over SPI
 
 ####Read 	2 		0000 		005A 		FFFF # Read SPI of Discrete input - these are read only (obviously)
 ####Writ 	2 		0000 		0000 		0000
