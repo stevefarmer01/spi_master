@@ -1,3 +1,6 @@
 [submodule "local_common_ip/domain_cross"]
 	path = local_common_ip/domain_cross
 	url = https://github.com/stevefarmer01/domain_cross.git
+[submodule "local_common_ip/reg_map_edge_interupt"]
+	path = local_common_ip/reg_map_edge_interupt
+	url = https://github.com/stevefarmer01/reg_map_edge_interupt.git
