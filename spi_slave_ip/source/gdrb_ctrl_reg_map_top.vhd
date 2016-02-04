@@ -46,7 +46,7 @@ entity gdrb_ctrl_reg_map_top is
             mosi : in STD_LOGIC;
             miso : out STD_LOGIC;
             --Discrete signals
-            test_input : in std_logic_vector(SPI_DATA_BITS - 1 downto 0);
+            test_input : in std_logic_vector(SPI_DATA_BITS - 1 downto 0) := (others => '0');
             test_output : out std_logic_vector(SPI_DATA_BITS - 1 downto 0)--;
 --            test_reg_map_array_from_pins : in gdrb_ctrl_address_type := (others => (others => '0'));
 --            test_reg_map_array_to_pins : out gdrb_ctrl_address_type
@@ -114,8 +114,8 @@ reg_map_gen : if not make_all_addresses_writeable_for_testing generate
 
                 --gdrb_ctrl_data_array_s(to_integer(unsigned(SensorStatusAddr_addr_c))) <= discrete_reg_map_array_from_pins(to_integer(unsigned(SensorStatusAddr_addr_c))); -- Read only --These have no constant value as they come from discrete pins
                 --gdrb_ctrl_data_array_s(to_integer(unsigned(FaultAddr_addr_c)))        <= ; -- Read only --These have no constant value as they come from discrete pins
-                gdrb_ctrl_data_array_s(to_integer(unsigned(MDRB_UES1Addr_addr_c)))    <= std_logic_vector(resize(unsigned(UES_1_c),SPI_DATA_BITS)); -- Read only
-                gdrb_ctrl_data_array_s(to_integer(unsigned(MDRB_UES2Addr_addr_c)))    <= std_logic_vector(resize(unsigned(UES_2_c),SPI_DATA_BITS)); -- Read only
+                gdrb_ctrl_data_array_s(to_integer(unsigned(MDRB_UES1Addr_addr_c)))    <= std_logic_vector(resize(unsigned(UES_1_c),SPI_DATA_BITS)); -- Read only - internal constants (not pins)
+                gdrb_ctrl_data_array_s(to_integer(unsigned(MDRB_UES2Addr_addr_c)))    <= std_logic_vector(resize(unsigned(UES_2_c),SPI_DATA_BITS)); -- Read only - internal constants (not pins)
                 --gdrb_ctrl_data_array_s(to_integer(unsigned(COMMUT_UES1Addr_addr_c)))  <= ; -- Read only --These have no constant value as they come from discrete pins
                 --gdrb_ctrl_data_array_s(to_integer(unsigned(COMMUT_UES2Addr_addr_c)))  <= ; -- Read only --These have no constant value as they come from discrete pins
  

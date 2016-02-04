@@ -18,6 +18,10 @@ Read 	1 		0000 		005A 		FFFF
 
 WrPo	2		005A # Write to discrete pins so that they can be read over SPI
 
+Read 	B 		0000 		FF10 		FFFF # Read SPI constant read only register MDRB_UES1Addr_addr_c
+
+Read 	C 		0000 		0126 		FFFF # Read SPI constant read only register MDRB_UES2Addr_addr_c
+
 ####Read 	2 		0000 		005A 		FFFF # Read SPI of Discrete input - these are read only (obviously)
 ####Writ 	2 		0000 		0000 		0000
 ####Read 	2 		0000 		005A 		FFFF
