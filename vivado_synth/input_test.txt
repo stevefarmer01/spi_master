@@ -18,9 +18,9 @@ Read 	1 		0000 		005A 		FFFF
 
 WrPo	2		005A # Write to discrete pins so that they can be read over SPI
 
-Read 	2 		0000 		005A 		FFFF # Read SPI of Discrete input - these are read only (obviously)
-Writ 	2 		0000 		0000 		0000
-Read 	2 		0000 		005A 		FFFF
+####Read 	2 		0000 		005A 		FFFF # Read SPI of Discrete input - these are read only (obviously)
+####Writ 	2 		0000 		0000 		0000
+####Read 	2 		0000 		005A 		FFFF
 
 
 

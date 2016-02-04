@@ -554,7 +554,7 @@ input_vector_file_test_gen : if DUT_TYPE = "input_vector_file_test" generate
             assert FALSE
                 report "Failed to open file" severity failure;
         else
-            stop_sim_on_fail <= FALSE;
+            stop_sim_on_fail <= FALSE;                                                                                     -- Do not exit on fail as we want complete file IO output showing fails (set to true when doing clk speed tests (will exit when fail detected))
 
             wait for TIME_PERIOD_CLK* 20 * dut_clk_ratio_to_testbench;                                                     -- Wait for sys_rst_i to propagate through DUT especially if DUT is running a much slower clock
             

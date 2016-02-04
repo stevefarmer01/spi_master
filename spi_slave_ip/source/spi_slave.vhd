@@ -125,7 +125,7 @@ begin
 
     --Domain cross and edge detect incoming SPI sckl
     i_sclk_edge_detect : edge_detect_domain_crossed
-        Port ( 
+        Port map ( 
                clk => i_sys_clk,                              -- : in std_logic;
                signal_to_detect => i_sclk,                    -- : in std_logic;
                rising_edge_detected => i_sclk_rising_edge_s,  -- : out std_logic;
@@ -211,7 +211,7 @@ begin
         if (i_sys_rst = '1') then
             rx_shift_data_pos_sclk_i         <= (others => '0');
         elsif rising_edge(i_sys_clk) then
-            if rising_edge_detected = '1' then
+            if i_sclk_rising_edge_s = '1' then
                 if (i_ssn = '0' and ((i_cpol = '0' and i_cpha = '0') or (i_cpol = '1' and i_cpha = '1'))) then
                     if (i_lsb_first = '1') then
                         rx_shift_data_pos_sclk_i <= i_mosi & rx_shift_data_pos_sclk_i(DATA_SIZE-1 downto 1);
@@ -229,7 +229,7 @@ begin
             rx_data_count_pos_sclk_i         <= (others => '0');
             rx_done_pos_sclk_i               <= '0';
         elsif rising_edge(i_sys_clk) then
-            if rising_edge_detected = '1' then
+            if i_sclk_rising_edge_s = '1' then
                 if (i_ssn = '0' and ((i_cpol = '0' and i_cpha = '0') or (i_cpol = '1' and i_cpha = '1'))) then
                     if (rx_data_count_pos_sclk_i = DATA_SIZE - 1) then
                         rx_data_count_pos_sclk_i <= (others => '0');
@@ -254,7 +254,7 @@ begin
         if (i_sys_rst = '1') then
             rx_shift_data_neg_sclk_i         <= (others => '0');
         elsif rising_edge(i_sys_clk) then
-            if falling_edge_detected = '1' then
+            if i_sclk_falling_edge_s = '1' then
                 if (i_ssn = '0' and ((i_cpol = '1' and i_cpha = '0') or (i_cpol = '0' and i_cpha = '1'))) then
                     if (i_lsb_first = '1') then
                         rx_shift_data_neg_sclk_i <= i_mosi & rx_shift_data_neg_sclk_i(DATA_SIZE-1 downto 1);
@@ -272,7 +272,7 @@ begin
             rx_data_count_neg_sclk_i     <= (others => '0');
             rx_done_neg_sclk_i           <= '0';
         elsif rising_edge(i_sys_clk) then
-            if falling_edge_detected = '1' then
+            if i_sclk_falling_edge_s = '1' then
                 if (rx_data_count_neg_sclk_i = DATA_SIZE - 1) then
                     rx_data_count_neg_sclk_i <= (others => '0');
                     rx_done_neg_sclk_i       <= '1';
@@ -393,7 +393,7 @@ begin
         if i_sys_rst = '1' then
             miso_01_i     <= '1';
         elsif rising_edge(i_sys_clk) then
-            if rising_edge_detected = '1' then
+            if i_sclk_rising_edge_s = '1' then
                 if(i_lsb_first = '1') then
                     miso_01_i <= txdata_reg_i(conv_integer(tx_data_count_pos_sclk_i));
                 else
@@ -412,7 +412,7 @@ begin
         if i_sys_rst = '1' then
             miso_11_i     <= '1';
         elsif rising_edge(i_sys_clk) then
-            if falling_edge_detected = '1' then
+            if i_sclk_falling_edge_s = '1' then
                 if(i_lsb_first = '1') then
                     miso_11_i <= txdata_reg_i(conv_integer(tx_data_count_neg_sclk_i));
                 else
@@ -433,7 +433,7 @@ begin
             tx_data_count_neg_sclk_i     <= (others => '0');
             tx_done_neg_sclk_i           <= '0';
         elsif rising_edge(i_sys_clk) then
-            if falling_edge_detected = '1' then
+            if i_sclk_falling_edge_s = '1' then
                 if (tx_data_count_neg_sclk_i = DATA_SIZE - 1) then
                     tx_data_count_neg_sclk_i <= (others => '0');
                     tx_done_neg_sclk_i       <= '1';
@@ -456,7 +456,7 @@ begin
             tx_data_count_pos_sclk_i     <= (others => '0');
             tx_done_pos_sclk_i           <= '0';
         elsif rising_edge(i_sys_clk) then
-            if rising_edge_detected = '1' then
+            if i_sclk_rising_edge_s = '1' then
                 if (tx_data_count_pos_sclk_i = DATA_SIZE - 1) then
                     tx_data_count_pos_sclk_i <= (others => '0');
                     tx_done_pos_sclk_i       <= '1';
