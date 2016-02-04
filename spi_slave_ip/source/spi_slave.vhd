@@ -81,6 +81,15 @@ entity spi_slave is
 end spi_slave;
 
 architecture rtl_arch of spi_slave is
+
+    component edge_detect_domain_crossed is
+        Port ( clk : in std_logic;
+               signal_to_detect : in std_logic;
+               rising_edge_detected : out std_logic;
+               falling_edge_detected : out std_logic
+             );
+    end component;
+
     signal data_in_reg_i            : std_logic_vector(DATA_SIZE - 1 downto 0);
     signal rxdata_reg_i             : std_logic_vector(DATA_SIZE - 1 downto 0);
     signal txdata_reg_i             : std_logic_vector(DATA_SIZE - 1 downto 0);
@@ -105,6 +114,7 @@ architecture rtl_arch of spi_slave is
     signal tx_done_pulse_i : std_logic;
     signal tx_error_reg_1_i : std_logic;
     signal rx_error_reg_1_i : std_logic;
+    signal i_sclk_rising_edge_s, i_sclk_falling_edge_s : std_logic := '0';
 
 begin
 
@@ -112,6 +122,15 @@ begin
     o_rx_ready                <= rx_ready_i;
     o_tx_error                <= tx_error_i and (not tx_error_reg_1_i);
     o_rx_error                <= rx_error_i and (not rx_error_reg_1_i);
+
+    --Domain cross and edge detect incoming SPI sckl
+    i_sclk_edge_detect : edge_detect_domain_crossed
+        Port ( 
+               clk => i_sys_clk,                              -- : in std_logic;
+               signal_to_detect => i_sclk,                    -- : in std_logic;
+               rising_edge_detected => i_sclk_rising_edge_s,  -- : out std_logic;
+               falling_edge_detected => i_sclk_falling_edge_s -- : out std_logic
+             );
 
 ----------------------------------------------------------------------------------------------------
 -- Data input latch process
@@ -186,34 +205,39 @@ begin
 --                  1. i_cpol=0 and i_cpha=0 
 --                  2. i_cpol=1 and i_cpha=1 
 ----------------------------------------------------------------------------
-    process(i_sclk, i_sys_rst)
+
+    process(i_sys_clk, i_sys_rst)
     begin
         if (i_sys_rst = '1') then
             rx_shift_data_pos_sclk_i         <= (others => '0');
-        elsif rising_edge(i_sclk) then
-            if (i_ssn = '0' and ((i_cpol = '0' and i_cpha = '0') or (i_cpol = '1' and i_cpha = '1'))) then
-                if (i_lsb_first = '1') then
-                    rx_shift_data_pos_sclk_i <= i_mosi & rx_shift_data_pos_sclk_i(DATA_SIZE-1 downto 1);
-                else
-                    rx_shift_data_pos_sclk_i <= rx_shift_data_pos_sclk_i(DATA_SIZE-2 downto 0) & i_mosi;
+        elsif rising_edge(i_sys_clk) then
+            if rising_edge_detected = '1' then
+                if (i_ssn = '0' and ((i_cpol = '0' and i_cpha = '0') or (i_cpol = '1' and i_cpha = '1'))) then
+                    if (i_lsb_first = '1') then
+                        rx_shift_data_pos_sclk_i <= i_mosi & rx_shift_data_pos_sclk_i(DATA_SIZE-1 downto 1);
+                    else
+                        rx_shift_data_pos_sclk_i <= rx_shift_data_pos_sclk_i(DATA_SIZE-2 downto 0) & i_mosi;
+                    end if;
                 end if;
             end if;
         end if;
     end process;
 
-    process(i_sclk, i_sys_rst)
+    process(i_sys_clk, i_sys_rst)
     begin
         if (i_sys_rst = '1') then
             rx_data_count_pos_sclk_i         <= (others => '0');
             rx_done_pos_sclk_i               <= '0';
-        elsif rising_edge(i_sclk) then
-            if (i_ssn = '0' and ((i_cpol = '0' and i_cpha = '0') or (i_cpol = '1' and i_cpha = '1'))) then
-                if (rx_data_count_pos_sclk_i = DATA_SIZE - 1) then
-                    rx_data_count_pos_sclk_i <= (others => '0');
-                    rx_done_pos_sclk_i       <= '1';
-                elsif (i_ssn = '0') then
-                    rx_data_count_pos_sclk_i <= rx_data_count_pos_sclk_i + 1;
-                    rx_done_pos_sclk_i       <= '0';
+        elsif rising_edge(i_sys_clk) then
+            if rising_edge_detected = '1' then
+                if (i_ssn = '0' and ((i_cpol = '0' and i_cpha = '0') or (i_cpol = '1' and i_cpha = '1'))) then
+                    if (rx_data_count_pos_sclk_i = DATA_SIZE - 1) then
+                        rx_data_count_pos_sclk_i <= (others => '0');
+                        rx_done_pos_sclk_i       <= '1';
+                    elsif (i_ssn = '0') then
+                        rx_data_count_pos_sclk_i <= rx_data_count_pos_sclk_i + 1;
+                        rx_done_pos_sclk_i       <= '0';
+                    end if;
                 end if;
             end if;
         end if;
@@ -224,33 +248,38 @@ begin
 -- 1. i_cpol=1 and i_cpha=0
 -- 2. i_cpol=0 and i_cpha=1
 ----------------------------------------------------------------------------
-    process(i_sclk, i_sys_rst)
+
+    process(i_sys_clk, i_sys_rst)
     begin
         if (i_sys_rst = '1') then
             rx_shift_data_neg_sclk_i         <= (others => '0');
-        elsif falling_edge(i_sclk) then
-            if (i_ssn = '0' and ((i_cpol = '1' and i_cpha = '0') or (i_cpol = '0' and i_cpha = '1'))) then
-                if (i_lsb_first = '1') then
-                    rx_shift_data_neg_sclk_i <= i_mosi & rx_shift_data_neg_sclk_i(DATA_SIZE-1 downto 1);
-                else
-                    rx_shift_data_neg_sclk_i <= rx_shift_data_neg_sclk_i(DATA_SIZE-2 downto 0) & i_mosi;
+        elsif rising_edge(i_sys_clk) then
+            if falling_edge_detected = '1' then
+                if (i_ssn = '0' and ((i_cpol = '1' and i_cpha = '0') or (i_cpol = '0' and i_cpha = '1'))) then
+                    if (i_lsb_first = '1') then
+                        rx_shift_data_neg_sclk_i <= i_mosi & rx_shift_data_neg_sclk_i(DATA_SIZE-1 downto 1);
+                    else
+                        rx_shift_data_neg_sclk_i <= rx_shift_data_neg_sclk_i(DATA_SIZE-2 downto 0) & i_mosi;
+                    end if;
                 end if;
             end if;
         end if;
     end process;
 
-    process(i_sclk, i_sys_rst)
+    process(i_sys_clk, i_sys_rst)
     begin
         if (i_sys_rst = '1') then
             rx_data_count_neg_sclk_i     <= (others => '0');
             rx_done_neg_sclk_i           <= '0';
-        elsif falling_edge(i_sclk) then
-            if (rx_data_count_neg_sclk_i = DATA_SIZE - 1) then
-                rx_data_count_neg_sclk_i <= (others => '0');
-                rx_done_neg_sclk_i       <= '1';
-            elsif (i_ssn = '0') then
-                rx_data_count_neg_sclk_i <= rx_data_count_neg_sclk_i + 1;
-                rx_done_neg_sclk_i       <= '0';
+        elsif rising_edge(i_sys_clk) then
+            if falling_edge_detected = '1' then
+                if (rx_data_count_neg_sclk_i = DATA_SIZE - 1) then
+                    rx_data_count_neg_sclk_i <= (others => '0');
+                    rx_done_neg_sclk_i       <= '1';
+                elsif (i_ssn = '0') then
+                    rx_data_count_neg_sclk_i <= rx_data_count_neg_sclk_i + 1;
+                    rx_done_neg_sclk_i       <= '0';
+                end if;
             end if;
         end if;
     end process;
@@ -359,15 +388,17 @@ begin
 -- cpol=0 and cpha=1: data must be placed at rising edge of sclk  -------
 ----------------------------------------------------------------------------
 
-    process (i_sclk, i_sys_rst)
+    process (i_sys_clk, i_sys_rst)
     begin
         if i_sys_rst = '1' then
             miso_01_i     <= '1';
-        elsif rising_edge(i_sclk) then
-            if(i_lsb_first = '1') then
-                miso_01_i <= txdata_reg_i(conv_integer(tx_data_count_pos_sclk_i));
-            else
-                miso_01_i <= txdata_reg_i(conv_integer(DATA_SIZE-tx_data_count_pos_sclk_i-1));
+        elsif rising_edge(i_sys_clk) then
+            if rising_edge_detected = '1' then
+                if(i_lsb_first = '1') then
+                    miso_01_i <= txdata_reg_i(conv_integer(tx_data_count_pos_sclk_i));
+                else
+                    miso_01_i <= txdata_reg_i(conv_integer(DATA_SIZE-tx_data_count_pos_sclk_i-1));
+                end if;
             end if;
         end if;
     end process;
@@ -376,15 +407,17 @@ begin
 -- cpol=1 and cpha=1: data must be placed at falling edge of sclk  -------
 ----------------------------------------------------------------------------
 
-    process (i_sclk, i_sys_rst)
+    process (i_sys_clk, i_sys_rst)
     begin
         if i_sys_rst = '1' then
             miso_11_i     <= '1';
-        elsif falling_edge(i_sclk) then
-            if(i_lsb_first = '1') then
-                miso_11_i <= txdata_reg_i(conv_integer(tx_data_count_neg_sclk_i));
-            else
-                miso_11_i <= txdata_reg_i(conv_integer(DATA_SIZE-tx_data_count_neg_sclk_i-1));
+        elsif rising_edge(i_sys_clk) then
+            if falling_edge_detected = '1' then
+                if(i_lsb_first = '1') then
+                    miso_11_i <= txdata_reg_i(conv_integer(tx_data_count_neg_sclk_i));
+                else
+                    miso_11_i <= txdata_reg_i(conv_integer(DATA_SIZE-tx_data_count_neg_sclk_i-1));
+                end if;
             end if;
         end if;
     end process;
@@ -393,18 +426,21 @@ begin
 -- Tx count on falling edge of sclk for cpol=0 and cpha=0  -------
 -- and cpol=1 and cpha=1  				   -------
 ----------------------------------------------------------------------------
-    process(i_sclk, i_sys_rst)
+
+    process(i_sys_clk, i_sys_rst)
     begin
         if (i_sys_rst = '1') then
             tx_data_count_neg_sclk_i     <= (others => '0');
             tx_done_neg_sclk_i           <= '0';
-        elsif falling_edge(i_sclk) then
-            if (tx_data_count_neg_sclk_i = DATA_SIZE - 1) then
-                tx_data_count_neg_sclk_i <= (others => '0');
-                tx_done_neg_sclk_i       <= '1';
-            elsif (i_ssn = '0') then
-                tx_data_count_neg_sclk_i <= tx_data_count_neg_sclk_i + 1;
-                tx_done_neg_sclk_i       <= '0';
+        elsif rising_edge(i_sys_clk) then
+            if falling_edge_detected = '1' then
+                if (tx_data_count_neg_sclk_i = DATA_SIZE - 1) then
+                    tx_data_count_neg_sclk_i <= (others => '0');
+                    tx_done_neg_sclk_i       <= '1';
+                elsif (i_ssn = '0') then
+                    tx_data_count_neg_sclk_i <= tx_data_count_neg_sclk_i + 1;
+                    tx_done_neg_sclk_i       <= '0';
+                end if;
             end if;
         end if;
     end process;
@@ -414,18 +450,20 @@ begin
 -- Tx count on rising edge of sclk for cpol=1 and cpha=0  -------
 -- and cpol=0 and cpha=1  				  -------
 ----------------------------------------------------------------------------
-    process(i_sclk, i_sys_rst)
+    process(i_sys_clk, i_sys_rst)
     begin
         if (i_sys_rst = '1') then
             tx_data_count_pos_sclk_i     <= (others => '0');
             tx_done_pos_sclk_i           <= '0';
-        elsif rising_edge(i_sclk) then
-            if (tx_data_count_pos_sclk_i = DATA_SIZE - 1) then
-                tx_data_count_pos_sclk_i <= (others => '0');
-                tx_done_pos_sclk_i       <= '1';
-            elsif (i_ssn = '0') then
-                tx_data_count_pos_sclk_i <= tx_data_count_pos_sclk_i + 1;
-                tx_done_pos_sclk_i       <= '0';
+        elsif rising_edge(i_sys_clk) then
+            if rising_edge_detected = '1' then
+                if (tx_data_count_pos_sclk_i = DATA_SIZE - 1) then
+                    tx_data_count_pos_sclk_i <= (others => '0');
+                    tx_done_pos_sclk_i       <= '1';
+                elsif (i_ssn = '0') then
+                    tx_data_count_pos_sclk_i <= tx_data_count_pos_sclk_i + 1;
+                    tx_done_pos_sclk_i       <= '0';
+                end if;
             end if;
         end if;
     end process;
