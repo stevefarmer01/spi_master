@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BaliProject version="3.2" title="gdrb_ctrl_reg_map_top" device="LCMXO2-1200HC-5TG144C" default_implementation="impl1">
+    <Options/>
+    <Implementation title="impl1" dir="impl1" description="impl1" synthesis="lse" default_strategy="Strategy1">
+        <Options def_top="gdrb_ctrl_reg_map_top"/>
+        <Source name="../../spi_slave_ip/source/edge_detect_domain_crossed.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../spi_slave_ip/source/gdrb_ctrl_address_pkg.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../spi_slave_ip/source/gdrb_ctrl_reg_map_top.vhd" type="VHDL" type_short="VHDL">
+            <Options top_module="gdrb_ctrl_reg_map_top"/>
+        </Source>
+        <Source name="../../spi_slave_ip/source/reg_map_spi_slave.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../spi_slave_ip/source/spi_package.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../spi_slave_ip/source/spi_slave.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../local_common_ip/domain_cross/source/level_change_domain.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="gdrb_ctrl_reg_map_top.lpf" type="Logic Preference" type_short="LPF">
+            <Options/>
+        </Source>
+    </Implementation>
+    <Strategy name="Strategy1" file="gdrb_ctrl_reg_map_top1.sty"/>
+</BaliProject>

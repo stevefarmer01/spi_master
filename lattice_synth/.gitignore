@@ -1,0 +1,16 @@
+
+
+#winmerge back-up files
+*.vhd.bak
+
+#Lattice Diamond
+/**/*.dir/**
+/**/impl*/**
+/**/.recovery
+/**/*.html
+/**/promote.xml
+/**/*.tpf
+#generated lattice ip files
+/**/ip_express_cores/*/*
+!/**/ip_express_cores/*/*.lpc
+!/**/ip_express_cores/*/*.ipx
