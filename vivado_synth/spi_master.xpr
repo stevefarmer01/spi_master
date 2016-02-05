@@ -3,7 +3,7 @@
 <!--                                                         -->
 <!-- Copyright (c) 2001-2013 Xilinx Inc, All rights reserved -->
 
-<Project Version="7" Minor="0" Path="D:/Projects/Vivado/2014_1/spi_master/vivado_synth/spi_master.xpr">
+<Project Version="7" Minor="0" Path="F:/usr/SFarmer/Griffin/GDRB/common_ip/spi_master/vivado_synth/spi_master.xpr">
   <DefaultLaunch Dir="$PRUNDIR"/>
   <Configuration>
     <Option Name="Id" Val="bd11ca71e8f14045925cf73eb1a3d1b1"/>
@@ -90,7 +90,7 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../common_ip/reg_map_edge_interupt/source/reg_map_edge_interupt.vhd">
+      <File Path="$PPRDIR/../local_common_ip/reg_map_edge_interupt/source/reg_map_edge_interupt.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>

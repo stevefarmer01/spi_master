@@ -75,13 +75,13 @@ signal reset_domain_cross_s : std_logic_vector(1 downto 0) := (others => '0');
 
 -------Array of data spanning entire address range declared in 'spi_package'
 signal spi_array_to_pins_s, spi_array_from_pins_s : gdrb_ctrl_address_type := (others => (others => '0')); -- From/to SPI interface
-signal reg_map_array_to_pins_s : gdrb_ctrl_address_type := (others => (others => '0'));  -- Intermediate signal for out port to pins
+--signal reg_map_array_to_pins_s : gdrb_ctrl_address_type := (others => (others => '0'));  -- Intermediate signal for out port to pins
 signal reg_map_array_internal_s : gdrb_ctrl_address_type := (others => (others => '0'));  -- Intermediate signal for out port to pins
 
 begin
 
 --Signal to output so that is can also be read
-reg_map_array_to_pins <= reg_map_array_to_pins_s;
+--reg_map_array_to_pins <= reg_map_array_to_pins_s;
 
 --Domain cross asyn reset
 sync_reset_proc : process(clk)
@@ -110,8 +110,8 @@ reg_map_spi_slave_inst : reg_map_spi_slave
 non_testbenching_gen : if not make_all_addresses_writeable_for_testing generate
 --.    --Example of.....
 --.    --Out pin (read/write over SPI)
---.    reg_map_array_to_pins_s(0) <= spi_array_to_pins_s(0);
---.    spi_array_from_pins_s(0) <= reg_map_array_to_pins_s(0);
+--.    reg_map_array_to_pins(0) <= spi_array_to_pins_s(0);
+--.    spi_array_from_pins_s(0) <= spi_array_to_pins_s(0);
 --.    --Example of.....
 --.    --In pin (read only over SPI)
 --.    spi_array_from_pins_s(1) <= reg_map_array_from_pins(1);
@@ -123,6 +123,7 @@ non_testbenching_gen : if not make_all_addresses_writeable_for_testing generate
 --.    spi_array_from_pins_s(to_integer(unsigned(MDRB_UES1Addr_addr_c)))    <= std_logic_vector(resize(unsigned(16#5555#),SPI_DATA_BITS)); 
 
 
+--SENSOR_
     --In pin (read only over SPI)
     spi_array_from_pins_s(to_integer(unsigned(SENSOR_STATUS_ADDR_C))) <= reg_map_array_from_pins(to_integer(unsigned(SENSOR_STATUS_ADDR_C)));
     --Internal read/write register (not pins - read/write over SPI)--use a process to manipulate data back to spi if necessary
@@ -130,7 +131,28 @@ non_testbenching_gen : if not make_all_addresses_writeable_for_testing generate
     --Internal read/write register (not pins - read/write over SPI)--use a process to manipulate data back to spi if necessary
     spi_array_from_pins_s(to_integer(unsigned(SENSOR_INT_MASK_ADDR_C))) <= spi_array_to_pins_s(to_integer(unsigned(SENSOR_INT_MASK_ADDR_C)));
 
+--FAULT_
+    --In pin (read only over SPI)
+    spi_array_from_pins_s(to_integer(unsigned(FAULT_STATUS_ADDR_C))) <= reg_map_array_from_pins(to_integer(unsigned(FAULT_STATUS_ADDR_C)));
+    --Internal read/write register (not pins - read/write over SPI)--use a process to manipulate data back to spi if necessary
+    spi_array_from_pins_s(to_integer(unsigned(FAULT_EDGE_ADDR_C))) <= spi_array_to_pins_s(to_integer(unsigned(FAULT_EDGE_ADDR_C)));
+    --Internal read/write register (not pins - read/write over SPI)--use a process to manipulate data back to spi if necessary
+    spi_array_from_pins_s(to_integer(unsigned(FAULT_INT_MASK_ADDR_C))) <= spi_array_to_pins_s(to_integer(unsigned(FAULT_INT_MASK_ADDR_C)));
 
+--MISC_
+    --In pin (read only over SPI)
+    spi_array_from_pins_s(to_integer(unsigned(MISC_STATUS_ADDR_C))) <= reg_map_array_from_pins(to_integer(unsigned(MISC_STATUS_ADDR_C)));
+    --Internal read/write register (not pins - read/write over SPI)--use a process to manipulate data back to spi if necessary
+    spi_array_from_pins_s(to_integer(unsigned(MISC_EDGE_ADDR_C))) <= spi_array_to_pins_s(to_integer(unsigned(MISC_EDGE_ADDR_C)));
+    --Internal read/write register (not pins - read/write over SPI)--use a process to manipulate data back to spi if necessary
+    spi_array_from_pins_s(to_integer(unsigned(MISC_INT_MASK_ADDR_C))) <= spi_array_to_pins_s(to_integer(unsigned(MISC_INT_MASK_ADDR_C)));
+
+--ENABLES_OUT
+    --Out pin (read/write over SPI)
+    reg_map_array_to_pins(to_integer(unsigned(ENABLES_OUT_ADDR_C))) <= spi_array_to_pins_s(to_integer(unsigned(ENABLES_OUT_ADDR_C)));
+    spi_array_from_pins_s(to_integer(unsigned(ENABLES_OUT_ADDR_C))) <= spi_array_to_pins_s(to_integer(unsigned(ENABLES_OUT_ADDR_C)));
+
+--UES
     --Internal constants (not pins - read only over SPI)-----UES_1_c
     spi_array_from_pins_s(to_integer(unsigned(MDRB_UES1Addr_addr_c)))    <= std_logic_vector(resize(unsigned(UES_1_c),SPI_DATA_BITS)); 
     --Internal constants (not pins - read only over SPI)-----UES_2_c
