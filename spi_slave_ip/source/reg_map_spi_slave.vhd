@@ -46,7 +46,10 @@ entity reg_map_spi_slave is
             miso : out STD_LOGIC;
             ---Array of data spanning entire address range declared and initialised in 'spi_package'
             reg_map_array_from_pins : in gdrb_ctrl_address_type;
-            reg_map_array_to_pins : out gdrb_ctrl_address_type
+            reg_map_array_to_pins : out gdrb_ctrl_address_type;
+            --Write enable and address to allow some write processing of internal FPGA register map (write bit toggling, etc)
+            write_enable_from_spi : out std_logic := '0';
+            write_addr_from_spi : out std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) := (others => '0')
             );
 
 end reg_map_spi_slave;
@@ -88,7 +91,7 @@ signal o_data_slave_s : std_logic_vector(DATA_SIZE-1 downto 0) := (others  => '0
 
 signal tx_data_s : std_logic_vector(DATA_SIZE-1 downto 0) := (others  => '0');
 
-signal rx_valid_S : std_logic := '0';
+signal rx_valid_s : std_logic := '0';
 signal rx_read_write_bit_s : std_logic := '0';
 signal rx_address_s : std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) := (others => '0');
 signal rx_data_s, read_data_s : std_logic_vector(SPI_DATA_BITS-1 downto 0) := (others => '0');
@@ -140,8 +143,9 @@ begin
         else
             rx_valid_S <= '0';
             o_rx_ready_slave_r0 <= o_rx_ready_slave_s;
-            if o_rx_ready_rising_edge_s = '1' then
-                rx_valid_S <= '1';
+            if o_rx_ready_rising_edge_s = '1' and ss_n = '0' then
+--            if o_rx_ready_rising_edge_s = '1' then
+                rx_valid_s <= '1';
                 rx_read_write_bit_s <= o_data_slave_s(SPI_ADDRESS_BITS+SPI_DATA_BITS);                     -- Tead/Write bit is the MSb
                 rx_address_s <= o_data_slave_s((SPI_ADDRESS_BITS-1)+SPI_DATA_BITS downto SPI_DATA_BITS); -- Address bits are the next MSb's after data
                 rx_data_s <= o_data_slave_s((SPI_DATA_BITS-1) downto 0);                                 -- Data bits are LSb's
@@ -154,6 +158,21 @@ end process;
 read_data_s <= reg_map_array_from_pins(to_integer(unsigned(rx_address_s)));           -- Use address received  to extract read data from reg map array to send back on next tx
 tx_data_s(tx_data_s'LEFT downto (tx_data_s'LEFT-read_data_s'LEFT)) <= read_data_s; -- Read data goes into MSb's of data sent back (no address or Read/Write bit sent back as per protocol)
 
+-----When valid data recieved load read data from reg map into spi interface to be sent back during next spi transaction (spi reads are always sent back during next spi transaction as per standard spi protocol)
+--spi_read_from_reg_map_proc : process(clk)
+--begin
+--    if rising_edge(clk) then
+--        if reset = '1' then
+--            wr_en_to_spi_slave_s <= '0';
+--        else
+--            wr_en_to_spi_slave_s <= '0';
+--            if rx_valid_s = '1' then
+--                wr_en_to_spi_slave_s <= '1';                                           -- Enable to latch send read or write data back across SPI by slave
+--            end if;
+--        end if;
+--    end if;
+--end process;
+
 ---When valid data recieved load read data from reg map into spi interface to be sent back during next spi transaction (spi reads are always sent back during next spi transaction as per standard spi protocol)
 spi_read_from_reg_map_proc : process(clk)
 begin
@@ -161,9 +180,11 @@ begin
         if reset = '1' then
             wr_en_to_spi_slave_s <= '0';
         else
-            wr_en_to_spi_slave_s <= '0';
+            --wr_en_to_spi_slave_s <= '0';
             if rx_valid_s = '1' then
-                wr_en_to_spi_slave_s <= '1';                                           -- Enable to latch send read or write data back across SPI by slave
+                wr_en_to_spi_slave_s <= '1';                 -- Enable to latch send read or write data back across SPI by slave as soon as valid data has been recieved across SPI from master
+            elsif ss_n = '1' then
+                wr_en_to_spi_slave_s <= '0';                 -- Send data to transmit back across SPI by slave as soon as master makes ss_n goes high as this is the first definate moment that the slave will accept a write enable in
             end if;
         end if;
     end if;
@@ -177,14 +198,21 @@ spi_write_to_reg_map_proc : process(clk)
 begin
     if rising_edge(clk) then
         if reset = '1' then
+            write_enable_from_spi <= '0';
+            write_addr_from_spi <= (others => '0');
             reg_map_array_to_pins <= gdrb_ctrl_data_array_initalise;                -- reset reg map array with a function (allows pre_loading of data values which could be useful for testing and operation)
         else
+            write_enable_from_spi <= '0';
             if write_enable_from_spi_s = '1' then
+                write_enable_from_spi <= '1';
+                write_addr_from_spi <= rx_address_s;
                 reg_map_array_to_pins(to_integer(unsigned(rx_address_s))) <= rx_data_s; -- This is a write and so update reg map array with data received
             end if;
         end if;
     end if;
 end process;
+
+
 
 
 end Behavioral;

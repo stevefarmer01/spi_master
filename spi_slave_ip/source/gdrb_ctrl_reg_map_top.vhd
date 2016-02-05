@@ -49,7 +49,9 @@ entity gdrb_ctrl_reg_map_top is
 --            test_input : in std_logic_vector(SPI_DATA_BITS - 1 downto 0) := (others => '0');
 --            test_output : out std_logic_vector(SPI_DATA_BITS - 1 downto 0) := (others => '0');
             reg_map_array_from_pins : in gdrb_ctrl_address_type := (others => (others => '0'));
-            reg_map_array_to_pins : out gdrb_ctrl_address_type
+            reg_map_array_to_pins : out gdrb_ctrl_address_type;
+            --Non-register map read/control bits
+            interupt_flag : out std_logic := '0'
             );
 end gdrb_ctrl_reg_map_top;
 
@@ -66,17 +68,42 @@ component reg_map_spi_slave is
             miso : out STD_LOGIC;
             ---Array of data spanning entire address range declared and initialised in 'spi_package'
             reg_map_array_from_pins : in gdrb_ctrl_address_type;
-            reg_map_array_to_pins : out gdrb_ctrl_address_type
+            reg_map_array_to_pins : out gdrb_ctrl_address_type;
+            --Write enable and address to allow some write processing of internal FPGA register map (write bit toggling, etc)
+            write_enable_from_spi : out std_logic;
+            write_addr_from_spi : out std_logic_vector(SPI_ADDRESS_BITS-1 downto 0)
             );
+end component;
+
+component reg_map_edge_interupt is
+    generic (
+             reg_width : positive := 16
+             );
+    Port ( 
+          clk : in std_logic;
+          status_reg : in std_logic_vector(reg_width-1 downto 0) := (others => '0');
+          edge_detect_toggle_en : in std_logic := '0';
+          edge_detect_toggle_reg : in std_logic_vector(reg_width-1 downto 0) := (others => '0');
+          edge_detect_reg : out std_logic_vector(reg_width-1 downto 0) := (others => '0');
+          interupt_mask_reg : in std_logic_vector(reg_width-1 downto 0) := (others => '0');
+          interupt_flag : out std_logic := '0'
+          );
 end component;
 
 signal reset_s : std_logic := '0';
 signal reset_domain_cross_s : std_logic_vector(1 downto 0) := (others => '0');
-
 -------Array of data spanning entire address range declared in 'spi_package'
 signal spi_array_to_pins_s, spi_array_from_pins_s : gdrb_ctrl_address_type := (others => (others => '0')); -- From/to SPI interface
---signal reg_map_array_to_pins_s : gdrb_ctrl_address_type := (others => (others => '0'));  -- Intermediate signal for out port to pins
 signal reg_map_array_internal_s : gdrb_ctrl_address_type := (others => (others => '0'));  -- Intermediate signal for out port to pins
+
+signal write_enable_from_spi_s : std_logic := '0';
+signal write_addr_from_spi_s : std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) := (others => '0');
+
+signal sensor_status_write_en_s : std_logic := '0';
+signal sensor_interupt_flag_s : std_logic := '0';
+
+signal diagnostics_interupts_data_s : std_logic_vector(SPI_DATA_BITS-1 downto 0) := (others => '0');
+signal global_interupt_flag_s : std_logic := '0';
 
 begin
 
@@ -103,10 +130,14 @@ reg_map_spi_slave_inst : reg_map_spi_slave
             miso => miso,                                  -- : out STD_LOGIC;
             ---Array of data spanning entire address range declared and initialised in 'spi_package'
             reg_map_array_from_pins => spi_array_from_pins_s, -- : in gdrb_ctrl_address_type
-            reg_map_array_to_pins => spi_array_to_pins_s -- : out gdrb_ctrl_address_type
+            reg_map_array_to_pins => spi_array_to_pins_s, -- : out gdrb_ctrl_address_type;
+            --Write enable and address to allow some write processing of internal FPGA register map (write bit toggling, etc)
+            write_enable_from_spi => write_enable_from_spi_s, --  : out std_logic := '0';
+            write_addr_from_spi => write_addr_from_spi_s --  : out std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) := (others => '0')
             );
 
-
+--Map array from/to SPI interface to itself to make read/write internal register map registers or to/from pins to create in/out discretes..
+--..Map these to the actual pins required at the next level up where this components is instantiated
 non_testbenching_gen : if not make_all_addresses_writeable_for_testing generate
 --.    --Example of.....
 --.    --Out pin (read/write over SPI)
@@ -127,7 +158,7 @@ non_testbenching_gen : if not make_all_addresses_writeable_for_testing generate
     --In pin (read only over SPI)
     spi_array_from_pins_s(to_integer(unsigned(SENSOR_STATUS_ADDR_C))) <= reg_map_array_from_pins(to_integer(unsigned(SENSOR_STATUS_ADDR_C)));
     --Internal read/write register (not pins - read/write over SPI)--use a process to manipulate data back to spi if necessary
-    spi_array_from_pins_s(to_integer(unsigned(SENSOR_EDGE_ADDR_C))) <= spi_array_to_pins_s(to_integer(unsigned(SENSOR_EDGE_ADDR_C)));
+--    spi_array_from_pins_s(to_integer(unsigned(SENSOR_EDGE_ADDR_C))) <= spi_array_to_pins_s(to_integer(unsigned(SENSOR_EDGE_ADDR_C)));   -- Now processed by component sensor_status_edge_interupt_inst
     --Internal read/write register (not pins - read/write over SPI)--use a process to manipulate data back to spi if necessary
     spi_array_from_pins_s(to_integer(unsigned(SENSOR_INT_MASK_ADDR_C))) <= spi_array_to_pins_s(to_integer(unsigned(SENSOR_INT_MASK_ADDR_C)));
 
@@ -152,17 +183,49 @@ non_testbenching_gen : if not make_all_addresses_writeable_for_testing generate
     reg_map_array_to_pins(to_integer(unsigned(ENABLES_OUT_ADDR_C))) <= spi_array_to_pins_s(to_integer(unsigned(ENABLES_OUT_ADDR_C)));
     spi_array_from_pins_s(to_integer(unsigned(ENABLES_OUT_ADDR_C))) <= spi_array_to_pins_s(to_integer(unsigned(ENABLES_OUT_ADDR_C)));
 
+--DIAGNOSTICS_INTERUPTS
+    --Internal signals (not pins - read only over SPI)
+    spi_array_from_pins_s(to_integer(unsigned(DIAGNOSTICS_INTERUPTS_ADDR_C))) <= diagnostics_interupts_data_s; 
+
 --UES
-    --Internal constants (not pins - read only over SPI)-----UES_1_c
+    --Internal constants (not pins - read only over SPI)
     spi_array_from_pins_s(to_integer(unsigned(MDRB_UES1Addr_addr_c)))    <= std_logic_vector(resize(unsigned(UES_1_c),SPI_DATA_BITS)); 
-    --Internal constants (not pins - read only over SPI)-----UES_2_c
+    --Internal constants (not pins - read only over SPI)
     spi_array_from_pins_s(to_integer(unsigned(MDRB_UES2Addr_addr_c)))    <= std_logic_vector(resize(unsigned(UES_2_c),SPI_DATA_BITS));
 
 end generate non_testbenching_gen;
 
-
+--Only for testbenchin a vanilla DUT
 testbenching_gen : if make_all_addresses_writeable_for_testing generate
     spi_array_from_pins_s <= spi_array_to_pins_s;
 end generate testbenching_gen;
+
+--signal write_enable_from_spi_s : out std_logic := '0';
+--signal write_addr_from_spi_s : out std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) := (others => '0');
+
+
+sensor_status_write_en_s <= '1' when write_enable_from_spi_s = '1' and (write_addr_from_spi_s = SENSOR_EDGE_ADDR_C) else '0';
+
+sensor_status_edge_interupt_inst : reg_map_edge_interupt
+    generic map (
+             reg_width => SPI_DATA_BITS -- : positive := 16
+             )
+    Port map( 
+          clk => clk,                                                                              -- : in std_logic;
+          status_reg => spi_array_from_pins_s(to_integer(unsigned(SENSOR_STATUS_ADDR_C))),         -- : in std_logic_vector(reg_width-1 downto 0);
+          edge_detect_toggle_en => sensor_status_write_en_s,                                       -- : in std_logic;
+          edge_detect_toggle_reg => spi_array_to_pins_s(to_integer(unsigned(SENSOR_EDGE_ADDR_C))), -- : in std_logic_vector(reg_width-1 downto 0);
+          edge_detect_reg => spi_array_from_pins_s(to_integer(unsigned(SENSOR_EDGE_ADDR_C))),      -- : out std_logic_vector(reg_width-1 downto 0);
+          interupt_mask_reg => spi_array_to_pins_s(to_integer(unsigned(SENSOR_INT_MASK_ADDR_C))),  -- : in std_logic_vector(reg_width-1 downto 0);
+          interupt_flag => sensor_interupt_flag_s                                                 -- : out std_logic := '0'
+          );
+
+--And various interupt detect register outputs together
+global_interupt_flag_s <= sensor_interupt_flag_s;
+interupt_flag <= global_interupt_flag_s;
+
+diagnostics_interupts_data_s(0) <= sensor_interupt_flag_s;
+diagnostics_interupts_data_s(diagnostics_interupts_data_s'LEFT) <= global_interupt_flag_s;
+
 
 end Behavioral;
