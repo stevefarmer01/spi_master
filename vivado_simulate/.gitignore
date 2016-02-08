@@ -29,6 +29,7 @@
 !*.tcl
 #####when scripted do not ignore .bat (windows batch files)
 !*.bat
+!*.prj
 
 ####### just to aid temperary debug between computers allow storing of waveform files
 !*.wcfg
