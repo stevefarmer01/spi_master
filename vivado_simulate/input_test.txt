@@ -1,40 +1,152 @@
+#### From spi_package.vhd...
 ####    constant SPI_ADDRESS_BITS : integer := 4;
 ####    constant SPI_DATA_BITS : integer := 16;
+#### From gdrb_ctrl_address_pkg.vhd...
 
 #### address  input data  read data  read data mask ####
 
 #### Finished Tests ####
 
-#### constant Test
-Read 	B 		0000 		FF10 		FFFF # Read SPI constant read only register MDRB_UES1Addr_addr_c
-#### constant Test
-Read 	C 		0000 		0126 		FFFF # Read SPI constant read only register MDRB_UES2Addr_addr_c
 
-#### in pin Test - SENSOR_STATUS_ADDR_C
+#### in pins Test 		- SENSOR_STATUS_ADDR_C
 Read 	0 		0000 		0000 		FFFF 	# Read default value
-Writ 	0 		1111 		0000 		0000 	# Test a write does....
-Read 	0 		0000 		0000 		FFFF 	# ....nothing
-WrPo	0		2222 							# Write to discrete pins so that they can be read over SPI
-Read 	0 		0000 		2222 		FFFF 	# Read pin values
+Writ 	0 		1111 		0000 		0000 	# Test a SPI write ....
+Read 	0 		0000 		0000 		FFFF 	# ....does nothing to the reg map register
+WrPo	0		2222 							# Test a write to discrete pins....
+Read 	0 		0000 		2222 		FFFF 	# ....can be read back over SPI through the reg map
+
+Writ 	1 		2222 		0000 		0000 	# Test a SPI write to toggle all bits in toggle reg before next test to get it back to 0000....
+#### internal reg Test 	- SENSOR_EDGE_ADDR_C
+Read 	1 		0000 		0000 		FFFF 	# Read default value
+Writ 	1 		3333 		0000 		0000 	# Test a SPI write....
+Read 	1 		0000 		3333 		FFFF 	# ....does a write to the reg map register
+RdPo	1		0000 							# Test this write has not made it to the pins 
+WrPo	1		4444 							# Test a write to discrete pins.... 
+Read 	1 		0000 		3333 		FFFF 	# ...does nothing to the reg map register
+
+#### internal reg Test 	- SENSOR_INT_MASK_ADDR_C
+Read 	2 		0000 		0000 		FFFF 	# Read default value
+Writ 	2 		3333 		0000 		0000 	# Test a SPI write....
+Read 	2 		0000 		3333 		FFFF 	# ....does a write to the reg map register
+RdPo	2		0000 							# Test this write has not made it to the pins 
+WrPo	2		4444 							# Test a write to discrete pins.... 
+Read 	2 		0000 		3333 		FFFF 	# ...does nothing to the reg map register
+
+#### in pins Test 		- FAULTADDR_ADDR_C
+Read 	3 		0000 		0000 		FFFF 	# Read default value
+Writ 	3 		5555 		0000 		0000 	# Test a SPI write ....
+Read 	3 		0000 		0000 		FFFF 	# ....does nothing to the reg map register
+WrPo	3		6666 							# Test a write to discrete pins....
+Read 	3 		0000 		6666 		FFFF 	# ....can be read back over SPI through the reg map
+
+Writ 	4 		6666 		0000 		0000 	# Test a SPI write to toggle all bits in toggle reg before next test to get it back to 0000....
+#### internal reg Test 	- FAULT_EDGE_ADDR_C
+Read 	4 		0000 		0000 		FFFF 	# Read default value
+Writ 	4 		4444 		0000 		0000 	# Test a SPI write....
+Read 	4 		0000 		4444 		FFFF 	# ....does a write to the reg map register
+RdPo	4		0000 							# Test this write has not made it to the pins 
+WrPo	4		5555 							# Test a write to discrete pins.... 
+Read 	4 		0000 		4444 		FFFF 	# ...does nothing to the reg map register
+
+#### internal reg Test 	- FAULT_INT_MASK_ADDR_C
+Read 	5 		0000 		0000 		FFFF 	# Read default value
+Writ 	5 		5555 		0000 		0000 	# Test a SPI write....
+Read 	5 		0000 		5555 		FFFF 	# ....does a write to the reg map register
+RdPo	5		0000 							# Test this write has not made it to the pins 
+WrPo	5		6666 							# Test a write to discrete pins.... 
+Read 	5 		0000 		5555 		FFFF 	# ...does nothing to the reg map register
+
+#### in pins Test 		- MISC_STATUS_ADDR_C
+Read 	6 		0000 		0000 		FFFF 	# Read default value
+Writ 	6 		5555 		0000 		0000 	# Test a SPI write ....
+Read 	6 		0000 		0000 		FFFF 	# ....does nothing to the reg map register
+WrPo	6		6666 							# Test a write to discrete pins....
+Read 	6 		0000 		6666 		FFFF 	# ....can be read back over SPI through the reg map
+
+Writ 	7 		6666 		0000 		0000 	# Test a SPI write to toggle all bits in toggle reg before next test to get it back to 0000....
+#### internal reg Test 	- MISC_EDGE_ADDR_C
+Read 	7 		0000 		0000 		FFFF 	# Read default value
+Writ 	7 		4444 		0000 		0000 	# Test a SPI write....
+Read 	7 		0000 		4444 		FFFF 	# ....does a write to the reg map register
+RdPo	7		0000 							# Test this write has not made it to the pins 
+WrPo	7		5555 							# Test a write to discrete pins.... 
+Read 	7 		0000 		4444 		FFFF 	# ...does nothing to the reg map register
+
+#### internal reg Test 	- MISC_INT_MASK_ADDR_C
+Read 	8 		0000 		0000 		FFFF 	# Read default value
+Writ 	8 		5555 		0000 		0000 	# Test a SPI write....
+Read 	8 		0000 		5555 		FFFF 	# ....does a write to the reg map register
+RdPo	8		0000 							# Test this write has not made it to the pins 
+WrPo	8		6666 							# Test a write to discrete pins.... 
+Read 	8 		0000 		5555 		FFFF 	# ...does nothing to the reg map register
+
+#### out pins Test 		- ENABLES_OUT_ADDR_C
+Read 	9 		0000 		0000 		FFFF 	# Read default value
+Writ 	9 		AAAA 		0000 		0000 	# Test a SPI write ....
+Read 	9 		0000 		AAAA 		FFFF 	# ....does a write to the reg map register
+RdPo	9		AAAA 							# Test a read from discrete pins has worked
+WrPo	9		BBBB 							# Test a write to discrete pins.....
+Read 	9 		0000 		AAAA 		FFFF 	# ....doesn't effect read back over SPI through the reg map
+
+#### constant Test 		- MDRB_UES1Addr_addr_c
+Read 	E 		0000 		FF10 		FFFF # Read SPI constant read only register MDRB_UES1Addr_addr_c
+Writ 	E 		8888 		0000 		0000 	# Test a SPI write....
+Read 	E 		0000 		FF10 		FFFF 	# ....does nothing
+
+#### constant Test 		- MDRB_UES2Addr_addr_c
+Read 	F 		0000 		0126 		FFFF # Read SPI constant read only register MDRB_UES2Addr_addr_c
+Writ 	F 		9999 		0000 		0000 	# Test a SPI write....
+Read 	F 		0000 		0126 		FFFF 	# ....does nothing
+
+
 
 #### Tests in development
 
+#### #### internal reg Test 	- DIAGNOSTICS_INTERUPTS_ADDR_C
+#### Writ 	2 		0000 		0000 		0000 	# Do a SPI write to clear interupt masks....
+#### Read 	D 		0000 		0000 		FFFF 	# Read default value to check no interupts have been asserted
+#### #### in pins Test 		- SENSOR_STATUS_ADDR_C
+#### Read 	0 		0000 		0000 		FFFF 	# Read default value
+#### Writ 	0 		1111 		0000 		0000 	# Test a SPI write ....
+#### Read 	0 		0000 		0000 		FFFF 	# ....does nothing to the reg map register
+#### WrPo	0		2222 							# Test a write to discrete pins....
+#### Read 	0 		0000 		2222 		FFFF 	# ....can be read back over SPI through the reg map
+#### 
+#### #### internal reg Test 	- SENSOR_EDGE_ADDR_C
+#### Read 	1 		0000 		2222 		FFFF 	# Read all values that have toggled in SENSOR_STATUS_ADDR_C
+#### Writ 	1 		0000 		0000 		0000 	# Test a SPI write of all 0's....
+#### Read 	1 		0000 		2222 		FFFF 	# ....and this should produce no change
+#### WrPo	0		1111 							# Test a write to discrete pins....
+#### Read 	1 		0000 		3333 		FFFF 	# Read all values that have toggled in SENSOR_STATUS_ADDR_C
+#### Writ 	1 		FFFF 		0000 		0000 	# Test a SPI write of 0xFFFF....
+#### Read 	1 		0000 		CCCC 		FFFF 	# ....and check all bits toggle
+#### #### internal reg Test 	- DIAGNOSTICS_INTERUPTS_ADDR_C
+#### Read 	D 		0000 		0000 		FFFF 	# Read default value to check no interupts have been asserted as they are all masked
+#### 
+#### #### internal reg Test 	- DIAGNOSTICS_INTERUPTS_ADDR_C
+#### #### check toggle register bits cause interupt
+#### Writ 	2 		FFFF 		0000 		0000 	# Do a SPI write to enable interupt masks
+#### Read 	1 		0000 		0000 		0000 	# Test a SPI read to see bit toggle
+#### Writ 	1 		0001 		0000 		0000 	# Do SPI write to toggle one bit in edge reg 
+#### Read 	1 		0000 		0000 		0000 	# Test a SPI read to see bit toggle
+#### Read 	D 		0000 		0001 		FFFF 	# Read SPI to check interupts have been asserted
+#### Writ 	2 		FFFE 		0000 		0000 	# Do a SPI write to clear interupt mask 0
+#### Read 	D 		0000 		0000 		FFFF 	# Read SPI to check interupts have been asserted
+#### #### check pin causes interupt
+#### Writ 	2 		0000 		0000 		0000 	# Do a SPI write to disable interupt masks
+#### WrPo	0		0000 							# Test pins 
+#### Read 	D 		0000 		0000 		FFFF 	# Read SPI to check interupts have been asserted
+#### Writ 	2 		FFFF 		0000 		0000 	# Do a SPI write to enable interupt masks
+#### Read 	D 		0000 		0000 		FFFF 	# Read SPI to check interupts have been asserted
 
 
 
-####RdPo	0 		0001 # Read discrete pins that have been written to over SPI
-####
-####WrPo	1		005A # Write to discrete pins so that they can be read over SPI
-####
-####Read 	1 		0000 		005A 		FFFF # Read SPI of Discrete input - these are read only (obviously)
-####Writ 	1 		0000 		0000 		0000
-####Read 	1 		0000 		005A 		FFFF
-####
-####WrPo	2		005A # Write to discrete pins so that they can be read over SPI
 
-####Read 	2 		0000 		005A 		FFFF # Read SPI of Discrete input - these are read only (obviously)
-####Writ 	2 		0000 		0000 		0000
-####Read 	2 		0000 		005A 		FFFF
+#### RdPo	1		0000 							# Test this write has not made it to the pins 
+#### WrPo	1		4444 							# Test a write to discrete pins.... 
+#### Read 	1 		0000 		3333 		FFFF 	# ...does nothing to the reg map register
+
+
 
 
 

@@ -546,7 +546,7 @@ input_vector_file_test_gen : if DUT_TYPE = "input_vector_file_test" generate
         variable check_data_mask_v : std_logic_vector(SPI_DATA_BITS - 1 downto 0) := (others => '1'); -- Default to all '1's so that all bits of the result are checked unless mask set otherwise by input testing parameters
         variable line_of_comments_v : string(1 to line_of_comments'LENGTH) := (others => ' ');
     begin
-        FILE_OPEN(status, F, "..\..\..\input_test.txt", READ_MODE);
+        FILE_OPEN(status, F, "..\input_test.txt", READ_MODE);
         if status /= OPEN_OK then
             assert FALSE
                 report "Failed to open file" severity failure;
@@ -647,7 +647,7 @@ file_output_proc : process
     variable rx_and_expected_same : boolean := FALSE;
     variable a_test_has_failed : boolean := FALSE;
 begin
-    FILE_OPEN(F, "..\..\..\output_test.txt", WRITE_MODE);
+    FILE_OPEN(F, "..\output_test.txt", WRITE_MODE);
     if status /= open_ok then
         report "Failed to open file";
     else
