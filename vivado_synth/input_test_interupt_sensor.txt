@@ -10,6 +10,7 @@
 
 #### internal reg Test 	- DIAGNOSTICS_INTERUPTS_ADDR_C
 Read 	D 		0000 		0000 		FFFF 	# Read default value to check no interupts have been asserted
+
 #### in pins Test 		- SENSOR_STATUS_ADDR_C
 Read 	0 		0000 		0000 		FFFF 	# Read default value
 Writ 	0 		1111 		0000 		0000 	# Test a SPI write ....
