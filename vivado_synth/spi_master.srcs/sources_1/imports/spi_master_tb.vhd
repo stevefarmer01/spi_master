@@ -81,16 +81,16 @@ architecture behave of spi_master_tb is
     constant FIFO_REQ  : Boolean   := FALSE;
 
 --.--.Test using  input file
---.    constant DUT_TYPE : string := "input_vector_file_test"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board unsing simple read write proceedures
---.    constant make_all_addresses_writeable_for_testing : boolean := FALSE; -- This allows entire register map read write access for testbench testing of a non-module specific register map
-
---.Test using  input file - DIAGNOSTICS AS IT HAS ALL ADDRESSES SET TO READ/WRITABLE via 'make_all_addresses_writeable_for_testing'
     constant DUT_TYPE : string := "input_vector_file_test"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board unsing simple read write proceedures
     constant make_all_addresses_writeable_for_testing : boolean := FALSE; -- This allows entire register map read write access for testbench testing of a non-module specific register map
+
+--.Test using  input file - DIAGNOSTICS AS IT HAS ALL ADDRESSES SET TO READ/WRITABLE via 'make_all_addresses_writeable_for_testing'
+--.    constant DUT_TYPE : string := "input_vector_file_test"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board unsing simple read write proceedures
+--.    constant make_all_addresses_writeable_for_testing : boolean := TRUE; -- This allows entire register map read write access for testbench testing of a non-module specific register map
 --.Simple read write as an example - without textio
 --.    constant DUT_TYPE : string := "write_and_then_read_an_address"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board
 --.    constant make_all_addresses_writeable_for_testing : boolean := TRUE; -- This allows entire register map read write access for testbench testing of a non-module specific register map
---.Full write/read test with a decreasing sclk frequency to DUT to check what frequency th eSPI link will work down to
+--.Full write/read test with a decreasing sclk frequency to DUT to check what frequency the SPI link will work down to
 --.    constant DUT_TYPE : string := "spi_reg_map_simple"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board unsing simple read write proceedures
 --.    constant make_all_addresses_writeable_for_testing : boolean := TRUE; -- This allows entire register map read write access for testbench testing of a non-module specific register map
 
@@ -212,7 +212,8 @@ end component;
 --.    constant induce_fault_slave_tx_c : boolean := FALSE;
 
     signal TIME_PERIOD_CLK_S : time := 10 ns;
-    signal TIME_PERIOD_CLK_DUT_S : time := 50 ns;
+--    signal TIME_PERIOD_CLK_DUT_S : time := 50 ns;
+    signal TIME_PERIOD_CLK_DUT_S : time := 16.67 ns;
     signal dut_sys_clk_i : std_logic := '0';
     signal dut_clk_ratio_to_testbench : integer := integer(TIME_PERIOD_CLK_DUT_S/TIME_PERIOD_CLK);
     signal stop_clks : boolean := FALSE;
@@ -231,8 +232,9 @@ end component;
     --signal gdrb_ctrl_data_array_tb_s : gdrb_ctrl_address_type := gdrb_ctrl_data_array_initalise_offset;
     signal discrete_reg_map_array_to_script_s, discrete_reg_map_array_from_script_s, discrete_reg_map_array_from_pins_s, discrete_reg_map_array_to_pins_s : gdrb_ctrl_address_type := (others => (others => '0'));
 
-    type command_t is (read_write_spi_cmd, read_port_cmd, write_port_cmd);
+    type command_t is (read_write_spi_cmd, read_port_cmd, write_port_cmd, print_comment_line);
     signal input_command_type : command_t;
+    signal line_of_comments : string(1 to 99);
 
 
 --    signal test_input_s  : std_logic_vector(SPI_DATA_BITS - 1 downto 0) := (others => '0');
@@ -542,6 +544,7 @@ input_vector_file_test_gen : if DUT_TYPE = "input_vector_file_test" generate
         variable data_to_spi_v, data_of_port_v : std_logic_vector(SPI_DATA_BITS - 1 downto 0) := (others => '1');
         variable check_data_from_spi_v : std_logic_vector(SPI_DATA_BITS - 1 downto 0) := (others => '1');
         variable check_data_mask_v : std_logic_vector(SPI_DATA_BITS - 1 downto 0) := (others => '1'); -- Default to all '1's so that all bits of the result are checked unless mask set otherwise by input testing parameters
+        variable line_of_comments_v : string(1 to line_of_comments'LENGTH) := (others => ' ');
     begin
         FILE_OPEN(status, F, "..\..\..\input_test.txt", READ_MODE);
         if status /= OPEN_OK then
@@ -554,10 +557,19 @@ input_vector_file_test_gen : if DUT_TYPE = "input_vector_file_test" generate
             
             while not ENDFILE(F) loop
                 READLINE(F, L);
-                next when L'length = 0;                                                     -- Skip empty lines
+                next when L'LENGTH = 0;                                                     -- Skip empty lines
                 READ(L, input_command_v);
                 if input_command_v = "####"  then                                           -- Comment
-                    next;
+--                    next;
+                    input_command_type <= print_comment_line;
+
+                    line_of_comments_v := (others => ' ');
+                    if (L'LENGTH < line_of_comments_v'LENGTH) then
+                        READ(L, line_of_comments_v(1 to L'LENGTH));
+                    end if;
+                    line_of_comments <= line_of_comments_v;
+                    stop_clks <= FALSE; 
+                    wait for 0 ns;  -- Allow stop_clks to get to file_output_proc process
                 elsif input_command_v = "Read" or input_command_v = "Writ"  then            -- Read or Write command
 
                     input_command_type <= read_write_spi_cmd;
@@ -600,7 +612,7 @@ input_vector_file_test_gen : if DUT_TYPE = "input_vector_file_test" generate
                     address_of_port <= to_integer(unsigned(address_of_port_v));
                     data_of_port <= to_integer(unsigned(data_of_port_v));
                     stop_clks <= FALSE; 
-                    wait for 0 ns;  -- Allow Read Port and Write Port commands to get to file_output_proc if these are last commands in input_test.txt;
+                    wait for 10 ns;  -- Allow Read Port and Write Port commands to get to file_output_proc if these are last commands in input_test.txt;
                 else
                     assert false report "Text input file format read error" severity FAILURE;
                 end if;
@@ -695,6 +707,10 @@ begin
                     HWRITE (L, std_logic_vector(to_unsigned(to_integer(unsigned(discrete_reg_map_array_to_script_s(address_of_port))), SPI_DATA_BITS)), left, 10);
                 end if;
 
+                WRITELINE (F, L);
+            elsif input_command_type = print_comment_line then
+                WRITE (L, string'("####"));
+                WRITE (L, line_of_comments);
                 WRITELINE (F, L);
             end if;
         end loop;
