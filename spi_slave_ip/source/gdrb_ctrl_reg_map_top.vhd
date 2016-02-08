@@ -193,9 +193,35 @@ non_testbenching_gen : if not make_all_addresses_writeable_for_testing generate
     --Internal constants (not pins - read only over SPI)
     spi_array_from_pins_s(to_integer(unsigned(MDRB_UES2Addr_addr_c)))    <= std_logic_vector(resize(unsigned(UES_2_c),SPI_DATA_BITS));
 
+
+----Start of Interupt and edge detectection for SENSOR_STATUS_ADDR_C, SENSOR_EDGE_ADDR_C and SENSOR_INT_MASK_ADDR_C
+    sensor_status_write_en_s <= '1' when write_enable_from_spi_s = '1' and (write_addr_from_spi_s = SENSOR_EDGE_ADDR_C) else '0';
+    
+    sensor_status_edge_interupt_inst : reg_map_edge_interupt
+        generic map (
+                 reg_width => SPI_DATA_BITS -- : positive := 16
+                 )
+        Port map( 
+              clk => clk,                                                                              -- : in std_logic;
+              status_reg => spi_array_from_pins_s(to_integer(unsigned(SENSOR_STATUS_ADDR_C))),         -- : in std_logic_vector(reg_width-1 downto 0);
+              edge_detect_toggle_en => sensor_status_write_en_s,                                       -- : in std_logic;
+              edge_detect_toggle_reg => spi_array_to_pins_s(to_integer(unsigned(SENSOR_EDGE_ADDR_C))), -- : in std_logic_vector(reg_width-1 downto 0);
+              edge_detect_reg => spi_array_from_pins_s(to_integer(unsigned(SENSOR_EDGE_ADDR_C))),      -- : out std_logic_vector(reg_width-1 downto 0);
+              interupt_mask_reg => spi_array_to_pins_s(to_integer(unsigned(SENSOR_INT_MASK_ADDR_C))),  -- : in std_logic_vector(reg_width-1 downto 0);
+              interupt_flag => sensor_interupt_flag_s                                                 -- : out std_logic := '0'
+              );
+    
+    --And various interupt detect register outputs together
+    global_interupt_flag_s <= sensor_interupt_flag_s;
+    interupt_flag <= global_interupt_flag_s;
+    
+    diagnostics_interupts_data_s(0) <= sensor_interupt_flag_s;
+    diagnostics_interupts_data_s(diagnostics_interupts_data_s'LEFT) <= global_interupt_flag_s;
+
 end generate non_testbenching_gen;
 
---Only for testbenchin a vanilla DUT
+--Only for testbenchin a vanilla DUT (no register access to pins, not read only, no interupt/edge detection/processing)...
+--...this will allow test with a decreasing sclk frequency to DUT to check what frequency the SPI link will work down to (currently about 20MHz depending on start frequency decimal places)
 testbenching_gen : if make_all_addresses_writeable_for_testing generate
     spi_array_from_pins_s <= spi_array_to_pins_s;
 end generate testbenching_gen;
@@ -203,29 +229,6 @@ end generate testbenching_gen;
 --signal write_enable_from_spi_s : out std_logic := '0';
 --signal write_addr_from_spi_s : out std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) := (others => '0');
 
-
-sensor_status_write_en_s <= '1' when write_enable_from_spi_s = '1' and (write_addr_from_spi_s = SENSOR_EDGE_ADDR_C) else '0';
-
-sensor_status_edge_interupt_inst : reg_map_edge_interupt
-    generic map (
-             reg_width => SPI_DATA_BITS -- : positive := 16
-             )
-    Port map( 
-          clk => clk,                                                                              -- : in std_logic;
-          status_reg => spi_array_from_pins_s(to_integer(unsigned(SENSOR_STATUS_ADDR_C))),         -- : in std_logic_vector(reg_width-1 downto 0);
-          edge_detect_toggle_en => sensor_status_write_en_s,                                       -- : in std_logic;
-          edge_detect_toggle_reg => spi_array_to_pins_s(to_integer(unsigned(SENSOR_EDGE_ADDR_C))), -- : in std_logic_vector(reg_width-1 downto 0);
-          edge_detect_reg => spi_array_from_pins_s(to_integer(unsigned(SENSOR_EDGE_ADDR_C))),      -- : out std_logic_vector(reg_width-1 downto 0);
-          interupt_mask_reg => spi_array_to_pins_s(to_integer(unsigned(SENSOR_INT_MASK_ADDR_C))),  -- : in std_logic_vector(reg_width-1 downto 0);
-          interupt_flag => sensor_interupt_flag_s                                                 -- : out std_logic := '0'
-          );
-
---And various interupt detect register outputs together
-global_interupt_flag_s <= sensor_interupt_flag_s;
-interupt_flag <= global_interupt_flag_s;
-
-diagnostics_interupts_data_s(0) <= sensor_interupt_flag_s;
-diagnostics_interupts_data_s(diagnostics_interupts_data_s'LEFT) <= global_interupt_flag_s;
 
 
 end Behavioral;

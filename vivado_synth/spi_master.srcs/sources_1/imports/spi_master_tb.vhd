@@ -81,16 +81,16 @@ architecture behave of spi_master_tb is
     constant FIFO_REQ  : Boolean   := FALSE;
 
 --.--.Test using  input file
---.    constant DUT_TYPE : string := "input_vector_file_test"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board unsing simple read write proceedures
---.    constant make_all_addresses_writeable_for_testing : boolean := FALSE; -- This allows entire register map read write access for testbench testing of a non-module specific register map
-
---.Test using  input file - DIAGNOSTICS AS IT HAS ALL ADDRESSES SET TO READ/WRITABLE via 'make_all_addresses_writeable_for_testing'
     constant DUT_TYPE : string := "input_vector_file_test"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board unsing simple read write proceedures
     constant make_all_addresses_writeable_for_testing : boolean := FALSE; -- This allows entire register map read write access for testbench testing of a non-module specific register map
+
+--.Test using  input file - DIAGNOSTICS AS IT HAS ALL ADDRESSES SET TO READ/WRITABLE via 'make_all_addresses_writeable_for_testing'
+--.    constant DUT_TYPE : string := "input_vector_file_test"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board unsing simple read write proceedures
+--.    constant make_all_addresses_writeable_for_testing : boolean := TRUE; -- This allows entire register map read write access for testbench testing of a non-module specific register map
 --.Simple read write as an example - without textio
 --.    constant DUT_TYPE : string := "write_and_then_read_an_address"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board
 --.    constant make_all_addresses_writeable_for_testing : boolean := TRUE; -- This allows entire register map read write access for testbench testing of a non-module specific register map
---.Full write/read test with a decreasing sclk frequency to DUT to check what frequency th eSPI link will work down to
+--.Full write/read test with a decreasing sclk frequency to DUT to check what frequency the SPI link will work down to
 --.    constant DUT_TYPE : string := "spi_reg_map_simple"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board unsing simple read write proceedures
 --.    constant make_all_addresses_writeable_for_testing : boolean := TRUE; -- This allows entire register map read write access for testbench testing of a non-module specific register map
 
@@ -212,7 +212,8 @@ end component;
 --.    constant induce_fault_slave_tx_c : boolean := FALSE;
 
     signal TIME_PERIOD_CLK_S : time := 10 ns;
-    signal TIME_PERIOD_CLK_DUT_S : time := 50 ns;
+--    signal TIME_PERIOD_CLK_DUT_S : time := 50 ns;
+    signal TIME_PERIOD_CLK_DUT_S : time := 16.67 ns;
     signal dut_sys_clk_i : std_logic := '0';
     signal dut_clk_ratio_to_testbench : integer := integer(TIME_PERIOD_CLK_DUT_S/TIME_PERIOD_CLK);
     signal stop_clks : boolean := FALSE;
