@@ -28,9 +28,10 @@
 !*.xpr
 !*.xdc
 !*.tcl
-#####when scripted do not ignore .bat (windows batch files)
+#####when scripted do not ignore .bat (windows batch files) and .py (python source code)
 !*.bat
 !*.prj
+!*.py
 
 ####### just to aid temperary debug between computers allow storing of waveform files
 !*.wcfg
