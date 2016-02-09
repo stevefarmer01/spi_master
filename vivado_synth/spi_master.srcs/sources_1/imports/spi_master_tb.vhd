@@ -303,10 +303,10 @@ end component;
                 rx_and_expected_same := FALSE;
             end if;
 
-            assert not rx_and_expected_same                                                                -- Check for correct data back and that there has actually been some data received
-                report "FAIL - Master SPI recieved different to expected" severity note;
-            assert rx_and_expected_same                                                                  -- Check for correct data back and that there has actually been some data received
-                report "PASS - Master SPI recieved as expected" severity note;
+--.            assert not rx_and_expected_same                                                                -- Check for correct data back and that there has actually been some data received
+--.                report "FAIL - Master SPI recieved different to expected" severity note;
+--.            assert rx_and_expected_same                                                                  -- Check for correct data back and that there has actually been some data received
+--.                report "PASS - Master SPI recieved as expected" severity note;
             if (not rx_and_expected_same) and stop_sim_on_fail then 
                 stop_clks <= TRUE; -- Stop simulation when a failure is detected when running tests which increment the DUT clk speed and will eventually fail to show the lowest DUT clk speed that SPI will still work at
             else
@@ -654,7 +654,16 @@ begin
         --while not(stop_clks = TRUE) loop
         while TRUE loop
             wait until stop_clks'transaction'event;
-            if (stop_clks = TRUE) then exit; end if;
+            if (stop_clks = TRUE) then
+--                if stop_sim_on_fail then 
+--                    a_test_has_failed := TRUE;  -- Force a fail assert when doing clk speed tests which are run with - 'stop_sim_on_fail = TRUE@
+--                end if;
+--                exit; 
+                --When not doing DUT speed tests then exit loop here to prevent a rogue result line being printed into the result text file
+                if not stop_sim_on_fail then 
+                    exit; 
+                end if;
+            end if;
             if input_command_type = read_write_spi_cmd then
                 if (((to_unsigned(rx_data_from_spi,DATA_SIZE)) and (to_unsigned(check_data_mask,DATA_SIZE))) = ((to_unsigned(check_data_from_spi,DATA_SIZE)) and (to_unsigned(check_data_mask,DATA_SIZE)))) then
                     rx_and_expected_same := TRUE;
@@ -712,6 +721,10 @@ begin
                 WRITE (L, string'("####"));
                 WRITE (L, line_of_comments);
                 WRITELINE (F, L);
+            end if;
+            --When DUT speed tests fail then exit loop here to allow the fail that caused the exit to be output into the results text file
+            if stop_sim_on_fail and stop_clks then 
+                exit; 
             end if;
         end loop;
             if a_test_has_failed then
