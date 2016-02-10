@@ -36,7 +36,7 @@ use IEEE.NUMERIC_STD.ALL;
 package spi_board_select_pkg is
 
     --Set sizes of data and addresse as required for particular application
-    constant SPI_BOARD_SEL_ADDR_BITS : integer := 0;
+    constant SPI_BOARD_SEL_ADDR_BITS : integer := 4;
 
 end spi_board_select_pkg;
 

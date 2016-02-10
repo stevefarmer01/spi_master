@@ -7,10 +7,12 @@
 
 #### Finished Tests ####
 
-Read 	0 		0000 		0000 		FFFF
+Read		0	 	0 		0000 		0000 		FFFF
 #### Test all write then read them (set MSb just as an extra test)
-Writ 	0 		8000 		0000 		0000
-Read 	0 		8000 		8000 		FFFF
+Writ		0	 	0 		8000 		0000 		0000
+Read		0	 	0 		8000 		8000 		FFFF
+Writ		1	 	0 		C000 		0000 		0000
+Read		1	 	0 		C000 		C000 		FFFF
 
 
 

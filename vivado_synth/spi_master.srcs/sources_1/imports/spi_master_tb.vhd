@@ -74,7 +74,8 @@ use work.spi_board_select_pkg.ALL;
 
 entity spi_master_tb is
     generic(
-            board_select : boolean := FALSE -- Use generate statement - xxxxxx_gen : if not board_select generate xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx end generate;
+            board_select : boolean := FALSE; -- Use generate statement - xxxxxx_gen : if not board_select generate xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx end generate;
+            make_all_addresses_writeable_for_testing : boolean := FALSE
             );
 end spi_master_tb;
 
@@ -88,7 +89,7 @@ architecture behave of spi_master_tb is
 
 --.Test using  input file - DIAGNOSTICS AS IT HAS ALL ADDRESSES SET TO READ/WRITABLE via 'make_all_addresses_writeable_for_testing'
     constant DUT_TYPE : string := "input_vector_file_test"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board unsing simple read write proceedures
-    constant make_all_addresses_writeable_for_testing : boolean := TRUE; -- This allows entire register map read write access for testbench testing of a non-module specific register map
+--    constant make_all_addresses_writeable_for_testing : boolean := TRUE; -- This allows entire register map read write access for testbench testing of a non-module specific register map
 --.Simple read write as an example - without textio
 --.    constant DUT_TYPE : string := "write_and_then_read_an_address"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board
 --.    constant make_all_addresses_writeable_for_testing : boolean := TRUE; -- This allows entire register map read write access for testbench testing of a non-module specific register map
@@ -136,34 +137,6 @@ component spi_master_top
         );
 end component;
 
-component spi_slave is
-    generic(
-        DATA_SIZE  :     natural := 16);
-    port (
-        i_sys_clk  : in  std_logic;     -- system clock
-        i_sys_rst  : in  std_logic;     -- system reset
-        i_csn      : in  std_logic;     -- Slave Enable/select
-        i_data     : in  std_logic_vector(DATA_SIZE - 1 downto 0);  -- Input data
-        i_wr       : in  std_logic;     -- Active Low Write, Active High Read
-        i_rd       : in  std_logic;     -- Active Low Write, Active High Read
-        o_data     : out std_logic_vector(DATA_SIZE - 1 downto 0);  --output data
-        o_tx_ready : out std_logic;     -- Transmitter ready, can write another 
-        o_rx_ready : out std_logic;     -- Receiver ready, can read data
-        o_tx_error : out std_logic;     -- Transmitter error
-        o_rx_error : out std_logic;     -- Receiver error
-        i_cpol      : in std_logic;     -- CPOL value - 0 or 1
-        i_cpha      : in std_logic;     -- CPHA value - 0 or 1 
-        i_lsb_first : in std_logic;     -- lsb first when '1' /msb first when 
-        o_miso      : out std_logic;    -- Slave output to Master
-        i_mosi      : in  std_logic;    -- Slave input from Master
-        i_ssn       : in  std_logic;    -- Slave Slect Active low
-        i_sclk      : in  std_logic;    -- Clock from SPI Master
-        miso_tri_en : out std_logic;
-        o_tx_ack    : out std_logic;
-        o_tx_no_ack : out std_logic
-        );
-end component;
-
 component gdrb_ctrl_reg_map_top is
     generic ( make_all_addresses_writeable_for_testing : boolean := FALSE );
     Port (  
@@ -175,8 +148,6 @@ component gdrb_ctrl_reg_map_top is
             mosi : in STD_LOGIC;
             miso : out STD_LOGIC;
             --Discrete signals
---            test_input : in std_logic_vector(SPI_DATA_BITS - 1 downto 0);
---            test_output : out std_logic_vector(SPI_DATA_BITS - 1 downto 0);
             reg_map_array_from_pins : in gdrb_ctrl_address_type := (others => (others => '0'));
             reg_map_array_to_pins : out gdrb_ctrl_address_type
             );
@@ -205,7 +176,7 @@ constant DATA_SIZE : integer := DATA_SIZE_C+SPI_BOARD_SEL_ADDR_BITS;
 signal stop_sim_on_fail : boolean := TRUE;
 signal report_spi_access_type : string(1 to 10);
 
-signal address_to_spi, address_of_port : natural := 0;
+signal board_sel_to_spi, address_to_spi, address_of_port : natural := 0;
 signal data_to_spi, data_of_port : natural := 16#AA#;
 signal check_data_from_spi : natural := 16#AA#;
 
@@ -277,8 +248,13 @@ shared variable cnt      : integer                       := 0;
     begin
                         wait until rising_edge(sys_clk_i);
                         spi_start_i     <= '0';
-        
-                        data_i      <= read_write_to_spi & std_logic_vector(to_unsigned(address_to_spi,SPI_ADDRESS_BITS)) & std_logic_vector(to_unsigned(data_to_spi,SPI_DATA_BITS)); -- send write data over SPI (just write all data to a fixed pattern and check it propergates thru array in reg map)
+                        
+                        if board_select then
+                            data_i      <= std_logic_vector(to_unsigned(board_sel_to_spi,SPI_BOARD_SEL_ADDR_BITS)) & read_write_to_spi & std_logic_vector(to_unsigned(address_to_spi,SPI_ADDRESS_BITS)) & std_logic_vector(to_unsigned(data_to_spi,SPI_DATA_BITS)); -- send write data over SPI (just write all data to a fixed pattern and check it propergates thru array in reg map)
+                        else
+                            data_i      <= read_write_to_spi & std_logic_vector(to_unsigned(address_to_spi,SPI_ADDRESS_BITS)) & std_logic_vector(to_unsigned(data_to_spi,SPI_DATA_BITS)); -- send write data over SPI (just write all data to a fixed pattern and check it propergates thru array in reg map)
+                        end if;
+                        
                         wr_i        <= '1';    -- write data enable tx to master
                         wait until rising_edge(sys_clk_i);
                         wr_i        <= '0';
@@ -585,6 +561,7 @@ input_vector_file_test_gen : if DUT_TYPE = "input_vector_file_test" generate
         variable good : boolean;
         variable status : file_open_status;
         variable input_command_v : string(1 to 4);
+        variable board_sel_to_spi_v : std_logic_vector(SPI_BOARD_SEL_ADDR_BITS - 1 downto 0) := (others => '0');
         variable address_to_spi_v, address_of_port_v : std_logic_vector(SPI_ADDRESS_BITS - 1 downto 0) := (others => '1');
         variable data_to_spi_v, data_of_port_v : std_logic_vector(SPI_DATA_BITS - 1 downto 0) := (others => '1');
         variable check_data_from_spi_v : std_logic_vector(SPI_DATA_BITS - 1 downto 0) := (others => '1');
@@ -605,7 +582,6 @@ input_vector_file_test_gen : if DUT_TYPE = "input_vector_file_test" generate
                 next when L'LENGTH = 0;                                                     -- Skip empty lines
                 READ(L, input_command_v);
                 if input_command_v = "####"  then                                           -- Comment
---                    next;
                     input_command_type <= print_comment_line;
 
                     line_of_comments_v := (others => ' ');
@@ -618,6 +594,12 @@ input_vector_file_test_gen : if DUT_TYPE = "input_vector_file_test" generate
                 elsif input_command_v = "Read" or input_command_v = "Writ"  then            -- Read or Write command
 
                     input_command_type <= read_write_spi_cmd;
+
+                    if board_select then
+                        HREAD(L, board_sel_to_spi_v, good);
+                        assert good report "Text input file format read error" severity FAILURE;
+                        board_sel_to_spi <= to_integer(unsigned(board_sel_to_spi_v));
+                    end if;
 
                     HREAD(L, address_to_spi_v, good);
                     assert good report "Text input file format read error" severity FAILURE;
@@ -719,6 +701,10 @@ begin
     
                 WRITE (L, report_spi_access_type, left, 12);
     
+                if board_select then
+                    WRITE (L, string'("Board Select Address = "));
+                    HWRITE (L, std_logic_vector(to_unsigned(board_sel_to_spi,SPI_BOARD_SEL_ADDR_BITS)), left, 10);
+                end if;
                 WRITE (L, string'("Address = "));
                 HWRITE (L, std_logic_vector(to_unsigned(address_to_spi,SPI_ADDRESS_BITS)), left, 10);
                 WRITE (L, string'("Write Data = "));
@@ -736,7 +722,7 @@ begin
                 if (input_command_type = write_port_cmd) then
                     WRITE (L, string'("PASS  "), left, 6);
                     WRITE (L, string'("Write Pins"), left, 12);
-                elsif (input_command_type = read_port_cmd) and (to_integer(unsigned(discrete_reg_map_array_to_script_s(address_of_port))) = data_of_port) then
+                elsif (input_command_type = read_port_cmd) and (to_integer(unsigned(discrete_reg_map_array_to_script_s(address_of_port))) = data_of_port) then -- causes annoying - Warning: NUMERIC_STD.TO_INTEGER: metavalue detected, returning 0
                     WRITE (L, string'("PASS  "), left, 6);
                     WRITE (L, string'("Read Pins"), left, 12);
                 else
@@ -752,7 +738,7 @@ begin
 
                 if (input_command_type = read_port_cmd) then
                     WRITE (L, string'("Read data = "));
-                    HWRITE (L, std_logic_vector(to_unsigned(to_integer(unsigned(discrete_reg_map_array_to_script_s(address_of_port))), SPI_DATA_BITS)), left, 10);
+                    HWRITE (L, std_logic_vector(to_unsigned(to_integer(unsigned(discrete_reg_map_array_to_script_s(address_of_port))), SPI_DATA_BITS)), left, 10); -- causes annoying - Warning: NUMERIC_STD.TO_INTEGER: metavalue detected, returning 0
                 end if;
 
                 WRITELINE (F, L);
