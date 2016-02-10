@@ -26,7 +26,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 -- arithmetic functions with Signed or Unsigned values
 use IEEE.NUMERIC_STD.ALL;
 
-use work.spi_package.ALL;
+use work.gdrb_ctrl_bb_pkg.ALL;
 
 -- Uncomment the following library declaration if instantiating
 -- any Xilinx leaf cells in this code.
@@ -83,6 +83,8 @@ component spi_slave is
         o_tx_no_ack : out std_logic
         );
 end component;
+
+constant DATA_SIZE : integer := DATA_SIZE_C;
 
 signal o_rx_ready_slave_s : std_logic := '0';
 signal o_rx_ready_slave_r0 : std_logic := '0';

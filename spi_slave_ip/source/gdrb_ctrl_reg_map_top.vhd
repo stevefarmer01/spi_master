@@ -26,9 +26,9 @@ use IEEE.STD_LOGIC_1164.ALL;
 -- arithmetic functions with Signed or Unsigned values
 use IEEE.NUMERIC_STD.ALL;
 
-use work.spi_package.ALL;
+use work.gdrb_ctrl_bb_pkg.ALL;
 
-use work.gdrb_ctrl_address_pkg.ALL;
+use work.gdrb_ctrl_bb_address_pkg.ALL;
 
 -- Uncomment the following library declaration if instantiating
 -- any Xilinx leaf cells in this code.

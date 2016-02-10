@@ -45,14 +45,14 @@ use IEEE.STD_LOGIC_1164.ALL;
 -- arithmetic functions with Signed or Unsigned values
 use IEEE.NUMERIC_STD.ALL;
 
-use work.spi_package.ALL;
+use work.gdrb_ctrl_bb_pkg.ALL;
 
 -- Uncomment the following library declaration if instantiating
 -- any Xilinx leaf cells in this code.
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-package gdrb_ctrl_address_pkg is
+package gdrb_ctrl_bb_address_pkg is
     
 --.    constant gdrb_ctrl_example0_addr_c : std_logic_vector(SPI_ADDRESS_BITS-1 downto 0)      := std_logic_vector(to_unsigned(16#0#,SPI_ADDRESS_BITS));
 --.    constant gdrb_ctrl_example1_addr_c : std_logic_vector(SPI_ADDRESS_BITS-1 downto 0)      := std_logic_vector(to_unsigned(16#1#,SPI_ADDRESS_BITS));
@@ -96,8 +96,8 @@ package gdrb_ctrl_address_pkg is
     constant Year_c       : std_logic_vector(3 downto 0) := std_logic_vector(to_unsigned(16#6#,4));    -- Release year,  2016
     constant UES_2_c      : std_logic_vector(15 downto 0) := Day_c & Month_c & Year_c;
 
-end gdrb_ctrl_address_pkg;
+end gdrb_ctrl_bb_address_pkg;
 
-package body gdrb_ctrl_address_pkg is
+package body gdrb_ctrl_bb_address_pkg is
 
 end;

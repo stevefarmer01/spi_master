@@ -68,14 +68,13 @@ use ieee.numeric_std.all;
 use std.textio.all;
 use ieee.std_logic_textio.all;
 
-use work.spi_package.ALL;
---use work.spi_package_diagnostics.ALL;
-
-use work.gdrb_ctrl_address_pkg.ALL;
+use work.gdrb_ctrl_bb_pkg.ALL;
+use work.gdrb_ctrl_bb_address_pkg.ALL;
+use work.spi_board_select_pkg.ALL;
 
 entity spi_master_tb is
     generic(
-            board_select : boolean := FALSE
+            board_select : boolean := FALSE -- Use generate statement - xxxxxx_gen : if not board_select generate xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx end generate;
             );
 end spi_master_tb;
 
@@ -84,12 +83,12 @@ architecture behave of spi_master_tb is
     constant FIFO_REQ  : Boolean   := FALSE;
 
 --.--.Test using  input file
-    constant DUT_TYPE : string := "input_vector_file_test"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board unsing simple read write proceedures
-    constant make_all_addresses_writeable_for_testing : boolean := FALSE; -- This allows entire register map read write access for testbench testing of a non-module specific register map
+--.    constant DUT_TYPE : string := "input_vector_file_test"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board unsing simple read write proceedures
+--.    constant make_all_addresses_writeable_for_testing : boolean := FALSE; -- This allows entire register map read write access for testbench testing of a non-module specific register map
 
 --.Test using  input file - DIAGNOSTICS AS IT HAS ALL ADDRESSES SET TO READ/WRITABLE via 'make_all_addresses_writeable_for_testing'
---.    constant DUT_TYPE : string := "input_vector_file_test"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board unsing simple read write proceedures
---.    constant make_all_addresses_writeable_for_testing : boolean := TRUE; -- This allows entire register map read write access for testbench testing of a non-module specific register map
+    constant DUT_TYPE : string := "input_vector_file_test"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board unsing simple read write proceedures
+    constant make_all_addresses_writeable_for_testing : boolean := TRUE; -- This allows entire register map read write access for testbench testing of a non-module specific register map
 --.Simple read write as an example - without textio
 --.    constant DUT_TYPE : string := "write_and_then_read_an_address"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board
 --.    constant make_all_addresses_writeable_for_testing : boolean := TRUE; -- This allows entire register map read write access for testbench testing of a non-module specific register map
@@ -183,39 +182,57 @@ component gdrb_ctrl_reg_map_top is
             );
 end component;
 
-    signal stop_sim_on_fail : boolean := TRUE;
-    signal report_spi_access_type : string(1 to 10);
+component spi_board_select_top is
+    generic ( make_all_addresses_writeable_for_testing : boolean := FALSE ); -- This is for testbenching only
+    Port ( 
+            clk : in std_logic;
+            reset : in std_logic;
+            ---Slave SPI interface pins
+            sclk : in STD_LOGIC;
+            ss_n : in STD_LOGIC;
+            mosi : in STD_LOGIC;
+            miso : out STD_LOGIC;
+            --Discrete signals
+            reg_map_array_from_pins : in gdrb_ctrl_address_type := (others => (others => '0'));
+            reg_map_array_to_pins : out gdrb_ctrl_address_type;
+            --Non-register map read/control bits
+            interupt_flag : out std_logic := '0'
+          );
+end component;
 
-    signal address_to_spi, address_of_port : natural := 0;
-    signal data_to_spi, data_of_port : natural := 16#AA#;
-    signal check_data_from_spi : natural := 16#AA#;
+constant DATA_SIZE : integer := DATA_SIZE_C+SPI_BOARD_SEL_ADDR_BITS;
 
-    signal rx_data_from_spi : natural;
-    signal check_data_mask : natural := (2**DATA_SIZE)-1; -- Default to all '1's so that all bits of the result are checked unless mask set otherwise by input testing parameters
+signal stop_sim_on_fail : boolean := TRUE;
+signal report_spi_access_type : string(1 to 10);
 
-    signal   sys_clk_i       : std_logic                     := '0';  -- system clock
-    signal   sys_rst_i       : std_logic                     := '1';  -- system reset
-    signal   csn_i           : std_logic                     := '1';  -- SPI Master chip select
-    signal   data_i          : std_logic_vector(DATA_SIZE - 1 downto 0) := (others => '0');  -- Input data
-    signal   slave_data_i    : std_logic_vector(DATA_SIZE - 1 downto 0) := (others => '0');  -- Input data
-    signal   wr_i            : std_logic                     := '0';  -- Active Low Write, Active High Read
-    signal   rd_i            : std_logic                     := '0';  -- Active Low Write, Active High Read
-    signal   slave_addr_i    : std_logic_vector(1 downto 0)  := "00";  -- Slave Address
-    signal   spi_start_i     : std_logic                     := '0';  -- START SPI Master Transactions
-    signal   tx2tx_cycles_i  : std_logic_vector(7 downto 0) := std_logic_vector(to_unsigned(16,8));  -- SPIM interval between data transactions in terms of i_sys_clk
-    signal   slave_csn_i     : std_logic_vector(3 downto 0);  -- SPI Slave select (chip select) active low
-    signal   mosi_i          : std_logic                     := '0';  -- Master output to Slave
-    signal   miso            : std_logic                     := '1';  -- Master input from Slave
-    signal   sclk_i          : std_logic                     := '0';  -- Master clock
-    signal   ss_i            : std_logic;  -- Master
-    constant TIME_PERIOD_CLK : time                          := 10 ns;
-    shared variable cnt      : integer                       := 0;
+signal address_to_spi, address_of_port : natural := 0;
+signal data_to_spi, data_of_port : natural := 16#AA#;
+signal check_data_from_spi : natural := 16#AA#;
+
+signal rx_data_from_spi : natural;
+signal check_data_mask : natural := (2**DATA_SIZE)-1; -- Default to all '1's so that all bits of the result are checked unless mask set otherwise by input testing parameters
+
+signal   sys_clk_i       : std_logic                     := '0';  -- system clock
+signal   sys_rst_i       : std_logic                     := '1';  -- system reset
+signal   csn_i           : std_logic                     := '1';  -- SPI Master chip select
+signal   data_i          : std_logic_vector(DATA_SIZE - 1 downto 0) := (others => '0');  -- Input data
+signal   slave_data_i    : std_logic_vector(DATA_SIZE - 1 downto 0) := (others => '0');  -- Input data
+signal   wr_i            : std_logic                     := '0';  -- Active Low Write, Active High Read
+signal   rd_i            : std_logic                     := '0';  -- Active Low Write, Active High Read
+signal   slave_addr_i    : std_logic_vector(1 downto 0)  := "00";  -- Slave Address
+signal   spi_start_i     : std_logic                     := '0';  -- START SPI Master Transactions
+signal   tx2tx_cycles_i  : std_logic_vector(7 downto 0) := std_logic_vector(to_unsigned(16,8));  -- SPIM interval between data transactions in terms of i_sys_clk
+signal   slave_csn_i     : std_logic_vector(3 downto 0);  -- SPI Slave select (chip select) active low
+signal   mosi_i          : std_logic                     := '0';  -- Master output to Slave
+signal   miso            : std_logic                     := '1';  -- Master input from Slave
+signal   sclk_i          : std_logic                     := '0';  -- Master clock
+signal   ss_i            : std_logic;  -- Master
+constant TIME_PERIOD_CLK : time                          := 10 ns;
+shared variable cnt      : integer                       := 0;
 
     constant induce_fault_master_tx_c : boolean := FALSE;
---.    constant induce_fault_slave_tx_c : boolean := FALSE;
 
     signal TIME_PERIOD_CLK_S : time := 10 ns;
---    signal TIME_PERIOD_CLK_DUT_S : time := 50 ns;
     signal TIME_PERIOD_CLK_DUT_S : time := 16.67 ns;
     signal dut_sys_clk_i : std_logic := '0';
     signal dut_clk_ratio_to_testbench : integer := integer(TIME_PERIOD_CLK_DUT_S/TIME_PERIOD_CLK);
@@ -238,10 +255,6 @@ end component;
     type command_t is (read_write_spi_cmd, read_port_cmd, write_port_cmd, print_comment_line);
     signal input_command_type : command_t;
     signal line_of_comments : string(1 to 99);
-
-
---    signal test_input_s  : std_logic_vector(SPI_DATA_BITS - 1 downto 0) := (others => '0');
---    signal test_output_s : std_logic_vector(SPI_DATA_BITS - 1 downto 0) := (others => '0');
 
 
     procedure send_to_spi_master(
@@ -443,8 +456,6 @@ begin
     wait;
 end process;
 
-duff_gen : if not board_select generate
-
 clk_gen_dut_proc : process
 begin
     while not stop_clks loop
@@ -454,11 +465,10 @@ begin
     wait;
 end process;
 
-end generate;
 
 --------------------------Register Map SPI DUT----------------------------.
 
-spi_reg_map_gen : if DUT_TYPE /= "spi_slave" generate
+spi_reg_map_gen : if not board_select generate
 
     reg_map_proc : gdrb_ctrl_reg_map_top
         generic map(
@@ -478,6 +488,29 @@ spi_reg_map_gen : if DUT_TYPE /= "spi_slave" generate
                 );
 
 end generate spi_reg_map_gen;
+
+--------------------------Board Select Register Map SPI DUT----------------------------.
+
+board_sel_spi_reg_map_gen : if board_select generate
+
+    reg_map_proc : spi_board_select_top
+        generic map(
+                make_all_addresses_writeable_for_testing => make_all_addresses_writeable_for_testing -- :     natural := 16
+                )
+        Port map(  
+                clk => dut_sys_clk_i,                                          -- : std_logic;
+                reset => sys_rst_i,                                            -- : std_logic;
+                ---Slave SPI interface pins
+                sclk => sclk_i,                                                -- : in STD_LOGIC;
+                ss_n => ss_i,                                                  -- : in STD_LOGIC;
+                mosi => mosi_i,                                                -- : in STD_LOGIC;
+                miso => miso,                                                  -- : out STD_LOGIC;
+                --Discrete signals
+                reg_map_array_from_pins => discrete_reg_map_array_from_script_s, -- : in gdrb_ctrl_address_type := (others => (others => '0'));
+                reg_map_array_to_pins => discrete_reg_map_array_to_script_s      -- : out gdrb_ctrl_address_type
+                );
+
+end generate board_sel_spi_reg_map_gen;
 
 
 --------------------------MASTER SPI----------------------------.
@@ -531,6 +564,14 @@ end process;
 
 ss_i <= slave_csn_i(0) and slave_csn_i(1) and slave_csn_i(2) and slave_csn_i(3);
 
+
+
+
+
+
+duff_gen : if not board_select generate
+
+end generate;
 
 --------------------------------------------------------.
 --------------------------Inputs------------------------.

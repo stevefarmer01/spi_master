@@ -33,12 +33,12 @@ use IEEE.NUMERIC_STD.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-package spi_package is
+package gdrb_ctrl_bb_pkg is
 
     --Set sizes of data and addresse as required for particular application
     constant SPI_ADDRESS_BITS : integer := 4;
     constant SPI_DATA_BITS : integer := 16;
-    constant DATA_SIZE : integer   := SPI_ADDRESS_BITS+SPI_DATA_BITS+1;                             -- Total data size = read/write bit + address + data
+    constant DATA_SIZE_C : integer   := SPI_ADDRESS_BITS+SPI_DATA_BITS+1;                             -- Total data size = read/write bit + address + data
     --Array type for all register map values
     type gdrb_ctrl_address_type is array (integer range 0 to (SPI_ADDRESS_BITS**2)-1) of std_logic_vector(SPI_DATA_BITS-1 downto 0);
     --This function allows non-zero initialising of register map array for testing and possible other uses
@@ -46,9 +46,9 @@ package spi_package is
     --Deferred constants below
     constant gdrb_ctrl_data_array_initalise : gdrb_ctrl_address_type;
 
-end spi_package;
+end gdrb_ctrl_bb_pkg;
 
-package body spi_package is
+package body gdrb_ctrl_bb_pkg is
 
     --This function allows non-zero initialising of register map array for testing and possible other uses
     function initalise_gdrb_ctrl_data_array(inc_values_enable : boolean; inc_data_start_value : natural ) return gdrb_ctrl_address_type is
