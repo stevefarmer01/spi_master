@@ -14,31 +14,46 @@ class cmd_simple(cmd.Cmd):
   run_all_tests_results_file = "run_all_tests_results.txt"
 
   def copy_to_input_test_txt(self, test_number):
+    if os.path.isfile(self.output_test_file):       # Remove will cause run time error if file doesn't exist
+      os.remove(self.output_test_file)              # Remove previous results so that if test fails to compile/run an erroneous pass will not be detected
     print 'Running test ' + test_number + ' .........'
     print 'Copying file \'' + self.test_list_dict[test_number] + '\' to \'' + self.input_test_file + '\''
     shutil.copyfile(self.test_list_dict[test_number], self.input_test_file)
     return;
 
   def check_results(self, test_number, file=None):
-    searchfile = open(self.output_test_file, "r")
-    for line in searchfile:
-      error_in_result_file = False
-      if "ERROR" in line: 
-        error_in_result_file = True
-#          print "    " + line
-#          if not file == None:
-#            file.write(line) # python will convert \n to os.linesep # Print ERROR lines into run_all_tests_results.txt (bit confusing at the moment)
+    error_in_result_file = False
+    if os.path.isfile(self.output_test_file):       # Search will cause run time error if file doesn't exist
+      searchfile = open(self.output_test_file, "r")
+      for line in searchfile:
+        if "ERROR" in line: 
+          error_in_result_file = True
+  #          print "    " + line
+  #          if not file == None:
+  #            file.write(line) # python will convert \n to os.linesep # Print ERROR lines into run_all_tests_results.txt (bit confusing at the moment)
     if not file == None:
-      if error_in_result_file:
+      if not os.path.isfile(self.output_test_file):
+        file.write('DID NOT RUN.......')
+      elif error_in_result_file:
         file.write('FAILED............')
       else:
         file.write('PASSED............')
       file.write(test_number + '_results_' + self.test_list_dict[test_number] + '\n')
-    searchfile.close()
+    else:
+      if not os.path.isfile(self.output_test_file):
+        test_status = 'DID NOT RUN.......'
+      elif error_in_result_file:
+        test_status = 'FAILED............'
+      else:
+        test_status = 'PASSED............'
+      print '\n' + test_status + test_number + '_results_' + self.test_list_dict[test_number] + '\n'
+    if os.path.isfile(self.output_test_file):       # Close will cause run time error if file doesn't exist
+      searchfile.close()
 
   def copy_results(self, test_number):
     print 'Copying test result to directory - /' + self.test_results_dir
-    shutil.copyfile(self.output_test_file, "test_results/" + test_number + '_results_' + self.test_list_dict[test_number])
+    if os.path.isfile(self.output_test_file):       # Copy will cause run time error if file doesn't exist
+      shutil.copyfile(self.output_test_file, "test_results/" + test_number + '_results_' + self.test_list_dict[test_number])
 
 
   def do_run_test_gui(self, test_number):

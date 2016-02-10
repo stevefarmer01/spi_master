@@ -33,22 +33,24 @@ use IEEE.NUMERIC_STD.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-package spi_package is
+package spi_board_select_pkg is
 
     --Set sizes of data and addresse as required for particular application
-    constant SPI_ADDRESS_BITS : integer := 4;
-    constant SPI_DATA_BITS : integer := 16;
-    constant DATA_SIZE : integer   := SPI_ADDRESS_BITS+SPI_DATA_BITS+1;                             -- Total data size = read/write bit + address + data
+    constant SPI_BOARD_SEL_ADDR_BITS : integer := 4;
+    constant SPI_ADDRESS_BITS : integer := 6;
+    constant SPI_DATA_BITS : integer := 8;
+    constant DATA_SIZE : integer   := SPI_BOARD_SEL_ADDR_BITS+SPI_ADDRESS_BITS+SPI_DATA_BITS+1;                             -- Total data size = board select address + read/write bit + address + data
     --Array type for all register map values
+    type input_data_type is array (integer range 0 to 15) of std_logic_vector(DATA_SIZE - 1 downto 0);
     type gdrb_ctrl_address_type is array (integer range 0 to (SPI_ADDRESS_BITS**2)-1) of std_logic_vector(SPI_DATA_BITS-1 downto 0);
     --This function allows non-zero initialising of register map array for testing and possible other uses
     function initalise_gdrb_ctrl_data_array(inc_values_enable : boolean; inc_data_start_value : natural ) return gdrb_ctrl_address_type;
     --Deferred constants below
     constant gdrb_ctrl_data_array_initalise : gdrb_ctrl_address_type;
 
-end spi_package;
+end spi_board_select_pkg;
 
-package body spi_package is
+package body spi_board_select_pkg is
 
     --This function allows non-zero initialising of register map array for testing and possible other uses
     function initalise_gdrb_ctrl_data_array(inc_values_enable : boolean; inc_data_start_value : natural ) return gdrb_ctrl_address_type is

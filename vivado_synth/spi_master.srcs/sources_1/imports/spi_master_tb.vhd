@@ -69,11 +69,14 @@ use std.textio.all;
 use ieee.std_logic_textio.all;
 
 use work.spi_package.ALL;
-use work.spi_package_diagnostics.ALL;
+--use work.spi_package_diagnostics.ALL;
 
 use work.gdrb_ctrl_address_pkg.ALL;
 
 entity spi_master_tb is
+    generic(
+            board_select : boolean := FALSE
+            );
 end spi_master_tb;
 
 architecture behave of spi_master_tb is
@@ -440,6 +443,8 @@ begin
     wait;
 end process;
 
+duff_gen : if not board_select generate
+
 clk_gen_dut_proc : process
 begin
     while not stop_clks loop
@@ -449,6 +454,7 @@ begin
     wait;
 end process;
 
+end generate;
 
 --------------------------Register Map SPI DUT----------------------------.
 
@@ -467,8 +473,6 @@ spi_reg_map_gen : if DUT_TYPE /= "spi_slave" generate
                 mosi => mosi_i,                                                -- : in STD_LOGIC;
                 miso => miso,                                                  -- : out STD_LOGIC;
                 --Discrete signals
---                test_input => test_input_s,                                    -- : in std_logic_vector(SPI_DATA_BITS - 1 downto 0);
---                test_output => test_output_s,                                  -- : out std_logic_vector(SPI_DATA_BITS - 1 downto 0)
                 reg_map_array_from_pins => discrete_reg_map_array_from_script_s, -- : in gdrb_ctrl_address_type := (others => (others => '0'));
                 reg_map_array_to_pins => discrete_reg_map_array_to_script_s      -- : out gdrb_ctrl_address_type
                 );
@@ -630,13 +634,7 @@ input_vector_file_test_gen : if DUT_TYPE = "input_vector_file_test" generate
 
 end generate input_vector_file_test_gen;
 
---discrete_reg_map_array_from_pins_s(0) <= test_output_s;
---test_input_s <= discrete_reg_map_array_to_pins_s(1);
 
---address_of_port <= to_integer(unsigned(address_of_port_v));
---data_of_port <= to_integer(unsigned(data_of_port_v));
-
---    type command_t is (read_write_spi_cmd, read_port_cmd, write_port_cmd);
 ---------------------------------------------------------.
 --------------------------Outputs------------------------.
 ---------------------------------------------------------.
@@ -829,200 +827,6 @@ spi_reg_map_test_simple_gen : if DUT_TYPE = "spi_reg_map_simple" generate
         wait;
     end process;
 end generate spi_reg_map_test_simple_gen;
-
-
-
---.------------------------------Register Map specific test------------------------------.
---.gdrb_ctrl_reg_map_test_gen : if DUT_TYPE = "gdrb_ctrl_reg_map_test" generate
---.
---.    stop_sim_on_fail <= FALSE;
---.
---.    main_control_proc : process
---.    begin
---.            TIME_PERIOD_CLK_DUT_S <= TIME_PERIOD_CLK_DUT_S + 1 ns;                                                         -- Auto increment when loop this routine to check lowest clk frequency DUT can run at and still work this SPI interface
---.            dut_clk_ratio_to_testbench <= integer(TIME_PERIOD_CLK_DUT_S/TIME_PERIOD_CLK);                                  -- Ratio for getting delays in testbench correct when DUT clk frequency is slowed down by line above
---.
---.            wait for TIME_PERIOD_CLK* 20 * dut_clk_ratio_to_testbench;                                                     -- Wait for sys_rst_i to propagate through DUT especially if DUT is running a much slower clock
---.            
---.            --Check initialised value
---.            address_to_spi <= 16#0#;
---.            data_to_spi <= 16#0#;
---.            check_data_from_spi <= 16#0#;
---.            check_data_mask <= 16#FFFF#; -- Check all bits back in rx reply
---.            reg_map_r_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
---.
---.            --Check initialised value
---.            address_to_spi <= 16#1#;
---.            data_to_spi <= 16#0#;
---.            check_data_from_spi <= 16#1#;
---.            reg_map_r_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
---.
---.            --Check initialised value
---.            address_to_spi <= 16#2#;
---.            data_to_spi <= 16#0#;
---.            check_data_from_spi <= 16#2#;
---.            reg_map_r_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
---.
---.            --Check address can be written and read
---.            address_to_spi <= 16#0#;
---.            data_to_spi <= 16#AAAA#;
---.            check_data_from_spi <= 16#AAAA#;
---.            reg_map_rw_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
---.
---.            --Check address can be written and read
---.            address_to_spi <= 16#2#;
---.            data_to_spi <= 16#5555#;
---.            check_data_from_spi <= 16#5555#;
---.            reg_map_rw_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
---.
---.            --Check address can be written and read
---.            address_to_spi <= 16#3#;
---.            reg_map_rw_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
---.
---.            address_to_spi <= 16#5#;
---.            reg_map_rw_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
---.
---.
---.            address_to_spi <= 16#A#;
---.            reg_map_rw_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
---.
---.            --Check initialised value
---.            address_to_spi <= 16#B#;
---.            check_data_from_spi <= to_integer(unsigned(Position_c) & unsigned(VersionNo_c));
---.            reg_map_r_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
---.
---.            --Check initialised value
---.            address_to_spi <= 16#C#;
---.            check_data_from_spi <= to_integer(unsigned(Day_c) & unsigned(Month_c) & unsigned(Year_c));
---.            reg_map_r_check(rx_data_from_spi, data_i, spi_start_i, wr_i, rd_i, report_spi_access_type, stop_clks);
---.
---.------------------------------FINSHED SIMULATION------------------------------.
---.        stop_clks <= TRUE;                                                                  -- Always stop simulator when all tests have completed
---.        wait;
---.
---.    end process;
---.end generate gdrb_ctrl_reg_map_test_gen;
-
-
---.------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------.
---.----------------these routines below are more diagnostics routine for initial designing of interface than an actual functional test and so shouldn't be run----------.
---.------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------.
---.--------------------------Slave SPI DUT----------------------------.
---.spi_master_gen : if DUT_TYPE = "spi_slave" generate
---.
---.    --.Induce fault to check test bench if desired
---.    data_i_slave_tx <= (data_i(data_i'HIGH downto 2) & "11") when induce_fault_slave_tx_c else data_i;
---.
---.    spi_slave_inst : spi_slave
---.        generic map(
---.            DATA_SIZE => DATA_SIZE)
---.        port map(
---.        i_sys_clk      => sys_clk_i,       -- : in  std_logic;                                               -- system clock
---.        i_sys_rst      => sys_rst_i,       -- : in  std_logic;                                               -- system reset
---.        i_csn          => '0',             -- : in  std_logic;                                               -- chip select for SPI master
---.        i_data         => data_i_slave_tx, -- : in  std_logic_vector(15 downto 0);                           -- Input data
---.        i_wr           => wr_i,            -- : in  std_logic;                                               -- Active Low Write, Active High Read
---.        i_rd           => '0',             -- : in  std_logic;                                               -- Active Low Write, Active High Read
---.        o_data      => o_data_slave,       -- o_data     : out std_logic_vector(15 downto 0);  --output data
---.        o_tx_ready  => open,               -- o_tx_ready : out std_logic;                                    -- Transmitter ready, can write another
---.        o_rx_ready  => o_rx_ready_slave,   -- o_rx_ready : out std_logic;                                    -- Receiver ready, can read data
---.        o_tx_error  => open,               -- o_tx_error : out std_logic;                                    -- Transmitter error
---.        o_rx_error  => open,               -- o_rx_error : out std_logic;                                    -- Receiver error
---.        ---i_cpol      => i_cpol,          -- i_cpol      : in std_logic;                                    -- CPOL value - 0 or 1
---.        ---i_cpha      => i_cpha,          -- i_cpha      : in std_logic;                                    -- CPHA value - 0 or 1
---.        ---i_lsb_first => i_lsb_first,     -- i_lsb_first : in std_logic;                                    -- lsb first when '1' /msb first when
---.        i_cpol         => '0',             -- : in  std_logic;                                               -- CPOL value - 0 or 1
---.        i_cpha         => '0',             -- : in  std_logic;                                               -- CPHA value - 0 or 1
---.        i_lsb_first    => '0',             -- : in  std_logic;                                               -- lsb first when '1' /msb first when
---.        i_ssn       => ss_i,               -- i_ssn  : in  std_logic;                                        -- Slave Slect Active low
---.        i_mosi      => mosi_i,             -- i_mosi : in  std_logic;                                        -- Slave input from Master
---.        o_miso      => miso,               -- o_miso : out std_logic;                                        -- Slave output to Master
---.        i_sclk      => sclk_i,             -- i_sclk : in  std_logic;                                        -- Clock from SPI Master
---.        o_tx_ack    => open,               -- o_tx_ack : out std_logic;
---.        o_tx_no_ack => open                -- o_tx_no_ack : out std_logic
---.            );
---.
---.    --.Instantaneous check if tx/rx values agree
---.    master_slave_match <= TRUE when data_i = o_data_slave else FALSE;
---.    --.Latch the failure if when rx ready goes high and tx/rx values don't agree
---.    latch_match_proc : process
---.    begin
---.        wait until o_rx_ready_slave = '1';
---.        if not (data_i = o_data_slave) then
---.            master_to_slave_rx_match_latch <= FALSE;
---.        else
---.            master_to_slave_rx_match_latch <= TRUE;
---.        end if;
---.    end process;
---.
---.end generate spi_master_gen;
---.
---.TIME_PERIOD_CLK_S <= TIME_PERIOD_CLK;
---.
---.spi_master_test_routine_gen : if DUT_TYPE = "spi_slave" generate
---.    main_control_proc : process
---.    begin
---.        while TRUE loop
---.            TIME_PERIOD_CLK_DUT_S <= TIME_PERIOD_CLK_DUT_S + 1 ns;
---.            dut_clk_ratio_to_testbench <= integer(TIME_PERIOD_CLK_DUT_S/TIME_PERIOD_CLK);
---.
---.                --.Proceedure for testing low level spi_slave.vhd - this only checks slave can receive, it doesn't check what it transmits back
---.                spi_main_test_loop (TIME_PERIOD_CLK => TIME_PERIOD_CLK_S, -- : in time;
---.                                                sys_clk_i => sys_clk_i, -- : in std_logic;
---.                                                spi_start_i => spi_start_i, -- : out std_logic;
---.                                                FIFO_REQ => FIFO_REQ, -- : in boolean := FALSE;
---.                                                input_data => input_data, -- : in input_data_type;
---.                                                ss_i => ss_i, -- : in std_logic;
---.                                                data_i => data_i, -- : out std_logic_vector(DATA_SIZE - 1 downto 0);
---.                                                wr_i => wr_i, -- : out std_logic;
---.                                                tx2tx_cycles_i => tx2tx_cycles_i, -- : out std_logic_vector;
---.                                                rd_i => rd_i, -- : out std_logic
---.                                                stop_clks => stop_clks, -- : out boolean
---.                                                dut_clk_ratio_to_testbench => dut_clk_ratio_to_testbench, -- : in boolean
---.                                                slave_to_master_rx_match_latch => slave_to_master_rx_match_latch, -- : in boolean
---.                                                master_rx_activity => master_rx_activity, -- : integer
---.                                                single_test_run_only => FALSE -- : boolean
---.                                                 ); 
---.
---.        end loop;
---.    end process;
---.end generate spi_master_test_routine_gen;
---.
---.
---.spi_reg_map_test_routine_gen : if DUT_TYPE = "spi_reg_map" generate
---.    main_control_proc : process
---.    begin
---.        while TRUE loop
---.            TIME_PERIOD_CLK_DUT_S <= TIME_PERIOD_CLK_DUT_S + 1 ns;
---.            dut_clk_ratio_to_testbench <= integer(TIME_PERIOD_CLK_DUT_S/TIME_PERIOD_CLK);
---.
---.                spi_main_test_loop_reg_map (TIME_PERIOD_CLK => TIME_PERIOD_CLK_S, -- : in time;
---.                                                sys_clk_i => sys_clk_i, -- : in std_logic;
---.                                                spi_start_i => spi_start_i, -- : out std_logic;
---.                                                FIFO_REQ => FIFO_REQ, -- : in boolean := FALSE;
---.                                                ss_i => ss_i, -- : in std_logic;
---.                                                data_i => data_i, -- : out std_logic_vector(DATA_SIZE - 1 downto 0);
---.                                                wr_i => wr_i, -- : out std_logic;
---.                                                tx2tx_cycles_i => tx2tx_cycles_i, -- : out std_logic_vector;
---.                                                rd_i => rd_i, -- : out std_logic
---.                                                stop_clks => stop_clks, -- : out boolean
---.                                                dut_clk_ratio_to_testbench => dut_clk_ratio_to_testbench, -- : in boolean
---.                                                --.slave_to_master_rx_match_latch => slave_to_master_rx_match_latch, -- : in boolean
---.                                                master_rx_activity => master_rx_activity, -- : integer
---.                                                o_data_master => o_data_master, -- : in std_logic_vector;
---.                                                slave_to_master_rx_match_latch => slave_to_master_rx_match_latch_result, -- : out boolean;
---.                                                slave_to_master_tx_match_latch => slave_to_master_tx_match_latch_result, -- : out boolean;
---.                                                single_test_run_only => FALSE, -- : boolean
---.                                                test_0 => test_0,
---.                                                test_1 => test_1
---.                                                 );
---.            ---Send reset to DUT as during transmitting to it this will write to it's internal reg map array and recieve test rely on it's power-on reset values 
---.            trigger_another_reset_s <= TRUE;
---.            wait for TIME_PERIOD_CLK;
---.            trigger_another_reset_s <= FALSE;
---.        end loop;
---.    end process;
---.end generate spi_reg_map_test_routine_gen;
 
 
 end behave;
