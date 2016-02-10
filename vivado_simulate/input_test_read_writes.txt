@@ -100,54 +100,6 @@ Read 	F 		0000 		0126 		FFFF 	# ....does nothing
 
 
 
-#### Tests in development
-
-#### #### internal reg Test 	- DIAGNOSTICS_INTERUPTS_ADDR_C
-#### Writ 	2 		0000 		0000 		0000 	# Do a SPI write to clear interupt masks....
-#### Read 	D 		0000 		0000 		FFFF 	# Read default value to check no interupts have been asserted
-#### #### in pins Test 		- SENSOR_STATUS_ADDR_C
-#### Read 	0 		0000 		0000 		FFFF 	# Read default value
-#### Writ 	0 		1111 		0000 		0000 	# Test a SPI write ....
-#### Read 	0 		0000 		0000 		FFFF 	# ....does nothing to the reg map register
-#### WrPo	0		2222 							# Test a write to discrete pins....
-#### Read 	0 		0000 		2222 		FFFF 	# ....can be read back over SPI through the reg map
-#### 
-#### #### internal reg Test 	- SENSOR_EDGE_ADDR_C
-#### Read 	1 		0000 		2222 		FFFF 	# Read all values that have toggled in SENSOR_STATUS_ADDR_C
-#### Writ 	1 		0000 		0000 		0000 	# Test a SPI write of all 0's....
-#### Read 	1 		0000 		2222 		FFFF 	# ....and this should produce no change
-#### WrPo	0		1111 							# Test a write to discrete pins....
-#### Read 	1 		0000 		3333 		FFFF 	# Read all values that have toggled in SENSOR_STATUS_ADDR_C
-#### Writ 	1 		FFFF 		0000 		0000 	# Test a SPI write of 0xFFFF....
-#### Read 	1 		0000 		CCCC 		FFFF 	# ....and check all bits toggle
-#### #### internal reg Test 	- DIAGNOSTICS_INTERUPTS_ADDR_C
-#### Read 	D 		0000 		0000 		FFFF 	# Read default value to check no interupts have been asserted as they are all masked
-#### 
-#### #### internal reg Test 	- DIAGNOSTICS_INTERUPTS_ADDR_C
-#### #### check toggle register bits cause interupt
-#### Writ 	2 		FFFF 		0000 		0000 	# Do a SPI write to enable interupt masks
-#### Read 	1 		0000 		0000 		0000 	# Test a SPI read to see bit toggle
-#### Writ 	1 		0001 		0000 		0000 	# Do SPI write to toggle one bit in edge reg 
-#### Read 	1 		0000 		0000 		0000 	# Test a SPI read to see bit toggle
-#### Read 	D 		0000 		0001 		FFFF 	# Read SPI to check interupts have been asserted
-#### Writ 	2 		FFFE 		0000 		0000 	# Do a SPI write to clear interupt mask 0
-#### Read 	D 		0000 		0000 		FFFF 	# Read SPI to check interupts have been asserted
-#### #### check pin causes interupt
-#### Writ 	2 		0000 		0000 		0000 	# Do a SPI write to disable interupt masks
-#### WrPo	0		0000 							# Test pins 
-#### Read 	D 		0000 		0000 		FFFF 	# Read SPI to check interupts have been asserted
-#### Writ 	2 		FFFF 		0000 		0000 	# Do a SPI write to enable interupt masks
-#### Read 	D 		0000 		0000 		FFFF 	# Read SPI to check interupts have been asserted
-
-
-
-
-#### RdPo	1		0000 							# Test this write has not made it to the pins 
-#### WrPo	1		4444 							# Test a write to discrete pins.... 
-#### Read 	1 		0000 		3333 		FFFF 	# ...does nothing to the reg map register
-
-
-
 
 
 

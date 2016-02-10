@@ -70,11 +70,3 @@ Read 	D 		0000 		8004 		FFFF 	# Read SPI to check interupts have been set
 Writ 	7 		0001 		0000 		0000 	# Do SPI write to toggle one bit in edge reg 
 Read 	7 		0000 		0000 		FFFF 	# Test a SPI read to see bit toggle cleared
 Read 	D 		0000 		0000 		FFFF 	# Read SPI to check interupts have been cleared
-
-
-
-
-
-
-
-
