@@ -229,14 +229,18 @@ begin
             rx_data_count_pos_sclk_i         <= (others => '0');
             rx_done_pos_sclk_i               <= '0';
         elsif rising_edge(i_sys_clk) then
-            if i_sclk_rising_edge_s = '1' then
-                if (i_ssn = '0' and ((i_cpol = '0' and i_cpha = '0') or (i_cpol = '1' and i_cpha = '1'))) then
-                    if (rx_data_count_pos_sclk_i = DATA_SIZE - 1) then
-                        rx_data_count_pos_sclk_i <= (others => '0');
-                        rx_done_pos_sclk_i       <= '1';
-                    elsif (i_ssn = '0') then
-                        rx_data_count_pos_sclk_i <= rx_data_count_pos_sclk_i + 1;
-                        rx_done_pos_sclk_i       <= '0';
+            if i_ssn = '1' then
+                rx_data_count_pos_sclk_i <= (others => '0');
+            else
+                if i_sclk_rising_edge_s = '1' then
+                    if (i_ssn = '0' and ((i_cpol = '0' and i_cpha = '0') or (i_cpol = '1' and i_cpha = '1'))) then
+                        if (rx_data_count_pos_sclk_i = DATA_SIZE - 1) then
+    --                        rx_data_count_pos_sclk_i <= (others => '0');
+                            rx_done_pos_sclk_i       <= '1';
+                        elsif (i_ssn = '0') then
+                            rx_data_count_pos_sclk_i <= rx_data_count_pos_sclk_i + 1;
+                            rx_done_pos_sclk_i       <= '0';
+                        end if;
                     end if;
                 end if;
             end if;
@@ -272,13 +276,17 @@ begin
             rx_data_count_neg_sclk_i     <= (others => '0');
             rx_done_neg_sclk_i           <= '0';
         elsif rising_edge(i_sys_clk) then
-            if i_sclk_falling_edge_s = '1' then
-                if (rx_data_count_neg_sclk_i = DATA_SIZE - 1) then
-                    rx_data_count_neg_sclk_i <= (others => '0');
-                    rx_done_neg_sclk_i       <= '1';
-                elsif (i_ssn = '0') then
-                    rx_data_count_neg_sclk_i <= rx_data_count_neg_sclk_i + 1;
-                    rx_done_neg_sclk_i       <= '0';
+            if i_ssn = '1' then
+                rx_data_count_neg_sclk_i <= (others => '0');
+            else
+                if i_sclk_falling_edge_s = '1' then
+                    if (rx_data_count_neg_sclk_i = DATA_SIZE - 1) then
+--                        rx_data_count_neg_sclk_i <= (others => '0');
+                        rx_done_neg_sclk_i       <= '1';
+                    elsif (i_ssn = '0') then
+                        rx_data_count_neg_sclk_i <= rx_data_count_neg_sclk_i + 1;
+                        rx_done_neg_sclk_i       <= '0';
+                    end if;
                 end if;
             end if;
         end if;
@@ -317,8 +325,8 @@ begin
         elsif rising_edge(i_sys_clk) then
             if (rx_done_reg2_i = '1' and rx_done_reg3_i = '0') then
                 rx_ready_i <= '1';
-            elsif (i_ssn = '1' and i_csn = '0') then
-                rx_ready_i <= '1';
+--            elsif (i_ssn = '1' and i_csn = '0') then
+--                rx_ready_i <= '1';
 	    elsif (i_ssn = '0' and i_csn = '0') then
                 rx_ready_i <= '0';
             end if;

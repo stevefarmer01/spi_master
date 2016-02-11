@@ -12,7 +12,7 @@
          </top_modules>
       </db_ref>
    </db_ref_list>
-   <WVObjectSize size="35" />
+   <WVObjectSize size="28" />
    <wvobject db_ref_id="1" fp_name="/spi_master_tb/sys_clk_i" type="logic">
       <obj_property name="ElementShortName">sys_clk_i</obj_property>
       <obj_property name="ObjectShortName">sys_clk_i</obj_property>
@@ -65,94 +65,69 @@
       <obj_property name="label">spi_board_select</obj_property>
       <obj_property name="DisplayName">label</obj_property>
    </wvobject>
-   <wvobject db_ref_id="1" fp_name="/spi_master_tb/board_sel_spi_reg_map_gen/reg_map_proc/spi_board_select_slave_proc/clk" type="logic">
-      <obj_property name="ElementShortName">clk</obj_property>
-      <obj_property name="ObjectShortName">clk</obj_property>
-   </wvobject>
-   <wvobject db_ref_id="1" fp_name="/spi_master_tb/board_sel_spi_reg_map_gen/reg_map_proc/spi_board_select_slave_proc/reset" type="logic">
-      <obj_property name="ElementShortName">reset</obj_property>
-      <obj_property name="ObjectShortName">reset</obj_property>
-   </wvobject>
-   <wvobject db_ref_id="1" fp_name="/spi_master_tb/board_sel_spi_reg_map_gen/reg_map_proc/spi_board_select_slave_proc/sclk" type="logic">
-      <obj_property name="ElementShortName">sclk</obj_property>
-      <obj_property name="ObjectShortName">sclk</obj_property>
-   </wvobject>
-   <wvobject db_ref_id="1" fp_name="/spi_master_tb/board_sel_spi_reg_map_gen/reg_map_proc/spi_board_select_slave_proc/ss_n" type="logic">
-      <obj_property name="ElementShortName">ss_n</obj_property>
-      <obj_property name="ObjectShortName">ss_n</obj_property>
-   </wvobject>
-   <wvobject db_ref_id="1" fp_name="/spi_master_tb/board_sel_spi_reg_map_gen/reg_map_proc/spi_board_select_slave_proc/mosi" type="logic">
-      <obj_property name="ElementShortName">mosi</obj_property>
-      <obj_property name="ObjectShortName">mosi</obj_property>
-   </wvobject>
    <wvobject db_ref_id="1" fp_name="/spi_master_tb/data_i" type="array">
-      <obj_property name="ElementShortName">data_i[24:0]</obj_property>
-      <obj_property name="ObjectShortName">data_i[24:0]</obj_property>
+      <obj_property name="ElementShortName">data_i[20:0]</obj_property>
+      <obj_property name="ObjectShortName">data_i[20:0]</obj_property>
    </wvobject>
-   <wvobject db_ref_id="1" fp_name="/spi_master_tb/board_sel_spi_reg_map_gen/reg_map_proc/spi_board_select_slave_proc/board_select" type="array">
-      <obj_property name="ElementShortName">board_select[3:0]</obj_property>
-      <obj_property name="ObjectShortName">board_select[3:0]</obj_property>
-   </wvobject>
-   <wvobject db_ref_id="1" fp_name="/spi_master_tb/board_sel_spi_reg_map_gen/reg_map_proc/spi_board_select_slave_proc/board_select_valid" type="logic">
-      <obj_property name="ElementShortName">board_select_valid</obj_property>
-      <obj_property name="ObjectShortName">board_select_valid</obj_property>
-   </wvobject>
-   <wvobject db_ref_id="1" fp_name="/spi_master_tb/board_sel_spi_reg_map_gen/reg_map_proc/spi_board_select_slave_proc/o_rx_ready_slave_s" type="logic">
-      <obj_property name="ElementShortName">o_rx_ready_slave_s</obj_property>
-      <obj_property name="ObjectShortName">o_rx_ready_slave_s</obj_property>
-   </wvobject>
-   <wvobject db_ref_id="1" fp_name="/spi_master_tb/board_sel_spi_reg_map_gen/reg_map_proc/spi_board_select_slave_proc/o_rx_ready_slave_r0" type="logic">
-      <obj_property name="ElementShortName">o_rx_ready_slave_r0</obj_property>
-      <obj_property name="ObjectShortName">o_rx_ready_slave_r0</obj_property>
-   </wvobject>
-   <wvobject db_ref_id="1" fp_name="/spi_master_tb/board_sel_spi_reg_map_gen/reg_map_proc/spi_board_select_slave_proc/o_rx_ready_rising_edge_s" type="logic">
-      <obj_property name="ElementShortName">o_rx_ready_rising_edge_s</obj_property>
-      <obj_property name="ObjectShortName">o_rx_ready_rising_edge_s</obj_property>
-   </wvobject>
-   <wvobject db_ref_id="1" fp_name="/spi_master_tb/board_sel_spi_reg_map_gen/reg_map_proc/spi_board_select_slave_proc/o_data_slave_s" type="array">
-      <obj_property name="ElementShortName">o_data_slave_s[3:0]</obj_property>
-      <obj_property name="ObjectShortName">o_data_slave_s[3:0]</obj_property>
-   </wvobject>
-   <wvobject db_ref_id="1" fp_name="/spi_master_tb/board_sel_spi_reg_map_gen/reg_map_proc/spi_board_select_slave_proc/BOARD_SELECT_ADDRESS_SIZE" type="other">
-      <obj_property name="ElementShortName">BOARD_SELECT_ADDRESS_SIZE</obj_property>
-      <obj_property name="ObjectShortName">BOARD_SELECT_ADDRESS_SIZE</obj_property>
-   </wvobject>
-   <wvobject type="divider" fp_name="divider39">
-      <obj_property name="label">slave</obj_property>
+   <wvobject type="divider" fp_name="divider37">
+      <obj_property name="label">reg_map_top</obj_property>
       <obj_property name="DisplayName">label</obj_property>
    </wvobject>
-   <wvobject db_ref_id="1" fp_name="/spi_master_tb/dut_clk_ratio_to_testbench" type="other">
-      <obj_property name="ElementShortName">dut_clk_ratio_to_testbench</obj_property>
-      <obj_property name="ObjectShortName">dut_clk_ratio_to_testbench</obj_property>
-      <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+   <wvobject type="divider" fp_name="divider28">
+      <obj_property name="label">reg_map_selected_inst</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
    </wvobject>
-   <wvobject db_ref_id="1" fp_name="/spi_master_tb/TIME_PERIOD_CLK_DUT_S" type="other">
-      <obj_property name="ElementShortName">TIME_PERIOD_CLK_DUT_S</obj_property>
-      <obj_property name="ObjectShortName">TIME_PERIOD_CLK_DUT_S</obj_property>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_reg_map_gen/reg_map_proc/reg_map_spi_slave_inst/spi_slave_inst/o_miso" type="logic">
+      <obj_property name="ElementShortName">o_miso</obj_property>
+      <obj_property name="ObjectShortName">o_miso</obj_property>
    </wvobject>
-   <wvobject db_ref_id="1" fp_name="/spi_master_tb/stop_clks" type="other">
-      <obj_property name="ElementShortName">stop_clks</obj_property>
-      <obj_property name="ObjectShortName">stop_clks</obj_property>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_reg_map_gen/reg_map_proc/reg_map_spi_slave_inst/spi_slave_inst/i_mosi" type="logic">
+      <obj_property name="ElementShortName">i_mosi</obj_property>
+      <obj_property name="ObjectShortName">i_mosi</obj_property>
    </wvobject>
-   <wvobject db_ref_id="1" fp_name="/spi_master_tb/o_tx_ready_master" type="logic">
-      <obj_property name="ElementShortName">o_tx_ready_master</obj_property>
-      <obj_property name="ObjectShortName">o_tx_ready_master</obj_property>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_reg_map_gen/reg_map_proc/reg_map_spi_slave_inst/spi_slave_inst/i_ssn" type="logic">
+      <obj_property name="ElementShortName">i_ssn</obj_property>
+      <obj_property name="ObjectShortName">i_ssn</obj_property>
    </wvobject>
-   <wvobject db_ref_id="1" fp_name="/spi_master_tb/o_rx_ready_master" type="logic">
-      <obj_property name="ElementShortName">o_rx_ready_master</obj_property>
-      <obj_property name="ObjectShortName">o_rx_ready_master</obj_property>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_reg_map_gen/reg_map_proc/reg_map_spi_slave_inst/spi_slave_inst/i_sclk" type="logic">
+      <obj_property name="ElementShortName">i_sclk</obj_property>
+      <obj_property name="ObjectShortName">i_sclk</obj_property>
    </wvobject>
-   <wvobject db_ref_id="1" fp_name="/spi_master_tb/rx_data_from_spi" type="other">
-      <obj_property name="ElementShortName">rx_data_from_spi</obj_property>
-      <obj_property name="ObjectShortName">rx_data_from_spi</obj_property>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_reg_map_gen/reg_map_proc/reg_map_spi_slave_inst/spi_slave_inst/tx_ready_i" type="logic">
+      <obj_property name="ElementShortName">tx_ready_i</obj_property>
+      <obj_property name="ObjectShortName">tx_ready_i</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_reg_map_gen/reg_map_proc/reg_map_spi_slave_inst/spi_slave_inst/i_wr" type="logic">
+      <obj_property name="ElementShortName">i_wr</obj_property>
+      <obj_property name="ObjectShortName">i_wr</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_reg_map_gen/reg_map_proc/reg_map_spi_slave_inst/spi_slave_inst/i_csn" type="logic">
+      <obj_property name="ElementShortName">i_csn</obj_property>
+      <obj_property name="ObjectShortName">i_csn</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_reg_map_gen/reg_map_proc/reg_map_spi_slave_inst/spi_slave_inst/rx_data_count_pos_sclk_i" type="array">
+      <obj_property name="ElementShortName">rx_data_count_pos_sclk_i[5:0]</obj_property>
+      <obj_property name="ObjectShortName">rx_data_count_pos_sclk_i[5:0]</obj_property>
       <obj_property name="Radix">HEXRADIX</obj_property>
    </wvobject>
-   <wvobject db_ref_id="1" fp_name="/spi_master_tb/master_to_slave_rx_match_latch" type="other">
-      <obj_property name="ElementShortName">master_to_slave_rx_match_latch</obj_property>
-      <obj_property name="ObjectShortName">master_to_slave_rx_match_latch</obj_property>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_reg_map_gen/reg_map_proc/reg_map_spi_slave_inst/spi_slave_inst/tx_data_count_pos_sclk_i" type="array">
+      <obj_property name="ElementShortName">tx_data_count_pos_sclk_i[5:0]</obj_property>
+      <obj_property name="ObjectShortName">tx_data_count_pos_sclk_i[5:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
    </wvobject>
-   <wvobject type="divider" fp_name="divider67">
-      <obj_property name="label">DUT</obj_property>
-      <obj_property name="DisplayName">label</obj_property>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_reg_map_gen/reg_map_proc/reg_map_spi_slave_inst/spi_slave_inst/rx_data_count_neg_sclk_i" type="array">
+      <obj_property name="ElementShortName">rx_data_count_neg_sclk_i[5:0]</obj_property>
+      <obj_property name="ObjectShortName">rx_data_count_neg_sclk_i[5:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_reg_map_gen/reg_map_proc/reg_map_spi_slave_inst/spi_slave_inst/tx_data_count_neg_sclk_i" type="array">
+      <obj_property name="ElementShortName">tx_data_count_neg_sclk_i[5:0]</obj_property>
+      <obj_property name="ObjectShortName">tx_data_count_neg_sclk_i[5:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_reg_map_gen/reg_map_proc/reg_map_spi_slave_inst/spi_slave_inst/DATA_SIZE" type="other">
+      <obj_property name="ElementShortName">DATA_SIZE</obj_property>
+      <obj_property name="ObjectShortName">DATA_SIZE</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
    </wvobject>
 </wave_config>

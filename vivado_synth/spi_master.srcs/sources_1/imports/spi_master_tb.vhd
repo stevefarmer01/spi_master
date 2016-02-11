@@ -268,7 +268,12 @@ shared variable cnt      : integer                       := 0;
     
                         wait for to_integer(unsigned(tx2tx_cycles_i)) * TIME_PERIOD_CLK * dut_clk_ratio_to_testbench; -- wait tx to tx minimum period which is implemented in master's sclk_gen component
     
-                        rx_data_from_spi <= to_integer(unsigned(o_data_master(o_data_master'LEFT downto o_data_master'LEFT-(SPI_DATA_BITS-1)))); -- rx data by master SPI
+                        if board_select then
+                            rx_data_from_spi <= to_integer(unsigned(o_data_master(o_data_master'LEFT-SPI_BOARD_SEL_ADDR_BITS downto o_data_master'LEFT-SPI_BOARD_SEL_ADDR_BITS-(SPI_DATA_BITS-1)))); -- rx data by master SPI
+--                            rx_data_from_spi <= to_integer(unsigned(o_data_master(o_data_master'LEFT downto o_data_master'LEFT-(SPI_DATA_BITS-1)))); -- rx data by master SPI
+                        else
+                            rx_data_from_spi <= to_integer(unsigned(o_data_master(o_data_master'LEFT downto o_data_master'LEFT-(SPI_DATA_BITS-1)))); -- rx data by master SPI
+                        end if;
         
                         wait until rising_edge(sys_clk_i);
                         rd_i        <= '1';     -- read data enable rx'd to master
