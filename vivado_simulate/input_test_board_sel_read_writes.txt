@@ -5,25 +5,83 @@
 
 #### address  input data  read data  read data mask ####
 
-#### #### Finished Tests ####
-#### #### These tests will pass when all 16 SPI slaves are fitted with their settings - 'make_all_addresses_writeable_for_testing = TRUE'
-#### Read		1	 	0 		0000 		0000 		FFFF
-#### #### Test all write then read them (set MSb just as an extra test)
-#### Writ		1	 	0 		8000 		0000 		0000
-#### Read		1	 	0 		8000 		8000 		FFFF
-#### Writ		1	 	F 		C000 		0000 		0000
-#### Read		1	 	F 		C000 		C000 		FFFF
-#### 
-#### Writ		2	 	0 		8002 		0000 		0000
-#### Read		2	 	0 		8002 		8002 		FFFF
-#### Writ		2	 	F 		C002 		0000 		0000
-#### Read		2	 	F 		C002 		C002 		FFFF
-#### 
-#### Read		1	 	0 		8000 		8000 		FFFF
-#### Read		1	 	F 		C000 		C000 		FFFF
+#### Finished Tests ####
+#### These tests will pass when all 16 SPI slaves are fitted with their settings - 'make_all_addresses_writeable_for_testing = TRUE'
+#### Test all write then read them (set MSb just as an extra test)
+Writ		1	 	0 		8001 		0000 		0000
+Read		1	 	0 		8001 		8001 		FFFF
+Writ		1	 	F 		C001 		0000 		0000
+Read		1	 	F 		C001 		C001 		FFFF
 
+Writ		2	 	0 		8002 		0000 		0000
+Read		2	 	0 		8002 		8002 		FFFF
+Writ		2	 	F 		C002 		0000 		0000
+Read		2	 	F 		C002 		C002 		FFFF
 
+Writ		3	 	0 		8004 		0000 		0000
+Read		3	 	0 		8004 		8004 		FFFF
+Writ		3	 	F 		C004 		0000 		0000
+Read		3	 	F 		C004 		C004 		FFFF
 
+Writ		4	 	0 		8008 		0000 		0000
+Read		4	 	0 		8008 		8008 		FFFF
+Writ		4	 	F 		C008 		0000 		0000
+Read		4	 	F 		C008 		C008 		FFFF
+
+Writ		5	 	0 		8010 		0000 		0000
+Read		5	 	0 		8010 		8010 		FFFF
+Writ		5	 	F 		C010 		0000 		0000
+Read		5	 	F 		C010 		C010 		FFFF
+
+Writ		6	 	0 		8020 		0000 		0000
+Read		6	 	0 		8020 		8020 		FFFF
+Writ		6	 	F 		C020 		0000 		0000
+Read		6	 	F 		C020 		C020 		FFFF
+
+Writ		7	 	0 		8040 		0000 		0000
+Read		7	 	0 		8040 		8040 		FFFF
+Writ		7	 	F 		C040 		0000 		0000
+Read		7	 	F 		C040 		C040 		FFFF
+
+Writ		8	 	0 		8080 		0000 		0000
+Read		8	 	0 		8080 		8080 		FFFF
+Writ		8	 	F 		C080 		0000 		0000
+Read		8	 	F 		C080 		C080 		FFFF
+
+Writ		9	 	0 		8100 		0000 		0000
+Read		9	 	0 		8100 		8100 		FFFF
+Writ		9	 	F 		C100 		0000 		0000
+Read		9	 	F 		C100 		C100 		FFFF
+
+Writ		A	 	0 		8001 		0000 		0000
+Read		A	 	0 		8001 		8001 		FFFF
+Writ		A	 	F 		C001 		0000 		0000
+Read		A	 	F 		C001 		C001 		FFFF
+
+Writ		B	 	0 		8002 		0000 		0000
+Read		B	 	0 		8002 		8002 		FFFF
+Writ		B	 	F 		C002 		0000 		0000
+Read		B	 	F 		C002 		C002 		FFFF
+
+Writ		C	 	0 		8004 		0000 		0000
+Read		C	 	0 		8004 		8004 		FFFF
+Writ		C	 	F 		C004 		0000 		0000
+Read		C	 	F 		C004 		C004 		FFFF
+
+Writ		D	 	0 		8008 		0000 		0000
+Read		D	 	0 		8008 		8008 		FFFF
+Writ		D	 	F 		C008 		0000 		0000
+Read		D	 	F 		C008 		C008 		FFFF
+
+Writ		E	 	0 		8010 		0000 		0000
+Read		E	 	0 		8010 		8010 		FFFF
+Writ		E	 	F 		C010 		0000 		0000
+Read		E	 	F 		C010 		C010 		FFFF
+
+Writ		F	 	0 		8020 		0000 		0000
+Read		F	 	0 		8020 		8020 		FFFF
+Writ		F	 	F 		C020 		0000 		0000
+Read		F	 	F 		C020 		C020 		FFFF
 
 
 
