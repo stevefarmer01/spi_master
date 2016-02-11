@@ -154,7 +154,7 @@ component gdrb_ctrl_reg_map_top is
 end component;
 
 component spi_board_select_top is
-    generic ( make_all_addresses_writeable_for_testing : boolean := FALSE ); -- This is for testbenching only
+    generic ( make_all_addresses_writeable_for_testing : boolean := TRUE ); -- This is for testbenching only
     Port ( 
             clk : in std_logic;
             reset : in std_logic;
@@ -475,9 +475,9 @@ end generate spi_reg_map_gen;
 board_sel_spi_reg_map_gen : if board_select generate
 
     reg_map_proc : spi_board_select_top
-        generic map(
-                make_all_addresses_writeable_for_testing => make_all_addresses_writeable_for_testing -- :     natural := 16
-                )
+--        generic map(
+--                make_all_addresses_writeable_for_testing => make_all_addresses_writeable_for_testing -- :     natural := 16
+--                )
         Port map(  
                 clk => dut_sys_clk_i,                                          -- : std_logic;
                 reset => sys_rst_i,                                            -- : std_logic;
