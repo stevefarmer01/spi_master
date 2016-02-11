@@ -433,13 +433,17 @@ begin
             tx_data_count_neg_sclk_i     <= (others => '0');
             tx_done_neg_sclk_i           <= '0';
         elsif rising_edge(i_sys_clk) then
-            if i_sclk_falling_edge_s = '1' then
-                if (tx_data_count_neg_sclk_i = DATA_SIZE - 1) then
-                    tx_data_count_neg_sclk_i <= (others => '0');
-                    tx_done_neg_sclk_i       <= '1';
-                elsif (i_ssn = '0') then
-                    tx_data_count_neg_sclk_i <= tx_data_count_neg_sclk_i + 1;
-                    tx_done_neg_sclk_i       <= '0';
+            if i_ssn = '1' then
+                tx_data_count_neg_sclk_i <= (others => '0');
+            else
+                if i_sclk_falling_edge_s = '1' then
+                    if (tx_data_count_neg_sclk_i = DATA_SIZE - 1) then
+    --                    tx_data_count_neg_sclk_i <= (others => '0');          -- Only indicate a valid tx edge once until ssn has gone low again
+                        tx_done_neg_sclk_i       <= '1';
+                    elsif (i_ssn = '0') then
+                        tx_data_count_neg_sclk_i <= tx_data_count_neg_sclk_i + 1;
+                        tx_done_neg_sclk_i       <= '0';
+                    end if;
                 end if;
             end if;
         end if;
@@ -456,13 +460,17 @@ begin
             tx_data_count_pos_sclk_i     <= (others => '0');
             tx_done_pos_sclk_i           <= '0';
         elsif rising_edge(i_sys_clk) then
-            if i_sclk_rising_edge_s = '1' then
-                if (tx_data_count_pos_sclk_i = DATA_SIZE - 1) then
-                    tx_data_count_pos_sclk_i <= (others => '0');
-                    tx_done_pos_sclk_i       <= '1';
-                elsif (i_ssn = '0') then
-                    tx_data_count_pos_sclk_i <= tx_data_count_pos_sclk_i + 1;
-                    tx_done_pos_sclk_i       <= '0';
+            if i_ssn = '1' then
+                tx_data_count_pos_sclk_i <= (others => '0');
+            else
+                if i_sclk_rising_edge_s = '1' then
+                    if (tx_data_count_pos_sclk_i = DATA_SIZE - 1) then
+    --                    tx_data_count_pos_sclk_i <= (others => '0');                        -- Only indicate a valid tx edge once until ssn has gone low again
+                        tx_done_pos_sclk_i       <= '1';
+                    elsif (i_ssn = '0') then
+                        tx_data_count_pos_sclk_i <= tx_data_count_pos_sclk_i + 1;
+                        tx_done_pos_sclk_i       <= '0';
+                    end if;
                 end if;
             end if;
         end if;
