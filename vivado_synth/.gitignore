@@ -9,12 +9,13 @@
 !*/
 !.gitignore
 ###########################################################################
-##  VIVADO
+##  VIVADO project mode
 ###########################################################################
 
 #ignore vivado created .runs and .cache whole directories
 *.runs/
 *.cache/
+*.sim/
 
 #########
 #Source files:
