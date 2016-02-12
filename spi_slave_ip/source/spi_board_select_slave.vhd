@@ -87,6 +87,9 @@ signal o_rx_ready_rising_edge_s : std_logic := '0';
 signal o_data_slave_s : std_logic_vector(BOARD_SELECT_ADDRESS_SIZE-1 downto 0) := (others  => '0');
 signal board_select_valid_s : std_logic := '0';
 
+signal low_s : std_logic := '0';                                                                 -- Needed because Modelsim will not handle '0' in component's instantation ports
+signal low_vector_s : std_logic_vector(BOARD_SELECT_ADDRESS_SIZE-1 downto 0) := (others => '0'); -- Needed because Modelsim will not handle '0' in component's instantation ports
+
 begin
 
     spi_slave_inst : spi_slave
@@ -94,26 +97,26 @@ begin
             DATA_SIZE => BOARD_SELECT_ADDRESS_SIZE
             )
         port map(
-            i_sys_clk   => clk,                                                        -- : in  std_logic;                                -- system clock
-            i_sys_rst   => reset,                                                      -- : in  std_logic;                                -- system reset
-            i_csn       => '0',                                                        -- : in  std_logic;                                -- chip select for SPI master
-            i_data      => std_logic_vector(to_unsigned(0,BOARD_SELECT_ADDRESS_SIZE)), -- : in  std_logic_vector(15 downto 0);            -- Input data
-            i_wr        => '0',                                                        -- : in  std_logic;                                -- Active Low Write, Active High Read
-            i_rd        => '0',                                                        -- : in  std_logic;                                -- Active Low Write, Active High Read
-            o_data      => o_data_slave_s,                                             -- o_data     : out std_logic_vector(15 downto 0); -- output data
-            o_tx_ready  => open,                                                       -- o_tx_ready : out std_logic;                     -- Transmitter ready, can write another
-            o_rx_ready  => o_rx_ready_slave_s,                                         -- o_rx_ready : out std_logic;                     -- Receiver ready, can read data
-            o_tx_error  => open,                                                       -- o_tx_error : out std_logic;                     -- Transmitter error
-            o_rx_error  => open,                                                       -- o_rx_error : out std_logic;                     -- Receiver error
-            i_cpol      => '0',                                                        -- : in  std_logic;                                -- CPOL value - 0 or 1
-            i_cpha      => '0',                                                        -- : in  std_logic;                                -- CPHA value - 0 or 1
-            i_lsb_first => '0',                                                        -- : in  std_logic;                                -- lsb first when '1' /msb first when
-            i_ssn       => ss_n,                                                       -- i_ssn  : in  std_logic;                         -- Slave Slect Active low
-            i_mosi      => mosi,                                                       -- i_mosi : in  std_logic;                         -- Slave input from Master
-            o_miso      => open,                                                       -- o_miso : out std_logic;                         -- Slave output to Master
-            i_sclk      => sclk,                                                       -- i_sclk : in  std_logic;                         -- Clock from SPI Master
-            o_tx_ack    => open,                                                       -- o_tx_ack : out std_logic;
-            o_tx_no_ack => open                                                        -- o_tx_no_ack : out std_logic
+            i_sys_clk   => clk,                -- : in  std_logic;                                -- system clock
+            i_sys_rst   => reset,              -- : in  std_logic;                                -- system reset
+            i_csn       => low_s,              -- : in  std_logic;                                -- chip select for SPI master
+            i_data      => low_vector_s,       -- : in  std_logic_vector(15 downto 0);            -- Input data
+            i_wr        => low_s,              -- : in  std_logic;                                -- Active Low Write, Active High Read
+            i_rd        => low_s,              -- : in  std_logic;                                -- Active Low Write, Active High Read
+            o_data      => o_data_slave_s,     -- o_data     : out std_logic_vector(15 downto 0); -- output data
+            o_tx_ready  => open,               -- o_tx_ready : out std_logic;                     -- Transmitter ready, can write another
+            o_rx_ready  => o_rx_ready_slave_s, -- o_rx_ready : out std_logic;                     -- Receiver ready, can read data
+            o_tx_error  => open,               -- o_tx_error : out std_logic;                     -- Transmitter error
+            o_rx_error  => open,               -- o_rx_error : out std_logic;                     -- Receiver error
+            i_cpol      => low_s,              -- : in  std_logic;                                -- CPOL value - 0 or 1
+            i_cpha      => low_s,              -- : in  std_logic;                                -- CPHA value - 0 or 1
+            i_lsb_first => low_s,              -- : in  std_logic;                                -- lsb first when '1' /msb first when
+            i_ssn       => ss_n,               -- i_ssn  : in  std_logic;                         -- Slave Slect Active low
+            i_mosi      => mosi,               -- i_mosi : in  std_logic;                         -- Slave input from Master
+            o_miso      => open,               -- o_miso : out std_logic;                         -- Slave output to Master
+            i_sclk      => sclk,               -- i_sclk : in  std_logic;                         -- Clock from SPI Master
+            o_tx_ack    => open,               -- o_tx_ack : out std_logic;
+            o_tx_no_ack => open                -- o_tx_no_ack : out std_logic
             );
 
 o_rx_ready_rising_edge_s <= '1' when o_rx_ready_slave_r0 = '0' and o_rx_ready_slave_s = '1' else '0';

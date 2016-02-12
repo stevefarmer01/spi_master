@@ -46,7 +46,7 @@ entity reg_map_spi_slave is
             miso : out STD_LOGIC;
             ---Array of data spanning entire address range declared and initialised in 'spi_package'
             reg_map_array_from_pins : in gdrb_ctrl_address_type;
-            reg_map_array_to_pins : out gdrb_ctrl_address_type;
+            reg_map_array_to_pins : out gdrb_ctrl_address_type := gdrb_ctrl_data_array_initalise;
             --Write enable and address to allow some write processing of internal FPGA register map (write bit toggling, etc)
             write_enable_from_spi : out std_logic := '0';
             write_addr_from_spi : out std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) := (others => '0')
@@ -202,8 +202,8 @@ spi_write_to_reg_map_proc : process(clk)
 begin
     if rising_edge(clk) then
         if reset = '1' then
-            write_enable_from_spi <= '0';
-            write_addr_from_spi <= (others => '0');
+--            write_enable_from_spi <= '0';
+--            write_addr_from_spi <= (others => '0');
             reg_map_array_to_pins <= gdrb_ctrl_data_array_initalise;                -- reset reg map array with a function (allows pre_loading of data values which could be useful for testing and operation)
         else
             write_enable_from_spi <= '0';
