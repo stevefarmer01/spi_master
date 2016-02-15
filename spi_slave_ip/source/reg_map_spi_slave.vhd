@@ -100,9 +100,6 @@ signal rx_read_write_bit_s : std_logic := '0';
 signal rx_address_s : std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) := (others => '0');
 signal rx_data_s, read_data_s : std_logic_vector(SPI_DATA_BITS-1 downto 0) := (others => '0');
 
------Array of data spanning entire address range declared and initialised in 'spi_package'
---signal gdrb_ctrl_data_array : gdrb_ctrl_address_type := gdrb_ctrl_data_array_initalise;
-
 signal wr_en_to_spi_slave_s : std_logic := '0';
 
 signal write_enable_from_spi_s : std_logic := '0';
@@ -205,9 +202,6 @@ spi_write_to_reg_map_proc : process(clk)
 begin
     if rising_edge(clk) then
         if reset = '1' then
---            write_enable_from_spi <= '0';
---            write_addr_from_spi <= (others => '0');
-            reg_map_array_to_pins <= gdrb_ctrl_data_array_initalise;                -- reset reg map array with a function (allows pre_loading of data values which could be useful for testing and operation)
         else
             write_enable_from_spi <= '0';
             if write_enable_from_spi_s = '1' then
