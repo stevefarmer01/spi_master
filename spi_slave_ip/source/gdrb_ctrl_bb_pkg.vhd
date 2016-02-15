@@ -66,6 +66,6 @@ package body gdrb_ctrl_bb_pkg is
     
     --Pre-load register map array for testing and possible other uses
 --    constant gdrb_ctrl_data_array_initalise : gdrb_ctrl_address_type := initalise_gdrb_ctrl_data_array(inc_values_enable => FALSE, inc_data_start_value => 0);
-    constant gdrb_ctrl_data_array_initalise : gdrb_ctrl_address_type := initalise_gdrb_ctrl_data_array(inc_values_enable => TRUE, inc_data_start_value => 0);
+    constant gdrb_ctrl_data_array_initalise : gdrb_ctrl_address_type := initalise_gdrb_ctrl_data_array(inc_values_enable => FALSE, inc_data_start_value => 0);
 
 end;
