@@ -30,6 +30,8 @@ use work.gdrb_ctrl_bb_pkg.ALL;
 
 use work.gdrb_ctrl_bb_address_pkg.ALL;
 
+use work.multi_array_types_pkg.all;
+
 -- Uncomment the following library declaration if instantiating
 -- any Xilinx leaf cells in this code.
 --library UNISIM;
@@ -89,6 +91,12 @@ component reg_map_edge_interupt is
           interupt_flag : out std_logic := '0'
           );
 end component;
+
+
+signal spi_mem_array_from_pins_s : gdrb_ctrl_mem_array_t := (others => (others => '0'));
+signal spi_mem_array_to_pins_s : gdrb_ctrl_mem_array_t := (others => (others => '0'));
+signal dummy_s : std_logic_vector(SPI_DATA_BITS-1 downto 0) := (others => '0');
+
 
 signal reset_s : std_logic := '0';
 signal reset_domain_cross_s : std_logic_vector(1 downto 0) := (others => '0');
@@ -263,15 +271,27 @@ non_testbenching_gen : if not make_all_addresses_writeable_for_testing generate
 
 end generate non_testbenching_gen;
 
+----Only for testbenchin a vanilla DUT (no register access to pins, not read only, no interupt/edge detection/processing)...
+----...this will allow test with a decreasing sclk frequency to DUT to check what frequency the SPI link will work down to (currently about 20MHz depending on start frequency decimal places)
+--testbenching_gen : if make_all_addresses_writeable_for_testing generate
+--    spi_array_from_pins_s <= spi_array_to_pins_s;
+--end generate testbenching_gen;
+
+
 --Only for testbenchin a vanilla DUT (no register access to pins, not read only, no interupt/edge detection/processing)...
 --...this will allow test with a decreasing sclk frequency to DUT to check what frequency the SPI link will work down to (currently about 20MHz depending on start frequency decimal places)
 testbenching_gen : if make_all_addresses_writeable_for_testing generate
+
     spi_array_from_pins_s <= spi_array_to_pins_s;
+
+--    gen : for i in 0 to (SPI_ADDRESS_BITS**2)-1 generate
+    gen : for i in spi_mem_array_from_pins_s'RANGE(1) generate
+--      set_data(spi_mem_array_from_pins_s, std_logic_vector(to_unsigned(i,spi_mem_array_from_pins_s'LENGTH(2))) , get_data(spi_mem_array_to_pins_s, i));
+--      set_data(spi_mem_array_from_pins_s, i , get_data(spi_mem_array_to_pins_s, i));
+      set_data(spi_mem_array_from_pins_s, dummy_s , get_data(spi_mem_array_to_pins_s, i));
+    end generate; 
+
 end generate testbenching_gen;
-
---signal write_enable_from_spi_s : out std_logic := '0';
---signal write_addr_from_spi_s : out std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) := (others => '0');
-
 
 
 end Behavioral;

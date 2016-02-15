@@ -33,6 +33,8 @@ use IEEE.NUMERIC_STD.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
+use work.multi_array_types_pkg.all;
+
 package gdrb_ctrl_bb_pkg is
 
     --Set sizes of data and addresse as required for particular application
@@ -45,6 +47,8 @@ package gdrb_ctrl_bb_pkg is
     function initalise_gdrb_ctrl_data_array(inc_values_enable : boolean; inc_data_start_value : natural ) return gdrb_ctrl_address_type;
     --Deferred constants below
     constant gdrb_ctrl_data_array_initalise : gdrb_ctrl_address_type;
+
+    subtype gdrb_ctrl_mem_array_t is mem_array_t(0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0);
 
 end gdrb_ctrl_bb_pkg;
 
