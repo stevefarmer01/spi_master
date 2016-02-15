@@ -145,6 +145,7 @@ component gdrb_ctrl_reg_map_top is
             ---Slave SPI interface pins
             sclk : in STD_LOGIC;
             ss_n : in STD_LOGIC;
+            i_raw_ssn : in  std_logic;    -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to ss_n
             mosi : in STD_LOGIC;
             miso : out STD_LOGIC;
             --Discrete signals
@@ -269,7 +270,8 @@ shared variable cnt      : integer                       := 0;
                         wait for to_integer(unsigned(tx2tx_cycles_i)) * TIME_PERIOD_CLK * dut_clk_ratio_to_testbench; -- wait tx to tx minimum period which is implemented in master's sclk_gen component
     
                         if board_select then
-                            rx_data_from_spi <= to_integer(unsigned(o_data_master(o_data_master'LEFT-SPI_BOARD_SEL_ADDR_BITS downto o_data_master'LEFT-SPI_BOARD_SEL_ADDR_BITS-(SPI_DATA_BITS-1)))); -- rx data by master SPI
+--                            rx_data_from_spi <= to_integer(unsigned(o_data_master(o_data_master'LEFT-SPI_BOARD_SEL_ADDR_BITS downto o_data_master'LEFT-SPI_BOARD_SEL_ADDR_BITS-(SPI_DATA_BITS-1)))); -- rx data by master SPI
+                            rx_data_from_spi <= to_integer(unsigned(o_data_master(o_data_master'LEFT downto o_data_master'LEFT-(SPI_DATA_BITS-1)))); -- rx data by master SPI
 --                            rx_data_from_spi <= to_integer(unsigned(o_data_master(o_data_master'LEFT downto o_data_master'LEFT-(SPI_DATA_BITS-1)))); -- rx data by master SPI
                         else
                             rx_data_from_spi <= to_integer(unsigned(o_data_master(o_data_master'LEFT downto o_data_master'LEFT-(SPI_DATA_BITS-1)))); -- rx data by master SPI
@@ -461,6 +463,7 @@ spi_reg_map_gen : if not board_select generate
                 ---Slave SPI interface pins
                 sclk => sclk_i,                                                -- : in STD_LOGIC;
                 ss_n => ss_i,                                                  -- : in STD_LOGIC;
+                i_raw_ssn => ss_i,                                             -- : in  std_logic;    -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to same signal as 'ss_n'
                 mosi => mosi_i,                                                -- : in STD_LOGIC;
                 miso => miso,                                                  -- : out STD_LOGIC;
                 --Discrete signals

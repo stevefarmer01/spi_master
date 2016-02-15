@@ -71,7 +71,8 @@ entity spi_slave is
 
         o_miso      : out std_logic;  	-- Slave output to Master
         i_mosi      : in  std_logic;  	-- Slave input from Master
-        i_ssn       : in  std_logic;  	-- Slave Slect Active low
+        i_ssn       : in  std_logic;    -- Slave Slect Active low
+        i_raw_ssn   : in  std_logic;    -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to i_ssn
         i_sclk      : in  std_logic;  	-- Clock from SPI Master
         miso_tri_en : out std_logic;
 	o_tx_ack    : out std_logic;
@@ -154,13 +155,15 @@ begin
     
 	o_data(DATA_SIZE-1 downto 0) <= rxdata_reg_i(DATA_SIZE-1 downto 0);
 	process(i_sys_clk, i_sys_rst)
+        variable wr_v0 : std_logic := '0';
     begin
         if(i_sys_rst = '1') then
             data_in_reg_i     <= (others => '0');
         elsif rising_edge(i_sys_clk) then
-            if (i_wr = '1' and i_csn = '0' and tx_ready_i = '1') then
+            if (i_wr = '1' and tx_ready_i = '1' and i_csn = '0') or (wr_v0 = '0' and i_wr = '1' and i_csn = '0') then
                 data_in_reg_i(DATA_SIZE-1 downto 0) <= i_data(DATA_SIZE-1 downto 0);
             end if;
+            wr_v0 := i_wr;
         end if;
     end process;
     
@@ -441,14 +444,14 @@ begin
             tx_data_count_neg_sclk_i     <= (others => '0');
             tx_done_neg_sclk_i           <= '0';
         elsif rising_edge(i_sys_clk) then
-            if i_ssn = '1' then
+            if i_raw_ssn = '1' then
                 tx_data_count_neg_sclk_i <= (others => '0');
             else
                 if i_sclk_falling_edge_s = '1' then
                     if (tx_data_count_neg_sclk_i = DATA_SIZE - 1) then
     --                    tx_data_count_neg_sclk_i <= (others => '0');          -- Only indicate a valid tx edge once until ssn has gone low again
                         tx_done_neg_sclk_i       <= '1';
-                    elsif (i_ssn = '0') then
+                    elsif (i_raw_ssn = '0') then
                         tx_data_count_neg_sclk_i <= tx_data_count_neg_sclk_i + 1;
                         tx_done_neg_sclk_i       <= '0';
                     end if;
@@ -468,14 +471,14 @@ begin
             tx_data_count_pos_sclk_i     <= (others => '0');
             tx_done_pos_sclk_i           <= '0';
         elsif rising_edge(i_sys_clk) then
-            if i_ssn = '1' then
+            if i_raw_ssn = '1' then
                 tx_data_count_pos_sclk_i <= (others => '0');
             else
                 if i_sclk_rising_edge_s = '1' then
                     if (tx_data_count_pos_sclk_i = DATA_SIZE - 1) then
     --                    tx_data_count_pos_sclk_i <= (others => '0');                        -- Only indicate a valid tx edge once until ssn has gone low again
                         tx_done_pos_sclk_i       <= '1';
-                    elsif (i_ssn = '0') then
+                    elsif (i_raw_ssn = '0') then
                         tx_data_count_pos_sclk_i <= tx_data_count_pos_sclk_i + 1;
                         tx_done_pos_sclk_i       <= '0';
                     end if;
@@ -484,9 +487,9 @@ begin
         end if;
     end process;
 
-    process(i_ssn, i_cpol, i_cpha, miso_00_i, miso_01_i, miso_10_i, miso_11_i)
+    process(i_raw_ssn, i_cpol, i_cpha, miso_00_i, miso_01_i, miso_10_i, miso_11_i)
     begin
-        if (i_ssn = '0') then
+        if (i_raw_ssn = '0') then
             if (i_cpol = '0' and i_cpha = '0') then
                 o_miso <= miso_00_i;
             elsif (i_cpol = '0' and i_cpha = '1') then

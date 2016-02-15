@@ -80,6 +80,7 @@ component gdrb_ctrl_reg_map_top is
             ---Slave SPI interface pins
             sclk : in STD_LOGIC;
             ss_n : in STD_LOGIC;
+            i_raw_ssn : in  std_logic;    -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to ss_n
             mosi : in STD_LOGIC;
             miso : out STD_LOGIC;
             --Discrete signals
@@ -94,9 +95,9 @@ constant board_select_addr_0_c : natural := 16#8#;
 
 constant valid_delayed_c : positive := 1; -- Delay board select edge detect due to delay caused by domain crossing of sclk in spi_slave.vhd
 
-signal board_select_s : std_logic_vector((SPI_BOARD_SEL_ADDR_BITS-1) downto 0) := (others => '0');
+signal board_select_s, prev_board_select_s : std_logic_vector((SPI_BOARD_SEL_ADDR_BITS-1) downto 0) := (others => '0');
 signal board_select_valid_s : std_logic := '0';
-signal board_select_mux_ss_n_s : std_logic_vector(((SPI_BOARD_SEL_ADDR_BITS**2)-1) downto 0) := (others => '1'); -- Default to all ss_n's de-asserted
+signal board_select_mux_ss_n_s, miso_board_select_mux_ss_n_s : std_logic_vector(((SPI_BOARD_SEL_ADDR_BITS**2)-1) downto 0) := (others => '1'); -- Default to all ss_n's de-asserted
 signal board_select_valid_r0 : std_logic := '0';
 signal board_select_valid_delayed_s : std_logic_vector(valid_delayed_c-1 downto 0) := (others => '0');
 signal board_select_valid_delayed_bit_s : std_logic := '0';
@@ -150,9 +151,28 @@ begin
     for i in 0 to ((SPI_BOARD_SEL_ADDR_BITS**2)-1) loop
         if ((to_integer(unsigned(board_select_s))) = i) and board_select_valid_delayed_s(board_select_valid_delayed_s'LEFT) = '1' then 
             board_select_mux_ss_n_s(i) <= ss_n;         -- Mux main ss_n through to slave as per received board select bits from 'spi_board_select_slave'
+--            miso <= miso_s(i);
+        end if;
+    end loop;
+end process;
+
+--For tx replies back on 'miso' use last receieved board select and raw ss_n so that data is sent back as soon as ss_n goes low and before new board select has been recieved(due to Griffin protcol)
+miso_board_select_ss_n_mux_proc : process
+    variable ss_n_v : std_logic := '0';
+begin
+    wait until rising_edge(clk);
+    if ss_n_v = '0' and ss_n = '1' then
+        prev_board_select_s <= board_select_s;
+    end if;
+    miso_board_select_mux_ss_n_s <= (others => '1');      -- Default value
+    for i in 0 to ((SPI_BOARD_SEL_ADDR_BITS**2)-1) loop
+--        if ((to_integer(unsigned(board_select_s))) = i) and board_select_valid_delayed_s(board_select_valid_delayed_s'LEFT) = '1' then 
+        if ((to_integer(unsigned(prev_board_select_s))) = i) and ss_n = '0' then 
+            miso_board_select_mux_ss_n_s(i) <= ss_n;         -- Mux main ss_n through to slave as per received board select bits from 'spi_board_select_slave'
             miso <= miso_s(i);
         end if;
     end loop;
+    ss_n_v := ss_n;
 end process;
 
 
@@ -167,6 +187,9 @@ reg_map_selected_inst : gdrb_ctrl_reg_map_top
             --Slave SPI interface pins
             sclk => sclk,                                       -- : in STD_LOGIC;
             ss_n => board_select_mux_ss_n_s(board_select_addr_0_c),                                       -- : in STD_LOGIC;
+--            i_raw_ssn => board_select_mux_ss_n_s(board_select_addr_0_c),                                       -- : in  std_logic;    -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to ss_n
+--            i_raw_ssn => ss_n,                                       -- : in  std_logic;    -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to ss_n
+            i_raw_ssn => miso_board_select_mux_ss_n_s(board_select_addr_0_c),                                       -- : in  std_logic;    -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to ss_n
             mosi => mosi,                                       -- : in STD_LOGIC;
             miso => miso_s(board_select_addr_0_c),                                       -- : out STD_LOGIC;
             --Discrete signals
@@ -187,6 +210,7 @@ reg_map_selected_inst : gdrb_ctrl_reg_map_top
 --.                --Slave SPI interface pins
 --.                sclk => sclk,                                       -- : in STD_LOGIC;
 --.                ss_n => board_select_mux_ss_n_s(i),                                       -- : in STD_LOGIC;
+--.            i_raw_ssn : in  std_logic;    -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to ss_n
 --.                mosi => mosi,                                       -- : in STD_LOGIC;
 --.                miso => miso_s(i),                                       -- : out STD_LOGIC;
 --.                --Discrete signals

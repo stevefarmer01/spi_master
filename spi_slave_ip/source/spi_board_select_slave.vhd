@@ -74,6 +74,7 @@ component spi_slave is
         o_miso      : out std_logic;                             -- Slave output to Master
         i_mosi      : in  std_logic;                             -- Slave input from Master
         i_ssn       : in  std_logic;                             -- Slave Slect Active low
+        i_raw_ssn : in  std_logic;    -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to ss_n
         i_sclk      : in  std_logic;                             -- Clock from SPI Master
         miso_tri_en : out std_logic;
         o_tx_ack    : out std_logic;
@@ -112,6 +113,7 @@ begin
             i_cpha      => low_s,              -- : in  std_logic;                                -- CPHA value - 0 or 1
             i_lsb_first => low_s,              -- : in  std_logic;                                -- lsb first when '1' /msb first when
             i_ssn       => ss_n,               -- i_ssn  : in  std_logic;                         -- Slave Slect Active low
+            i_raw_ssn   => ss_n,               -- : in  std_logic;    -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to ss_n
             i_mosi      => mosi,               -- i_mosi : in  std_logic;                         -- Slave input from Master
             o_miso      => open,               -- o_miso : out std_logic;                         -- Slave output to Master
             i_sclk      => sclk,               -- i_sclk : in  std_logic;                         -- Clock from SPI Master

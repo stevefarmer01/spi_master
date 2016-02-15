@@ -42,6 +42,7 @@ entity reg_map_spi_slave is
             ---Slave SPI interface pins
             sclk : in STD_LOGIC;
             ss_n : in STD_LOGIC;
+            i_raw_ssn   : in  std_logic;    -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to i_ssn
             mosi : in STD_LOGIC;
             miso : out STD_LOGIC;
             ---Array of data spanning entire address range declared and initialised in 'spi_package'
@@ -77,6 +78,7 @@ component spi_slave is
         o_miso      : out std_logic;    -- Slave output to Master
         i_mosi      : in  std_logic;    -- Slave input from Master
         i_ssn       : in  std_logic;    -- Slave Slect Active low
+        i_raw_ssn   : in  std_logic;    -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to i_ssn
         i_sclk      : in  std_logic;    -- Clock from SPI Master
         miso_tri_en : out std_logic;
         o_tx_ack    : out std_logic;
@@ -128,6 +130,7 @@ begin
         i_cpha      => low_s,                  -- : in  std_logic;                                -- CPHA value - 0 or 1
         i_lsb_first => low_s,                  -- : in  std_logic;                                -- lsb first when '1' /msb first when
         i_ssn       => ss_n,                 -- i_ssn  : in  std_logic;                         -- Slave Slect Active low
+        i_raw_ssn   => i_raw_ssn,                 -- : in  std_logic;    -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to i_ssn
         i_mosi      => mosi,                 -- i_mosi : in  std_logic;                         -- Slave input from Master
         o_miso      => miso,                 -- o_miso : out std_logic;                         -- Slave output to Master
         i_sclk      => sclk,                 -- i_sclk : in  std_logic;                         -- Clock from SPI Master

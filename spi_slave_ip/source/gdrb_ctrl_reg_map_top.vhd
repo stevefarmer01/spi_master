@@ -43,6 +43,7 @@ entity gdrb_ctrl_reg_map_top is
             ---Slave SPI interface pins
             sclk : in STD_LOGIC;
             ss_n : in STD_LOGIC;
+            i_raw_ssn : in  std_logic;    -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to i_ssn
             mosi : in STD_LOGIC;
             miso : out STD_LOGIC;
             --Discrete signals
@@ -62,6 +63,7 @@ component reg_map_spi_slave is
             ---Slave SPI interface pins
             sclk : in STD_LOGIC;
             ss_n : in STD_LOGIC;
+            i_raw_ssn : in  std_logic;    -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to i_ssn
             mosi : in STD_LOGIC;
             miso : out STD_LOGIC;
             ---Array of data spanning entire address range declared and initialised in 'spi_package'
@@ -130,6 +132,7 @@ reg_map_spi_slave_inst : reg_map_spi_slave
             ---Slave SPI interface pins
             sclk => sclk,                                  -- : in STD_LOGIC;
             ss_n => ss_n,                                  -- : in STD_LOGIC;
+            i_raw_ssn => i_raw_ssn,                             -- : in  std_logic;    -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to i_ssn
             mosi => mosi,                                  -- : in STD_LOGIC;
             miso => miso,                                  -- : out STD_LOGIC;
             ---Array of data spanning entire address range declared and initialised in 'spi_package'

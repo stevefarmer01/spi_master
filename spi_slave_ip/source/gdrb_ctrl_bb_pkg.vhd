@@ -58,8 +58,11 @@ package body gdrb_ctrl_bb_pkg is
             for i in gdrb_ctrl_data_array'RANGE loop
                 gdrb_ctrl_data_array(i) := std_logic_vector(to_unsigned(inc_data_start_value+i,SPI_DATA_BITS)); -- Automatically incrementing values with an offset if required
             end loop;
-                gdrb_ctrl_data_array(0) := std_logic_vector(to_unsigned(16#0#,SPI_DATA_BITS));                  -- Example of how to manually set defualt values(these will overwrite incremented values above)
-                gdrb_ctrl_data_array(1) := std_logic_vector(to_unsigned(16#1#,SPI_DATA_BITS));                  -- Example of how to manually set defualt values(these will overwrite incremented values above)
+--                gdrb_ctrl_data_array(0) := (others => '1');                  -- Example of how to manually set defualt values(these will overwrite incremented values above)
+--                gdrb_ctrl_data_array(1) := std_logic_vector(to_unsigned(16#8001#,SPI_DATA_BITS));                  -- Example of how to manually set defualt values(these will overwrite incremented values above)
+--                gdrb_ctrl_data_array(2) := (others => '1');                  -- Example of how to manually set defualt values(these will overwrite incremented values above)
+----.                gdrb_ctrl_data_array(0) := std_logic_vector(to_unsigned(16#0#,SPI_DATA_BITS));                  -- Example of how to manually set defualt values(these will overwrite incremented values above)
+----.                gdrb_ctrl_data_array(1) := std_logic_vector(to_unsigned(16#1#,SPI_DATA_BITS));                  -- Example of how to manually set defualt values(these will overwrite incremented values above)
             end if;
         return gdrb_ctrl_data_array;
     end;

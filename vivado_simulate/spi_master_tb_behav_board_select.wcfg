@@ -12,7 +12,7 @@
          </top_modules>
       </db_ref>
    </db_ref_list>
-   <WVObjectSize size="44" />
+   <WVObjectSize size="45" />
    <wvobject db_ref_id="1" fp_name="/spi_master_tb/o_data_master" type="array">
       <obj_property name="ElementShortName">o_data_master[24:0]</obj_property>
       <obj_property name="ObjectShortName">o_data_master[24:0]</obj_property>
@@ -78,6 +78,7 @@
    <wvobject db_ref_id="1" fp_name="/spi_master_tb/data_i" type="array">
       <obj_property name="ElementShortName">data_i[24:0]</obj_property>
       <obj_property name="ObjectShortName">data_i[24:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
    </wvobject>
    <wvobject type="divider" fp_name="divider40">
       <obj_property name="label">board select</obj_property>
@@ -163,6 +164,10 @@
    <wvobject db_ref_id="1" fp_name="/spi_master_tb/board_sel_spi_reg_map_gen/reg_map_proc/reg_map_selected_inst/reg_map_spi_slave_inst/spi_slave_inst/i_ssn" type="logic">
       <obj_property name="ElementShortName">i_ssn</obj_property>
       <obj_property name="ObjectShortName">i_ssn</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/board_sel_spi_reg_map_gen/reg_map_proc/reg_map_selected_inst/reg_map_spi_slave_inst/spi_slave_inst/i_raw_ssn" type="logic">
+      <obj_property name="ElementShortName">i_raw_ssn</obj_property>
+      <obj_property name="ObjectShortName">i_raw_ssn</obj_property>
    </wvobject>
    <wvobject db_ref_id="1" fp_name="/spi_master_tb/board_sel_spi_reg_map_gen/reg_map_proc/reg_map_selected_inst/reg_map_spi_slave_inst/spi_slave_inst/i_sclk" type="logic">
       <obj_property name="ElementShortName">i_sclk</obj_property>
