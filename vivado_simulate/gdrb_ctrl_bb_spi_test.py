@@ -78,6 +78,17 @@ class cmd_simple(cmd.Cmd):
     self.check_results(test_number, file)
     self.copy_results(test_number)
 
+  def do_run_test_no_gui_straight_thru(self, test_number, file=None):
+    '''do_run_test_no_gui[test number] -- Simulates test [test number] no GUI'''
+    if not self.test_list_dict.has_key(test_number):
+      print 'Need a valid test number - no test run\n'
+      return
+    print 'Running Test - ' + test_number + '\n'
+    self.copy_to_input_test_txt(test_number)
+    os.system(r'simulate_no_gui_straight_thru.bat')
+    self.check_results(test_number, file)
+    self.copy_results(test_number)
+
   def do_run_all_tests(self, line):
     f = open(self.test_results_dir + '/' + self.run_all_tests_results_file,'w')
     for k,v in self.test_list_dict.items():
