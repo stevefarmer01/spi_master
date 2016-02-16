@@ -95,7 +95,8 @@ end component;
 
 signal spi_mem_array_from_pins_s : gdrb_ctrl_mem_array_t := (others => (others => '0'));
 signal spi_mem_array_to_pins_s : gdrb_ctrl_mem_array_t := (others => (others => '0'));
-signal dummy_s : std_logic_vector(SPI_DATA_BITS-1 downto 0) := (others => '0');
+--signal spi_mem_array_data_s : std_logic_vector(SPI_DATA_BITS-1 downto 0) := (others => '0');
+--signal spi_mem_array_address_s : natural range 0 to (SPI_ADDRESS_BITS**2)-1 := 0;
 
 
 signal reset_s : std_logic := '0';
@@ -284,12 +285,19 @@ testbenching_gen : if make_all_addresses_writeable_for_testing generate
 
     spi_array_from_pins_s <= spi_array_to_pins_s;
 
---    gen : for i in 0 to (SPI_ADDRESS_BITS**2)-1 generate
-    gen : for i in spi_mem_array_from_pins_s'RANGE(1) generate
---      set_data(spi_mem_array_from_pins_s, std_logic_vector(to_unsigned(i,spi_mem_array_from_pins_s'LENGTH(2))) , get_data(spi_mem_array_to_pins_s, i));
---      set_data(spi_mem_array_from_pins_s, i , get_data(spi_mem_array_to_pins_s, i));
-      set_data(spi_mem_array_from_pins_s, dummy_s , get_data(spi_mem_array_to_pins_s, i));
-    end generate; 
+    set_all_data(spi_mem_array_to_pins_s, spi_mem_array_from_pins_s);
+
+--  data_proc : process
+--  begin
+--    wait until rising_edge(clk);
+--    gen : for i in spi_mem_array_from_pins_s'RANGE(1) generate
+--      spi_mem_array_data_s <= (others => '0');
+--    end generate; 
+----    gen : for i in spi_mem_array_from_pins_s'RANGE(1) generate
+----      spi_mem_array_data_s <= get_data(spi_mem_array_to_pins_s, i);
+----      set_data(spi_mem_array_from_pins_s, i, spi_mem_array_data_s);
+----    end generate; 
+--  end process;
 
 end generate testbenching_gen;
 
