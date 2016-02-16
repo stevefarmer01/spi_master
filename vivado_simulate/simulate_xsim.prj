@@ -1,5 +1,6 @@
 vhdl work "..\local_common_ip\domain_cross\source\level_change_domain.vhd"
 vhdl work "..\local_common_ip\reg_map_edge_interupt\source\reg_map_edge_interupt.vhd"
+vhdl work "..\spi_slave_ip\source\multi_array_types_pkg.vhd"
 vhdl work "..\spi_slave_ip\source\edge_detect_domain_crossed.vhd"
 vhdl work "..\spi_slave_ip\source\gdrb_ctrl_bb_pkg.vhd"
 vhdl work "..\spi_slave_ip\source\gdrb_ctrl_bb_address_pkg.vhd"

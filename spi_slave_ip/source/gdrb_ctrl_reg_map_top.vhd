@@ -93,10 +93,6 @@ component reg_map_edge_interupt is
 end component;
 
 
---signal spi_mem_array_from_pins_s : gdrb_ctrl_mem_array_t := (others => (others => '0'));
---signal spi_mem_array_to_pins_s : gdrb_ctrl_mem_array_t := (others => (others => '0'));
-
-
 signal reset_s : std_logic := '0';
 signal reset_domain_cross_s : std_logic_vector(1 downto 0) := (others => '0');
 -------Array of data spanning entire address range declared in 'spi_package'
@@ -279,8 +275,6 @@ testbenching_gen : if make_all_addresses_writeable_for_testing generate
 
 --    spi_array_from_pins_s <= spi_array_to_pins_s;
     set_all_data(spi_array_to_pins_s, spi_array_from_pins_s);
-
---    set_all_data(spi_mem_array_to_pins_s, spi_mem_array_from_pins_s);
 
 end generate testbenching_gen;
 
