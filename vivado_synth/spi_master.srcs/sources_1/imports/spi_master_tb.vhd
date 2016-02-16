@@ -71,6 +71,8 @@ use ieee.std_logic_textio.all;
 use work.gdrb_ctrl_bb_pkg.ALL;
 use work.gdrb_ctrl_bb_address_pkg.ALL;
 use work.spi_board_select_pkg.ALL;
+use work.multi_array_types_pkg.all;
+
 
 entity spi_master_tb is
     generic(
@@ -153,8 +155,8 @@ component gdrb_ctrl_reg_map_top is
             mosi : in STD_LOGIC;
             miso : out STD_LOGIC;
             --Discrete signals
-            reg_map_array_from_pins : in gdrb_ctrl_address_type := (others => (others => '0'));
-            reg_map_array_to_pins : out gdrb_ctrl_address_type
+            reg_map_array_from_pins : in gdrb_ctrl_mem_array_t;
+            reg_map_array_to_pins : out gdrb_ctrl_mem_array_t
             );
 end component;
 
@@ -169,8 +171,8 @@ component spi_board_select_top is
             mosi : in STD_LOGIC;
             miso : out STD_LOGIC;
             --Discrete signals
-            reg_map_array_from_pins : in gdrb_ctrl_address_type := (others => (others => '0'));
-            reg_map_array_to_pins : out gdrb_ctrl_address_type;
+            reg_map_array_from_pins : in gdrb_ctrl_mem_array_t;
+            reg_map_array_to_pins : out gdrb_ctrl_mem_array_t;
             --Non-register map read/control bits
             interupt_flag : out std_logic := '0'
           );
@@ -226,7 +228,8 @@ shared variable cnt      : integer                       := 0;
 
     ---Array of data spanning entire address range declared and initialised in 'spi_package' has offset to make i's contents different from that held in DUT
     --signal gdrb_ctrl_data_array_tb_s : gdrb_ctrl_address_type := gdrb_ctrl_data_array_initalise_offset;
-    signal discrete_reg_map_array_to_script_s, discrete_reg_map_array_from_script_s, discrete_reg_map_array_from_pins_s, discrete_reg_map_array_to_pins_s : gdrb_ctrl_address_type := (others => (others => '0'));
+--    signal discrete_reg_map_array_to_script_s, discrete_reg_map_array_from_script_s : gdrb_ctrl_address_type := (others => (others => '0'));
+    signal discrete_reg_map_array_to_script_s, discrete_reg_map_array_from_script_s : mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0')); -- This may be safer but not as nice
 
     type command_t is (read_write_spi_cmd, read_port_cmd, write_port_cmd, print_comment_line);
     signal input_command_type : command_t;
@@ -646,7 +649,8 @@ input_vector_file_test_gen : if DUT_TYPE = "input_vector_file_test" generate
                     if input_command_v = "RdPo" then
                         --Do nothing, check results in textio output
                     elsif input_command_v = "WrPo" then
-                        discrete_reg_map_array_from_script_s(to_integer(unsigned(address_of_port_v))) <= data_of_port_v;
+--                        discrete_reg_map_array_from_script_s(to_integer(unsigned(address_of_port_v))) <= data_of_port_v;
+                        set_data(discrete_reg_map_array_from_script_s, (to_integer(unsigned(address_of_port_v))), data_of_port_v);  -- put data from pins into array for pins to SPI interface
                     end if;
                     address_of_port <= to_integer(unsigned(address_of_port_v));
                     data_of_port <= to_integer(unsigned(data_of_port_v));
@@ -734,7 +738,8 @@ begin
                 if (input_command_type = write_port_cmd) then
                     WRITE (L, string'("PASS  "), left, 6);
                     WRITE (L, string'("Write Pins"), left, 12);
-                elsif (input_command_type = read_port_cmd) and (to_integer(unsigned(discrete_reg_map_array_to_script_s(address_of_port))) = data_of_port) then -- causes annoying - Warning: NUMERIC_STD.TO_INTEGER: metavalue detected, returning 0
+--                elsif (input_command_type = read_port_cmd) and (to_integer(unsigned(discrete_reg_map_array_to_script_s(address_of_port))) = data_of_port) then -- causes annoying - Warning: NUMERIC_STD.TO_INTEGER: metavalue detected, returning 0
+                elsif (input_command_type = read_port_cmd) and (to_integer(unsigned(get_data(discrete_reg_map_array_to_script_s, address_of_port))) = data_of_port) then -- causes annoying - Warning: NUMERIC_STD.TO_INTEGER: metavalue detected, returning 0
                     WRITE (L, string'("PASS  "), left, 6);
                     WRITE (L, string'("Read Pins"), left, 12);
                 else
@@ -750,7 +755,8 @@ begin
 
                 if (input_command_type = read_port_cmd) then
                     WRITE (L, string'("Read data = "));
-                    HWRITE (L, std_logic_vector(to_unsigned(to_integer(unsigned(discrete_reg_map_array_to_script_s(address_of_port))), SPI_DATA_BITS)), left, 10); -- causes annoying - Warning: NUMERIC_STD.TO_INTEGER: metavalue detected, returning 0
+--                    HWRITE (L, std_logic_vector(to_unsigned(to_integer(unsigned(discrete_reg_map_array_to_script_s(address_of_port))), SPI_DATA_BITS)), left, 10); -- causes annoying - Warning: NUMERIC_STD.TO_INTEGER: metavalue detected, returning 0
+                    HWRITE (L, std_logic_vector(to_unsigned(to_integer(unsigned(get_data(discrete_reg_map_array_to_script_s, address_of_port))), SPI_DATA_BITS)), left, 10); -- causes annoying - Warning: NUMERIC_STD.TO_INTEGER: metavalue detected, returning 0
                 end if;
 
                 WRITELINE (F, L);

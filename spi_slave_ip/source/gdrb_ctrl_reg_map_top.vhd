@@ -48,9 +48,11 @@ entity gdrb_ctrl_reg_map_top is
             i_raw_ssn : in  std_logic;    -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to i_ssn
             mosi : in STD_LOGIC;
             miso : out STD_LOGIC;
-            --Discrete signals
-            reg_map_array_from_pins : in gdrb_ctrl_address_type := (others => (others => '0'));
-            reg_map_array_to_pins : out gdrb_ctrl_address_type;
+            --Discrete signals-Array of data spanning entire address range declared and initialised in 'package' for particular register map being implemented - (multi_array_types_pkg.vhd)
+--            reg_map_array_from_pins : in gdrb_ctrl_address_type := (others => (others => '0'));
+--            reg_map_array_to_pins : out gdrb_ctrl_address_type;
+            reg_map_array_from_pins : in gdrb_ctrl_mem_array_t;
+            reg_map_array_to_pins : out gdrb_ctrl_mem_array_t;
             --Non-register map read/control bits
             interupt_flag : out std_logic := '0'
             );
@@ -59,6 +61,10 @@ end gdrb_ctrl_reg_map_top;
 architecture Behavioral of gdrb_ctrl_reg_map_top is
 
 component reg_map_spi_slave is
+    generic(
+            SPI_ADDRESS_BITS : integer := 4;
+            SPI_DATA_BITS : integer := 16
+        );
     Port (  
             clk : in std_logic;
             reset : in std_logic;
@@ -68,7 +74,7 @@ component reg_map_spi_slave is
             i_raw_ssn : in  std_logic;    -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to i_ssn
             mosi : in STD_LOGIC;
             miso : out STD_LOGIC;
-            ---Array of data spanning entire address range declared and initialised in 'spi_package'
+            --Array of data spanning entire address range declared and initialised in 'package' for particular register map being implemented - (multi_array_types_pkg.vhd)
             reg_map_array_from_pins : in gdrb_ctrl_mem_array_t;
             reg_map_array_to_pins : out gdrb_ctrl_mem_array_t;
             --Write enable and address to allow some write processing of internal FPGA register map (write bit toggling, etc)
@@ -131,6 +137,10 @@ begin
 end process;
 
 reg_map_spi_slave_inst : reg_map_spi_slave
+    generic map(
+            SPI_ADDRESS_BITS => SPI_ADDRESS_BITS, -- : integer := 4;
+            SPI_DATA_BITS => SPI_DATA_BITS        -- : integer := 16
+        )
     Port map(  
             clk => clk,                                    -- : in std_logic;
             reset => reset_s,                              -- : in std_logic;
@@ -147,6 +157,36 @@ reg_map_spi_slave_inst : reg_map_spi_slave
             write_enable_from_spi => write_enable_from_spi_s, --  : out std_logic := '0';
             write_addr_from_spi => write_addr_from_spi_s --  : out std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) := (others => '0')
             );
+
+----Map array from/to SPI interface to itself to make read/write internal register map registers or to/from pins to create in/out discretes..
+----..Map these to the actual pins required at the next level up where this components is instantiated
+non_testbenching_gen : if not make_all_addresses_writeable_for_testing generate
+----.    --Example of.....
+----.    --Out pin (read/write over SPI)
+----.    reg_map_array_to_pins(0) <= spi_array_to_pins_s(0);
+----.    spi_array_from_pins_s(0) <= spi_array_to_pins_s(0);
+----.    --Example of.....
+----.    --In pin (read only over SPI)
+----.    spi_array_from_pins_s(1) <= reg_map_array_from_pins(1);
+----.    --Example of.....
+----.    --Internal read/write register (not pins - read/write over SPI)--use a process to manipulate data back to spi if necessary
+----.    spi_array_from_pins_s(3) <= spi_array_to_pins_s(3);
+----.    --Example of.....
+----.    --Internal constants (not pins - read only over SPI)
+----.    spi_array_from_pins_s(to_integer(unsigned(MDRB_UES1Addr_addr_c)))    <= std_logic_vector(resize(unsigned(16#5555#),SPI_DATA_BITS)); 
+--
+--
+----SENSOR_
+--    --In pin (read only over SPI)
+--    spi_array_from_pins_s(to_integer(unsigned(SENSOR_STATUS_ADDR_C))) <= reg_map_array_from_pins(to_integer(unsigned(SENSOR_STATUS_ADDR_C)));
+--    --Internal read/write register (not pins - read/write over SPI)--use a process to manipulate data back to spi if necessary
+----.    spi_array_from_pins_s(to_integer(unsigned(SENSOR_EDGE_ADDR_C))) <= spi_array_to_pins_s(to_integer(unsigned(SENSOR_EDGE_ADDR_C)));   -- Now processed by component sensor_status_edge_interupt_inst
+--    --Internal read/write register (not pins - read/write over SPI)--use a process to manipulate data back to spi if necessary
+--    spi_array_from_pins_s(to_integer(unsigned(SENSOR_INT_MASK_ADDR_C))) <= spi_array_to_pins_s(to_integer(unsigned(SENSOR_INT_MASK_ADDR_C)));
+--
+--
+end generate non_testbenching_gen;
+
 
 ----Map array from/to SPI interface to itself to make read/write internal register map registers or to/from pins to create in/out discretes..
 ----..Map these to the actual pins required at the next level up where this components is instantiated
