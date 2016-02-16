@@ -225,6 +225,7 @@ begin
     end if;
 end process;
 
-reg_map_array_to_pins <= reg_map_array_to_pins_s;
+--reg_map_array_to_pins <= reg_map_array_to_pins_s;
+reg_map_array_to_pins <= (others => (others => '0'));
 
 end Behavioral;

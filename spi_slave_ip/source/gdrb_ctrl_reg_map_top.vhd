@@ -158,9 +158,23 @@ reg_map_spi_slave_inst : reg_map_spi_slave
             write_addr_from_spi => write_addr_from_spi_s --  : out std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) := (others => '0')
             );
 
+
 ----Map array from/to SPI interface to itself to make read/write internal register map registers or to/from pins to create in/out discretes..
 ----..Map these to the actual pins required at the next level up where this components is instantiated
 non_testbenching_gen : if not make_all_addresses_writeable_for_testing generate
+
+--spi_array_from_pins_s <= reg_map_array_from_pins;
+--reg_map_array_to_pins <= spi_array_to_pins_s;
+process(reg_map_array_from_pins)
+begin
+    set_all_data(reg_map_array_from_pins, spi_array_from_pins_s);
+end process;
+
+process(spi_array_to_pins_s)
+begin
+    set_all_data(spi_array_to_pins_s, reg_map_array_to_pins);
+end process;
+
 ----.    --Example of.....
 ----.    --Out pin (read/write over SPI)
 ----.    reg_map_array_to_pins(0) <= spi_array_to_pins_s(0);

@@ -29,6 +29,10 @@ package multi_array_types_pkg is
                         signal mem_array_out : out mem_array_t
                         );
 
+    function get_data_bit (input_array : mem_array_t;
+                        address : natural;
+                        bit_address : natural) return std_logic;
+
 end multi_array_types_pkg;
 
 
@@ -72,5 +76,17 @@ package body multi_array_types_pkg is
             end loop;
         end loop;
     end set_all_data;
+    
+    function get_data_bit (input_array : mem_array_t;
+                        address : natural;
+                        bit_address : natural) return std_logic is
+        variable data : std_logic;
+    begin
+        data := input_array(address,bit_address);
+--        for i in input_array'RANGE(2) loop
+--            data(i) := input_array(address,i);
+--        end loop;
+        return data;
+    end get_data_bit;
     
 end;
