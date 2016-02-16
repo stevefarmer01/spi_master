@@ -59,12 +59,6 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../local_common_ip/reg_map_edge_interupt/source/reg_map_edge_interupt.vhd">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
       <File Path="$PPRDIR/../spi_slave_ip/source/spi_board_select_slave.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
@@ -84,6 +78,12 @@
         </FileInfo>
       </File>
       <File Path="$PPRDIR/../spi_slave_ip/source/spi_board_select_top.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../local_common_ip/reg_map_edge_interupt/source/reg_map_edge_interupt.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>

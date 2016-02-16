@@ -28,6 +28,8 @@ use IEEE.NUMERIC_STD.ALL;
 
 use work.gdrb_ctrl_bb_pkg.ALL;
 
+use work.multi_array_types_pkg.all;
+
 -- Uncomment the following library declaration if instantiating
 -- any Xilinx leaf cells in this code.
 --library UNISIM;
@@ -46,8 +48,8 @@ entity reg_map_spi_slave is
             mosi : in STD_LOGIC;
             miso : out STD_LOGIC;
             ---Array of data spanning entire address range declared and initialised in 'spi_package'
-            reg_map_array_from_pins : in gdrb_ctrl_address_type;
-            reg_map_array_to_pins : out gdrb_ctrl_address_type := gdrb_ctrl_data_array_initalise;
+            reg_map_array_from_pins : in gdrb_ctrl_mem_array_t;
+            reg_map_array_to_pins : out gdrb_ctrl_mem_array_t := (others => (others => '0'));
             --Write enable and address to allow some write processing of internal FPGA register map (write bit toggling, etc)
             write_enable_from_spi : out std_logic := '0';
             write_addr_from_spi : out std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) := (others => '0')
@@ -87,6 +89,8 @@ component spi_slave is
 end component;
 
 constant DATA_SIZE : integer := DATA_SIZE_C;
+
+signal reg_map_array_to_pins_s : gdrb_ctrl_mem_array_t := (others => (others => '0')); 
 
 signal o_rx_ready_slave_s : std_logic := '0';
 signal o_rx_ready_slave_r0 : std_logic := '0';
@@ -159,13 +163,16 @@ begin
 end process;
 
 ---Extract read data from reg map array and send it back across SPI to master
-read_data_s <= reg_map_array_from_pins(to_integer(unsigned(rx_address_s)));           -- Use address received  to extract read data from reg map array to send back on next tx
+--read_data_s <= reg_map_array_from_pins(to_integer(unsigned(rx_address_s)));           -- Use address received  to extract read data from reg map array to send back on next tx
+read_data_s <= get_data(reg_map_array_from_pins, to_integer(unsigned(rx_address_s)));           -- Use address received  to extract read data from reg map array to send back on next tx
+
 tx_data_s(tx_data_s'LEFT downto (tx_data_s'LEFT-read_data_s'LEFT)) <= read_data_s; -- Read data goes into MSb's of data sent back (no address or Read/Write bit sent back as per protocol)
 
 -----When valid data recieved load read data from reg map into spi interface to be sent back during next spi transaction (spi reads are always sent back during next spi transaction as per standard spi protocol)
 --spi_read_from_reg_map_proc : process(clk)
---begin
---    if rising_edge(clk) then
+--beginget_data(spi_mem_array_to_pins_s, i)
+--
+--ising_edge(clk) then
 --        if reset = '1' then
 --            wr_en_to_spi_slave_s <= '0';
 --        else
@@ -207,13 +214,13 @@ begin
             if write_enable_from_spi_s = '1' then
                 write_enable_from_spi <= '1';
                 write_addr_from_spi <= rx_address_s;
-                reg_map_array_to_pins(to_integer(unsigned(rx_address_s))) <= rx_data_s; -- This is a write and so update reg map array with data received
+--                reg_map_array_to_pins(to_integer(unsigned(rx_address_s))) <= rx_data_s; -- This is a write and so update reg map array with data received
+                set_data(reg_map_array_to_pins_s, (to_integer(unsigned(rx_address_s))), rx_data_s); -- This is a write and so update reg map array with data received
             end if;
         end if;
     end if;
 end process;
 
-
-
+reg_map_array_to_pins <= reg_map_array_to_pins_s;
 
 end Behavioral;
