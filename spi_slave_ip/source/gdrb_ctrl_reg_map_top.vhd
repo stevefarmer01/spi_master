@@ -26,10 +26,10 @@ use IEEE.STD_LOGIC_1164.ALL;
 -- arithmetic functions with Signed or Unsigned values
 use IEEE.NUMERIC_STD.ALL;
 
-use work.gdrb_ctrl_bb_pkg.ALL;
+use work.gdrb_ctrl_bb_pkg.ALL;          -- Widths of SPI protocol's address, data and board select (if applicable)
 use work.gdrb_ctrl_bb_address_pkg.ALL;  -- Address constants used in non_testbenching_gen if 'make_all_addresses_writeable_for_testing' set to FALSE
 
-use work.multi_array_types_pkg.all;
+use work.multi_array_types_pkg.ALL;     -- Multi-dimension array functions and proceedures
 
 -- Uncomment the following library declaration if instantiating
 -- any Xilinx leaf cells in this code.
@@ -64,7 +64,8 @@ architecture Behavioral of gdrb_ctrl_reg_map_top is
 component reg_map_spi_slave is
     generic(
             SPI_ADDRESS_BITS : integer := 4;
-            SPI_DATA_BITS : integer := 16
+            SPI_DATA_BITS : integer := 16;
+            MEM_ARRAY_T_INITIALISATION : mem_array_t
         );
     Port (  
             clk : in std_logic;
@@ -125,7 +126,7 @@ signal global_interupt_flag_s : std_logic := '0';
 
 signal edge_detect_sensor_to_spi_s, edge_detect_fault_to_spi_s, edge_detect_status_to_spi_s : std_logic_vector(SPI_DATA_BITS-1 downto 0) := (others => '0');
 
-
+constant blank : mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0'));
 
 begin
 
@@ -143,24 +144,25 @@ end process;
 
 reg_map_spi_slave_inst : reg_map_spi_slave
     generic map(
-            SPI_ADDRESS_BITS => SPI_ADDRESS_BITS, -- : integer := 4;
-            SPI_DATA_BITS => SPI_DATA_BITS        -- : integer := 16
-        )
+            SPI_ADDRESS_BITS => SPI_ADDRESS_BITS,             -- : integer := 4;
+            SPI_DATA_BITS => SPI_DATA_BITS,                   -- : integer := 16
+            MEM_ARRAY_T_INITIALISATION => mem_array_t_initalised -- Function that populates this constant in 'gdrb_ctrl_bb_pkg'
+            )
     Port map(  
-            clk => clk,                                    -- : in std_logic;
-            reset => reset_s,                              -- : in std_logic;
+            clk => clk,                                       -- : in std_logic;
+            reset => reset_s,                                 -- : in std_logic;
             ---Slave SPI interface pins
-            sclk => sclk,                                  -- : in STD_LOGIC;
-            ss_n => ss_n,                                  -- : in STD_LOGIC;
-            i_raw_ssn => i_raw_ssn,                             -- : in  std_logic;    -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to i_ssn
-            mosi => mosi,                                  -- : in STD_LOGIC;
-            miso => miso,                                  -- : out STD_LOGIC;
+            sclk => sclk,                                     -- : in STD_LOGIC;
+            ss_n => ss_n,                                     -- : in STD_LOGIC;
+            i_raw_ssn => i_raw_ssn,                           -- : in  std_logic;                -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to i_ssn
+            mosi => mosi,                                     -- : in STD_LOGIC;
+            miso => miso,                                     -- : out STD_LOGIC;
             ---Array of data spanning entire address range declared and initialised in 'spi_package'
             reg_map_array_from_pins => spi_array_from_pins_s, -- : in gdrb_ctrl_address_type
-            reg_map_array_to_pins => spi_array_to_pins_s, -- : out gdrb_ctrl_address_type;
+            reg_map_array_to_pins => spi_array_to_pins_s,     -- : out gdrb_ctrl_address_type;
             --Write enable and address to allow some write processing of internal FPGA register map (write bit toggling, etc)
-            write_enable_from_spi => write_enable_from_spi_s, --  : out std_logic := '0';
-            write_addr_from_spi => write_addr_from_spi_s --  : out std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) := (others => '0')
+            write_enable_from_spi => write_enable_from_spi_s, -- : out std_logic := '0';
+            write_addr_from_spi => write_addr_from_spi_s      -- : out std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) := (others => '0')
             );
 
 

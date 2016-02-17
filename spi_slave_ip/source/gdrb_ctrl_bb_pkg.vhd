@@ -68,6 +68,6 @@ package body gdrb_ctrl_bb_pkg is
     end;
     
     --Pre-load register map array for testing and possible other uses
-    constant mem_array_t_initalised : mem_array_t := initalise_mem_array_t(inc_values_enable => TRUE, inc_data_start_value => 16#0#);
+    constant mem_array_t_initalised : mem_array_t := initalise_mem_array_t(inc_values_enable => FALSE, inc_data_start_value => 16#0#);
 
 end;

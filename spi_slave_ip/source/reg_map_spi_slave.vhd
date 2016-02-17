@@ -26,9 +26,9 @@ use IEEE.STD_LOGIC_1164.ALL;
 -- arithmetic functions with Signed or Unsigned values
 use IEEE.NUMERIC_STD.ALL;
 
-use work.gdrb_ctrl_bb_pkg.ALL;
+--use work.gdrb_ctrl_bb_pkg.ALL;
 
-use work.multi_array_types_pkg.all;
+use work.multi_array_types_pkg.all;     -- Multi-dimension array functions and proceedures
 
 -- Uncomment the following library declaration if instantiating
 -- any Xilinx leaf cells in this code.
@@ -38,7 +38,8 @@ use work.multi_array_types_pkg.all;
 entity reg_map_spi_slave is
     generic(
             SPI_ADDRESS_BITS : integer := 4;
-            SPI_DATA_BITS : integer := 16
+            SPI_DATA_BITS : integer := 16;
+            MEM_ARRAY_T_INITIALISATION : mem_array_t
         );
     Port (  
             clk : in std_logic;
@@ -46,10 +47,10 @@ entity reg_map_spi_slave is
             ---Slave SPI interface pins
             sclk : in STD_LOGIC;
             ss_n : in STD_LOGIC;
-            i_raw_ssn   : in  std_logic;    -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to i_ssn
+            i_raw_ssn : in  std_logic;    -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to i_ssn
             mosi : in STD_LOGIC;
             miso : out STD_LOGIC;
-            ---Array of data spanning entire address range declared and initialised in 'spi_package'
+            ---Array of data spanning entire address range declared'
             reg_map_array_from_pins : in mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0);
             reg_map_array_to_pins : out mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0);
             --Write enable and address to allow some write processing of internal FPGA register map (write bit toggling, etc)
@@ -65,36 +66,37 @@ component spi_slave is
     generic(
         DATA_SIZE  :     natural := 16);
     port (
-        i_sys_clk  : in  std_logic;     -- system clock
-        i_sys_rst  : in  std_logic;     -- system reset
-        i_csn      : in  std_logic;     -- Slave Enable/select
-        i_data     : in  std_logic_vector(DATA_SIZE - 1 downto 0);  -- Input data
-        i_wr       : in  std_logic;     -- Active Low Write, Active High Read
-        i_rd       : in  std_logic;     -- Active Low Write, Active High Read
+        i_sys_clk  : in  std_logic;                                -- system clock
+        i_sys_rst  : in  std_logic;                                -- system reset
+        i_csn      : in  std_logic;                                -- Slave Enable/select
+        i_data     : in  std_logic_vector(DATA_SIZE - 1 downto 0); -- Input data
+        i_wr       : in  std_logic;                                -- Active Low Write, Active High Read
+        i_rd       : in  std_logic;                                -- Active Low Write, Active High Read
         o_data     : out std_logic_vector(DATA_SIZE - 1 downto 0);  --output data
-        o_tx_ready : out std_logic;     -- Transmitter ready, can write another 
-        o_rx_ready : out std_logic;     -- Receiver ready, can read data
-        o_tx_error : out std_logic;     -- Transmitter error
-        o_rx_error : out std_logic;     -- Receiver error
-        i_cpol      : in std_logic;     -- CPOL value - 0 or 1
-        i_cpha      : in std_logic;     -- CPHA value - 0 or 1 
-        i_lsb_first : in std_logic;     -- lsb first when '1' /msb first when 
-        o_miso      : out std_logic;    -- Slave output to Master
-        i_mosi      : in  std_logic;    -- Slave input from Master
-        i_ssn       : in  std_logic;    -- Slave Slect Active low
-        i_raw_ssn   : in  std_logic;    -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to i_ssn
-        i_sclk      : in  std_logic;    -- Clock from SPI Master
+        o_tx_ready : out std_logic;                                -- Transmitter ready, can write another
+        o_rx_ready : out std_logic;                                -- Receiver ready, can read data
+        o_tx_error : out std_logic;                                -- Transmitter error
+        o_rx_error : out std_logic;                                -- Receiver error
+        i_cpol      : in std_logic;                                -- CPOL value - 0 or 1
+        i_cpha      : in std_logic;                                -- CPHA value - 0 or 1
+        i_lsb_first : in std_logic;                                -- lsb first when '1' /msb first when
+        o_miso      : out std_logic;                               -- Slave output to Master
+        i_mosi      : in  std_logic;                               -- Slave input from Master
+        i_ssn       : in  std_logic;                               -- Slave Slect Active low
+        i_raw_ssn   : in  std_logic;                               -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to i_ssn
+        i_sclk      : in  std_logic;                               -- Clock from SPI Master
         miso_tri_en : out std_logic;
         o_tx_ack    : out std_logic;
         o_tx_no_ack : out std_logic
         );
 end component;
 
-constant DATA_SIZE_C : integer   := SPI_ADDRESS_BITS+SPI_DATA_BITS+1;                          -- Total data size = read/write bit + address + data
+constant DATA_SIZE_C : integer := SPI_ADDRESS_BITS+SPI_DATA_BITS+1;                          -- Total data size = read/write bit + address + data
 constant DATA_SIZE : integer := DATA_SIZE_C;
 
 --signal reg_map_array_to_pins_s : mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0')); -- This may be safer (due to syth support although tested in Diamond 3.5 and vivado 2014.1)) but not as nice
-signal reg_map_array_to_pins_s : mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0) := mem_array_t_initalised; -- This may be safer (due to syth support although tested in Diamond 3.5 and vivado 2014.1)) but not as nice
+--signal reg_map_array_to_pins_s : mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0) := mem_array_t_initalised; -- This may be safer (due to syth support although tested in Diamond 3.5 and vivado 2014.1)) but not as nice
+signal reg_map_array_to_pins_s : mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0) := MEM_ARRAY_T_INITIALISATION; -- This may be safer (due to syth support although tested in Diamond 3.5 and vivado 2014.1)) but not as nice
 
 signal o_rx_ready_slave_s : std_logic := '0';
 signal o_rx_ready_slave_r0 : std_logic := '0';
@@ -118,29 +120,30 @@ begin
 
     spi_slave_inst : spi_slave
         generic map(
-            DATA_SIZE => DATA_SIZE)
+            DATA_SIZE => DATA_SIZE
+            )
         port map(
-        i_sys_clk   => clk,                  -- : in  std_logic;                                -- system clock
-        i_sys_rst   => reset,              -- : in  std_logic;                                -- system reset
-        i_csn       => low_s,                  -- : in  std_logic;                                -- chip select for SPI master
-        i_data      => tx_data_s,            -- : in  std_logic_vector(15 downto 0);            -- Input data
-        i_wr        => wr_en_to_spi_slave_s, -- : in  std_logic;                                -- Active Low Write, Active High Read
-        i_rd        => low_s,                  -- : in  std_logic;                                -- Active Low Write, Active High Read
-        o_data      => o_data_slave_s,       -- o_data     : out std_logic_vector(15 downto 0); -- output data
-        o_tx_ready  => open,                 -- o_tx_ready : out std_logic;                     -- Transmitter ready, can write another
-        o_rx_ready  => o_rx_ready_slave_s,   -- o_rx_ready : out std_logic;                     -- Receiver ready, can read data
-        o_tx_error  => open,                 -- o_tx_error : out std_logic;                     -- Transmitter error
-        o_rx_error  => open,                 -- o_rx_error : out std_logic;                     -- Receiver error
-        i_cpol      => low_s,                  -- : in  std_logic;                                -- CPOL value - 0 or 1
-        i_cpha      => low_s,                  -- : in  std_logic;                                -- CPHA value - 0 or 1
-        i_lsb_first => low_s,                  -- : in  std_logic;                                -- lsb first when '1' /msb first when
-        i_ssn       => ss_n,                 -- i_ssn  : in  std_logic;                         -- Slave Slect Active low
-        i_raw_ssn   => i_raw_ssn,                 -- : in  std_logic;    -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to i_ssn
-        i_mosi      => mosi,                 -- i_mosi : in  std_logic;                         -- Slave input from Master
-        o_miso      => miso,                 -- o_miso : out std_logic;                         -- Slave output to Master
-        i_sclk      => sclk,                 -- i_sclk : in  std_logic;                         -- Clock from SPI Master
-        o_tx_ack    => open,                 -- o_tx_ack : out std_logic;
-        o_tx_no_ack => open                  -- o_tx_no_ack : out std_logic
+            i_sys_clk   => clk,                  -- : in  std_logic;                   -- system clock
+            i_sys_rst   => reset,                -- : in  std_logic;                   -- system reset
+            i_csn       => low_s,                -- : in  std_logic;                   -- chip select for SPI master
+            i_data      => tx_data_s,            -- : in  std_logic_vector;            -- Input data
+            i_wr        => wr_en_to_spi_slave_s, -- : in  std_logic;                   -- Active Low Write, Active High Read
+            i_rd        => low_s,                -- : in  std_logic;                   -- Active Low Write, Active High Read
+            o_data      => o_data_slave_s,       -- o_data     : out std_logic_vector; -- output data
+            o_tx_ready  => open,                 -- o_tx_ready : out std_logic;        -- Transmitter ready, can write another
+            o_rx_ready  => o_rx_ready_slave_s,   -- o_rx_ready : out std_logic;        -- Receiver ready, can read data
+            o_tx_error  => open,                 -- o_tx_error : out std_logic;        -- Transmitter error
+            o_rx_error  => open,                 -- o_rx_error : out std_logic;        -- Receiver error
+            i_cpol      => low_s,                -- : in  std_logic;                   -- CPOL value - 0 or 1
+            i_cpha      => low_s,                -- : in  std_logic;                   -- CPHA value - 0 or 1
+            i_lsb_first => low_s,                -- : in  std_logic;                   -- lsb first when '1' /msb first when
+            i_ssn       => ss_n,                 -- i_ssn  : in  std_logic;            -- Slave Slect Active low
+            i_raw_ssn   => i_raw_ssn,            -- : in  std_logic;                   -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to i_ssn
+            i_mosi      => mosi,                 -- i_mosi : in  std_logic;            -- Slave input from Master
+            o_miso      => miso,                 -- o_miso : out std_logic;            -- Slave output to Master
+            i_sclk      => sclk,                 -- i_sclk : in  std_logic;            -- Clock from SPI Master
+            o_tx_ack    => open,                 -- o_tx_ack : out std_logic;
+            o_tx_no_ack => open                  -- o_tx_no_ack : out std_logic
             );
 
 o_rx_ready_rising_edge_s <= '1' when o_rx_ready_slave_r0 = '0' and o_rx_ready_slave_s = '1' else '0';
