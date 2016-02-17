@@ -15,12 +15,6 @@ package multi_array_types_pkg is
     type mem_array_t is
         array (natural range <>, natural range <>)  of std_logic;
 
---    procedure set_data (--signal clk : in std_logic;
---                        signal mem_array : inout mem_array_t;
---                        address : in natural;
---                        data : in std_logic_vector
---                        );
-
     function get_data (input_array : mem_array_t;
                         address : natural) return std_logic_vector;
 
@@ -44,6 +38,8 @@ end multi_array_types_pkg;
 
 package body multi_array_types_pkg is
 
+
+
     function get_data (input_array : mem_array_t;
                         address : natural) return std_logic_vector is
         variable data : std_logic_vector(input_array'RANGE(2));
@@ -54,38 +50,15 @@ package body multi_array_types_pkg is
         return data;
     end get_data;
     
---    procedure set_data (--signal clk : in std_logic;
---                        signal mem_array : inout mem_array_t;
---                        address : in natural;
---                        data : in std_logic_vector
---                        ) is
---    begin
---        for x in mem_array'RANGE(1) loop
---            for i in mem_array'RANGE(2) loop
---                if x = address then 
---                    mem_array(address,i) <= data(i);
---                else
---                    mem_array(x,i) <= mem_array(x,i);
---                end if;
---            end loop;
---        end loop;
---    end set_data;
-    
     procedure set_data (--signal clk : in std_logic;
                         signal mem_array : out mem_array_t;
                         address : in natural;
                         data : in std_logic_vector
                         ) is
     begin
---        for x in mem_array'RANGE(1) loop
             for i in mem_array'RANGE(2) loop
---                if x = address then 
                     mem_array(address,i) <= data(i);
---                else
---                    mem_array(x,i) <= mem_array(x,i);
---                end if;
             end loop;
---        end loop;
     end set_data;
     
     procedure set_all_data (--signal clk : in std_logic;
@@ -106,9 +79,6 @@ package body multi_array_types_pkg is
         variable data : std_logic;
     begin
         data := input_array(address,bit_address);
---        for i in input_array'RANGE(2) loop
---            data(i) := input_array(address,i);
---        end loop;
         return data;
     end get_data_bit;
     

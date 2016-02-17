@@ -237,7 +237,6 @@ shared variable cnt      : integer                       := 0;
 
     ---Array of data spanning entire address range declared and initialised in 'spi_package' has offset to make i's contents different from that held in DUT
     --signal gdrb_ctrl_data_array_tb_s : gdrb_ctrl_address_type := gdrb_ctrl_data_array_initalise_offset;
---    signal discrete_reg_map_array_to_script_s, discrete_reg_map_array_from_script_s : gdrb_ctrl_address_type := (others => (others => '0'));
     signal discrete_reg_map_array_to_script_s, discrete_reg_map_array_from_script_s : mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0')); -- This may be safer but not as nice
     signal bs_discrete_reg_map_array_to_script_s, bs_discrete_reg_map_array_from_script_s : mem_array_t( 0 to (SPI_BOARD_SEL_PROTOCOL_ADDR_BITS**2)-1, SPI_BOARD_SEL_PROTOCOL_DATA_BITS-1 downto 0) := (others => (others => '0')); -- This may be safer but not as nice
 
@@ -486,8 +485,8 @@ spi_reg_map_gen : if not board_select generate
                 mosi => mosi_i,                                                -- : in STD_LOGIC;
                 miso => miso,                                                  -- : out STD_LOGIC;
                 --Discrete signals
-                reg_map_array_from_pins => discrete_reg_map_array_from_script_s, -- : in gdrb_ctrl_address_type := (others => (others => '0'));
-                reg_map_array_to_pins => discrete_reg_map_array_to_script_s      -- : out gdrb_ctrl_address_type
+                reg_map_array_from_pins => discrete_reg_map_array_from_script_s, -- : in mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0'));
+                reg_map_array_to_pins => discrete_reg_map_array_to_script_s      -- : out mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0)
                 );
 
 end generate spi_reg_map_gen;
@@ -514,8 +513,8 @@ board_sel_spi_reg_map_gen : if board_select generate
                 mosi => mosi_i,                                                -- : in STD_LOGIC;
                 miso => miso,                                                  -- : out STD_LOGIC;
                 --Discrete signals
-                reg_map_array_from_pins => bs_discrete_reg_map_array_from_script_s, -- : in gdrb_ctrl_address_type := (others => (others => '0'));
-                reg_map_array_to_pins => bs_discrete_reg_map_array_to_script_s      -- : out gdrb_ctrl_address_type
+                reg_map_array_from_pins => bs_discrete_reg_map_array_from_script_s, -- : in mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0'));
+                reg_map_array_to_pins => bs_discrete_reg_map_array_to_script_s      -- : out mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0)
                 );
 
 end generate board_sel_spi_reg_map_gen;
