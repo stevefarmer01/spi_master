@@ -48,7 +48,7 @@ package gdrb_ctrl_bb_pkg is
     --Deferred constants below
     constant gdrb_ctrl_data_array_initalise : gdrb_ctrl_address_type;
 
-    subtype gdrb_ctrl_mem_array_t is mem_array_t(0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0);
+--    subtype gdrb_ctrl_mem_array_t is mem_array_t(0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0);
 
 end gdrb_ctrl_bb_pkg;
 

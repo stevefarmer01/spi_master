@@ -155,8 +155,8 @@ component gdrb_ctrl_reg_map_top is
             mosi : in STD_LOGIC;
             miso : out STD_LOGIC;
             --Discrete signals
-            reg_map_array_from_pins : in gdrb_ctrl_mem_array_t;
-            reg_map_array_to_pins : out gdrb_ctrl_mem_array_t
+            reg_map_array_from_pins : in mem_array_t(0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0);
+            reg_map_array_to_pins : out mem_array_t(0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0)
             );
 end component;
 
@@ -171,8 +171,8 @@ component spi_board_select_top is
             mosi : in STD_LOGIC;
             miso : out STD_LOGIC;
             --Discrete signals
-            reg_map_array_from_pins : in gdrb_ctrl_mem_array_t;
-            reg_map_array_to_pins : out gdrb_ctrl_mem_array_t;
+            reg_map_array_from_pins : in mem_array_t(0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0);
+            reg_map_array_to_pins : out mem_array_t(0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0);
             --Non-register map read/control bits
             interupt_flag : out std_logic := '0'
           );
