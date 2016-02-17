@@ -50,8 +50,8 @@ entity reg_map_spi_slave is
             mosi : in STD_LOGIC;
             miso : out STD_LOGIC;
             ---Array of data spanning entire address range declared and initialised in 'spi_package'
-            reg_map_array_from_pins : in mem_array_t;
-            reg_map_array_to_pins : out mem_array_t := (others => (others => '0'));
+            reg_map_array_from_pins : in mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0);
+            reg_map_array_to_pins : out mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0'));
             --Write enable and address to allow some write processing of internal FPGA register map (write bit toggling, etc)
             write_enable_from_spi : out std_logic := '0';
             write_addr_from_spi : out std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) := (others => '0')
@@ -93,8 +93,8 @@ end component;
 constant DATA_SIZE_C : integer   := SPI_ADDRESS_BITS+SPI_DATA_BITS+1;                          -- Total data size = read/write bit + address + data
 constant DATA_SIZE : integer := DATA_SIZE_C;
 
-signal reg_map_array_to_pins_s : mem_array_t( reg_map_array_from_pins'RANGE(1), reg_map_array_from_pins'RANGE(2)) := (others => (others => '0')); -- Take unconstrained array ranges from input array
---signal reg_map_array_to_pins_s : mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0')); -- This may be safer (due to syth support although tested in Diamond 3.5 and vivado 2014.1)) but not as nice
+--signal reg_map_array_to_pins_s : mem_array_t( reg_map_array_from_pins'RANGE(1), reg_map_array_from_pins'RANGE(2)) := (others => (others => '0')); -- Take unconstrained array ranges from input array
+signal reg_map_array_to_pins_s : mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0')); -- This may be safer (due to syth support although tested in Diamond 3.5 and vivado 2014.1)) but not as nice
 
 signal o_rx_ready_slave_s : std_logic := '0';
 signal o_rx_ready_slave_r0 : std_logic := '0';
@@ -225,7 +225,11 @@ begin
     end if;
 end process;
 
---reg_map_array_to_pins <= reg_map_array_to_pins_s;
-reg_map_array_to_pins <= (others => (others => '0'));
+process(reg_map_array_to_pins_s)
+begin
+--    reg_map_array_to_pins <= reg_map_array_to_pins_s;
+    set_all_data (reg_map_array_to_pins_s, reg_map_array_to_pins);
+end process;
+--reg_map_array_to_pins <= (others => (others => '0'));
 
 end Behavioral;
