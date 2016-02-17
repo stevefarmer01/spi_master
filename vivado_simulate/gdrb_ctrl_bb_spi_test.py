@@ -6,7 +6,9 @@ class cmd_simple(cmd.Cmd):
 
   intro = 'Welcome to the test enviroment for the GDRB Begalbone SPI.\nType help or ? to list commands.\n'
   prompt = '(GDRB Begalbone SPI) '
-  test_list_dict = {'0' : 'input_test_read_writes.txt', '1' : 'input_test_interupt_sensor.txt', '2' : 'input_test_interupt_fault.txt', '3' : 'input_test_interupt_misc.txt', '4' : 'input_test_vanilla_read_writes.txt'}
+# to include test 4 need to add ability to modify vhdl generics during simulation
+#  test_list_dict = {'0' : 'input_test_read_writes.txt', '1' : 'input_test_interupt_sensor.txt', '2' : 'input_test_interupt_fault.txt', '3' : 'input_test_interupt_misc.txt', '4' : 'input_test_vanilla_read_writes.txt'}
+  test_list_dict = {'0' : 'input_test_read_writes.txt', '1' : 'input_test_interupt_sensor.txt', '2' : 'input_test_interupt_fault.txt', '3' : 'input_test_interupt_misc.txt'}
   input_test_file = "input_test.txt"
   output_test_file = "output_test.txt"
   test_results_dir = "test_results"

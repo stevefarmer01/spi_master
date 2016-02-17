@@ -112,6 +112,9 @@ signal write_addr_from_spi_s : std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) := 
 
 signal sensor_status_write_en_s : std_logic := '0';
 signal sensor_interupt_flag_s : std_logic := '0';
+signal sensor_status_s, sensor_edge_s, sensor_int_mask_s : std_logic_vector(SPI_DATA_BITS-1 downto 0) := (others => '0');
+signal fault_status_s, fault_edge_s, fault_int_mask_s : std_logic_vector(SPI_DATA_BITS-1 downto 0) := (others => '0');
+signal misc_status_s, misc_edge_s, misc_int_mask_s : std_logic_vector(SPI_DATA_BITS-1 downto 0) := (others => '0');
 
 signal fault_status_write_en_s : std_logic := '0';
 signal fault_interupt_flag_s : std_logic := '0';
@@ -121,6 +124,10 @@ signal misc_interupt_flag_s : std_logic := '0';
 
 signal diagnostics_interupts_data_s : std_logic_vector(SPI_DATA_BITS-1 downto 0) := (others => '0');
 signal global_interupt_flag_s : std_logic := '0';
+
+signal edge_detect_sensor_to_spi_s, edge_detect_fault_to_spi_s, edge_detect_status_to_spi_s : std_logic_vector(SPI_DATA_BITS-1 downto 0) := (others => '0');
+
+
 
 begin
 
@@ -187,8 +194,33 @@ non_testbenching_gen : if not make_all_addresses_writeable_for_testing generate
 ----.    --Internal constants (not pins - read only over SPI)
 ----.    spi_array_from_pins_s(to_integer(unsigned(MDRB_UES1Addr_addr_c)))    <= std_logic_vector(resize(unsigned(16#5555#),SPI_DATA_BITS)); 
 
+----SENSOR_
+--    --In pin (read only over SPI)
+--    spi_array_from_pins_s(to_integer(unsigned(SENSOR_STATUS_ADDR_C))) <= reg_map_array_from_pins(to_integer(unsigned(SENSOR_STATUS_ADDR_C)));
+--    --Internal read/write register (not pins - read/write over SPI)--use a process to manipulate data back to spi if necessary
+----.    spi_array_from_pins_s(to_integer(unsigned(SENSOR_EDGE_ADDR_C))) <= spi_array_to_pins_s(to_integer(unsigned(SENSOR_EDGE_ADDR_C)));   -- Now processed by component sensor_status_edge_interupt_inst
+--    --Internal read/write register (not pins - read/write over SPI)--use a process to manipulate data back to spi if necessary
+--    spi_array_from_pins_s(to_integer(unsigned(SENSOR_INT_MASK_ADDR_C))) <= spi_array_to_pins_s(to_integer(unsigned(SENSOR_INT_MASK_ADDR_C)));
+--
+----FAULT_
+--    --In pin (read only over SPI)
+--    spi_array_from_pins_s(to_integer(unsigned(FAULT_STATUS_ADDR_C))) <= reg_map_array_from_pins(to_integer(unsigned(FAULT_STATUS_ADDR_C)));
+--    --Internal read/write register (not pins - read/write over SPI)--use a process to manipulate data back to spi if necessary
+----.    spi_array_from_pins_s(to_integer(unsigned(FAULT_EDGE_ADDR_C))) <= spi_array_to_pins_s(to_integer(unsigned(FAULT_EDGE_ADDR_C)));      -- Now processed by component fault_status_edge_interupt_inst
+--    --Internal read/write register (not pins - read/write over SPI)--use a process to manipulate data back to spi if necessary
+--    spi_array_from_pins_s(to_integer(unsigned(FAULT_INT_MASK_ADDR_C))) <= spi_array_to_pins_s(to_integer(unsigned(FAULT_INT_MASK_ADDR_C)));
+--
+----MISC_
+--    --In pin (read only over SPI)
+--    spi_array_from_pins_s(to_integer(unsigned(MISC_STATUS_ADDR_C))) <= reg_map_array_from_pins(to_integer(unsigned(MISC_STATUS_ADDR_C)));
+--    --Internal read/write register (not pins - read/write over SPI)--use a process to manipulate data back to spi if necessary
+----.    spi_array_from_pins_s(to_integer(unsigned(MISC_EDGE_ADDR_C))) <= spi_array_to_pins_s(to_integer(unsigned(MISC_EDGE_ADDR_C)));
+--    --Internal read/write register (not pins - read/write over SPI)--use a process to manipulate data back to spi if necessary
+--    spi_array_from_pins_s(to_integer(unsigned(MISC_INT_MASK_ADDR_C))) <= spi_array_to_pins_s(to_integer(unsigned(MISC_INT_MASK_ADDR_C)));
+--
+--
 --ENABLES_OUT
-    --Out pin (read/write over SPI)
+--    --Out pin (read/write over SPI)
 --    reg_map_array_to_pins(to_integer(unsigned(ENABLES_OUT_ADDR_C))) <= spi_array_to_pins_s(to_integer(unsigned(ENABLES_OUT_ADDR_C)));
 --    spi_array_from_pins_s(to_integer(unsigned(ENABLES_OUT_ADDR_C))) <= spi_array_to_pins_s(to_integer(unsigned(ENABLES_OUT_ADDR_C)));
 
@@ -198,21 +230,112 @@ non_testbenching_gen : if not make_all_addresses_writeable_for_testing generate
 --    --Internal constants (not pins - read only over SPI)
 --    spi_array_from_pins_s(to_integer(unsigned(MDRB_UES2Addr_addr_c)))    <= std_logic_vector(resize(unsigned(UES_2_c),SPI_DATA_BITS));
 --
+----DIAGNOSTICS_INTERUPTS
+--    --Internal signals (not pins - read only over SPI)
+--    spi_array_from_pins_s(to_integer(unsigned(DIAGNOSTICS_INTERUPTS_ADDR_C))) <= diagnostics_interupts_data_s; 
 --
 
---Process to write to array connected to output pins of FPGA on top level
-process(spi_array_to_pins_s)
-begin
-    set_data(reg_map_array_to_pins, to_integer(unsigned(ENABLES_OUT_ADDR_C)), get_data(spi_array_to_pins_s,to_integer(unsigned(ENABLES_OUT_ADDR_C))));--Out pin (write to pins)
-end process;
 
---Process to write to array into SPI interface
-process(spi_array_to_pins_s)
-begin
-    set_data(spi_array_from_pins_s, to_integer(unsigned(ENABLES_OUT_ADDR_C)), get_data(spi_array_to_pins_s,to_integer(unsigned(ENABLES_OUT_ADDR_C))));--Out pin (read/write over SPI)
-    set_data(spi_array_from_pins_s, to_integer(unsigned(MDRB_UES1Addr_addr_c)), std_logic_vector(resize(unsigned(UES_1_c),SPI_DATA_BITS)));--Internal constants (read only over SPI)
-    set_data(spi_array_from_pins_s, to_integer(unsigned(MDRB_UES2Addr_addr_c)), std_logic_vector(resize(unsigned(UES_2_c),SPI_DATA_BITS)));--Internal constants (read only over SPI)
-end process;
+  --Process to write to array connected to output pins of FPGA on top level
+  process(spi_array_to_pins_s)
+  begin
+      set_data(reg_map_array_to_pins, to_integer(unsigned(ENABLES_OUT_ADDR_C)), get_data(spi_array_to_pins_s,to_integer(unsigned(ENABLES_OUT_ADDR_C))));--Out pin (write to pins)
+  end process;
+  
+  --Process to write to array into SPI interface
+  process(spi_array_to_pins_s, reg_map_array_from_pins, edge_detect_sensor_to_spi_s, edge_detect_fault_to_spi_s, edge_detect_status_to_spi_s, diagnostics_interupts_data_s)
+  begin
+      set_data(spi_array_from_pins_s, to_integer(unsigned(SENSOR_STATUS_ADDR_C)), get_data(reg_map_array_from_pins, to_integer(unsigned(SENSOR_STATUS_ADDR_C)))); -- In pin (read only over SPI from FPGA pin)
+      set_data(spi_array_from_pins_s, to_integer(unsigned(SENSOR_EDGE_ADDR_C)), edge_detect_sensor_to_spi_s);                                                     -- Internal read/write register (Edge detected and so processed by component sensor_status_edge_interupt_inst)
+      set_data(spi_array_from_pins_s, to_integer(unsigned(SENSOR_INT_MASK_ADDR_C)), get_data(spi_array_to_pins_s, to_integer(unsigned(SENSOR_INT_MASK_ADDR_C)))); -- Internal read/write register (read/write over SPI)
+      set_data(spi_array_from_pins_s, to_integer(unsigned(FAULT_STATUS_ADDR_C)), get_data(reg_map_array_from_pins, to_integer(unsigned(FAULT_STATUS_ADDR_C))));   -- In pin (read only over SPI from FPGA pin)
+      set_data(spi_array_from_pins_s, to_integer(unsigned(FAULT_EDGE_ADDR_C)), edge_detect_fault_to_spi_s);                                                       -- Internal read/write register (Edge detected and so processed by component fault_status_edge_interupt_inst)
+      set_data(spi_array_from_pins_s, to_integer(unsigned(FAULT_INT_MASK_ADDR_C)), get_data(spi_array_to_pins_s, to_integer(unsigned(FAULT_INT_MASK_ADDR_C))));   -- Internal read/write register (read/write over SPI)
+      set_data(spi_array_from_pins_s, to_integer(unsigned(MISC_STATUS_ADDR_C)), get_data(reg_map_array_from_pins, to_integer(unsigned(MISC_STATUS_ADDR_C))));     -- In pin (read only over SPI from FPGA pin)
+      set_data(spi_array_from_pins_s, to_integer(unsigned(MISC_EDGE_ADDR_C)), edge_detect_status_to_spi_s);                                                       -- Internal read/write register (Edge detected and so processed by component misc_status_edge_interupt_inst)
+      set_data(spi_array_from_pins_s, to_integer(unsigned(MISC_INT_MASK_ADDR_C)), get_data(spi_array_to_pins_s, to_integer(unsigned(MISC_INT_MASK_ADDR_C))));     -- Internal read/write register (read/write over SPI)
+      set_data(spi_array_from_pins_s, to_integer(unsigned(ENABLES_OUT_ADDR_C)), get_data(spi_array_to_pins_s,to_integer(unsigned(ENABLES_OUT_ADDR_C))));          -- Out pin (read/write over SPI)
+      set_data(spi_array_from_pins_s, to_integer(unsigned(DIAGNOSTICS_INTERUPTS_ADDR_C)), diagnostics_interupts_data_s);                                          -- Internal read only register (read only over SPI from FPGA register)
+      set_data(spi_array_from_pins_s, to_integer(unsigned(MDRB_UES1Addr_addr_c)), std_logic_vector(resize(unsigned(UES_1_c),SPI_DATA_BITS)));                     -- Internal constants (read only over SPI from constant in vhdl package)
+      set_data(spi_array_from_pins_s, to_integer(unsigned(MDRB_UES2Addr_addr_c)), std_logic_vector(resize(unsigned(UES_2_c),SPI_DATA_BITS)));                     -- Internal constants (read only over SPI from constant in vhdl package)
+  end process;
+
+
+----Start of Interupt and edge detectection for SENSOR_STATUS_ADDR_C, SENSOR_EDGE_ADDR_C and SENSOR_INT_MASK_ADDR_C
+    sensor_status_write_en_s <= '1' when write_enable_from_spi_s = '1' and (write_addr_from_spi_s = SENSOR_EDGE_ADDR_C) else '0';
+    
+    sensor_status_s <= get_data(spi_array_from_pins_s, to_integer(unsigned(SENSOR_STATUS_ADDR_C)));   -- The addition of these doesn't effect simulation results but stops a vivado compiler warning- "globally static expression"
+    sensor_edge_s <= get_data(spi_array_to_pins_s, to_integer(unsigned(SENSOR_EDGE_ADDR_C)));         -- The addition of these doesn't effect simulation results but stops a vivado compiler warning- "globally static expression"
+    sensor_int_mask_s <= get_data(spi_array_to_pins_s, to_integer(unsigned(SENSOR_INT_MASK_ADDR_C))); -- The addition of these doesn't effect simulation results but stops a vivado compiler warning- "globally static expression"
+
+    sensor_status_edge_interupt_inst : reg_map_edge_interupt
+        generic map (
+                    reg_width => SPI_DATA_BITS                                                             -- : positive := 16
+                 )
+        Port map( 
+                    clk => clk,                                                                            -- : in std_logic;
+                    status_reg => sensor_status_s,                                                         -- : in std_logic_vector(reg_width-1 downto 0);
+                    edge_detect_toggle_en => sensor_status_write_en_s,                                     -- : in std_logic;
+                    edge_detect_toggle_reg => sensor_edge_s,                                               -- : in std_logic_vector(reg_width-1 downto 0);
+                    --.edge_detect_reg => spi_array_from_pins_s(to_integer(unsigned(SENSOR_EDGE_ADDR_C))), -- : out std_logic_vector(reg_width-1 downto 0);
+                    edge_detect_reg => edge_detect_sensor_to_spi_s,                                        -- : out std_logic_vector(reg_width-1 downto 0);
+                    interupt_mask_reg => sensor_int_mask_s,                                                -- : in std_logic_vector(reg_width-1 downto 0);
+                    interupt_flag => sensor_interupt_flag_s                                                -- : out std_logic := '0'
+                    );
+    
+----Start of Interupt and edge detectection for FAULT_STATUS_ADDR_C, FAULT_EDGE_ADDR_C and FAULT_INT_MASK_ADDR_C
+    fault_status_write_en_s <= '1' when write_enable_from_spi_s = '1' and (write_addr_from_spi_s = FAULT_EDGE_ADDR_C) else '0';
+
+    fault_status_s <= get_data(spi_array_from_pins_s, to_integer(unsigned(FAULT_STATUS_ADDR_C)));     -- The addition of these doesn't effect simulation results but stops a vivado compiler warning- "globally static expression"
+    fault_edge_s <= get_data(spi_array_to_pins_s, to_integer(unsigned(FAULT_EDGE_ADDR_C)));           -- The addition of these doesn't effect simulation results but stops a vivado compiler warning- "globally static expression"
+    fault_int_mask_s <= get_data(spi_array_to_pins_s, to_integer(unsigned(FAULT_INT_MASK_ADDR_C)));   -- The addition of these doesn't effect simulation results but stops a vivado compiler warning- "globally static expression"
+    
+    fault_status_edge_interupt_inst : reg_map_edge_interupt
+        generic map (
+                  reg_width => SPI_DATA_BITS                                                            -- : positive := 16
+                 )
+        Port map( 
+                  clk => clk,                                                                           -- : in std_logic;
+                  status_reg => fault_status_s,                                                         -- : in std_logic_vector(reg_width-1 downto 0);
+                  edge_detect_toggle_en => fault_status_write_en_s,                                     -- : in std_logic;
+                  edge_detect_toggle_reg => fault_edge_s,                                               -- : in std_logic_vector(reg_width-1 downto 0);
+                  --.edge_detect_reg => spi_array_from_pins_s(to_integer(unsigned(FAULT_EDGE_ADDR_C))), -- : out std_logic_vector(reg_width-1 downto 0);
+                  edge_detect_reg => edge_detect_fault_to_spi_s,                                        -- : out std_logic_vector(reg_width-1 downto 0);
+                  interupt_mask_reg => fault_int_mask_s,                                                -- : in std_logic_vector(reg_width-1 downto 0);
+                  interupt_flag => fault_interupt_flag_s                                                -- : out std_logic := '0'
+                  );
+    
+----Start of Interupt and MISC detectection for MISC_STATUS_ADDR_C, MISC_EDGE_ADDR_C and MISC_INT_MASK_ADDR_C
+    misc_status_write_en_s <= '1' when write_enable_from_spi_s = '1' and (write_addr_from_spi_s = MISC_EDGE_ADDR_C) else '0';
+    
+    misc_status_s <= get_data(spi_array_from_pins_s, to_integer(unsigned(MISC_STATUS_ADDR_C)));       -- The addition of these doesn't effect simulation results but stops a vivado compiler warning- "globally static expression"
+    misc_edge_s <= get_data(spi_array_to_pins_s, to_integer(unsigned(MISC_EDGE_ADDR_C)));             -- The addition of these doesn't effect simulation results but stops a vivado compiler warning- "globally static expression"
+    misc_int_mask_s <= get_data(spi_array_to_pins_s, to_integer(unsigned(MISC_INT_MASK_ADDR_C)));     -- The addition of these doesn't effect simulation results but stops a vivado compiler warning- "globally static expression"
+    
+    misc_status_edge_interupt_inst : reg_map_edge_interupt
+        generic map (
+                  reg_width => SPI_DATA_BITS                                                           -- : positive := 16
+                  )
+        Port map( 
+                  clk => clk,                                                                          -- : in std_logic;
+                  status_reg => misc_status_s,                                                         -- : in std_logic_vector(reg_width-1 downto 0);
+                  edge_detect_toggle_en => misc_status_write_en_s,                                     -- : in std_logic;
+                  edge_detect_toggle_reg => misc_edge_s,                                               -- : in std_logic_vector(reg_width-1 downto 0);
+                  --.edge_detect_reg => spi_array_from_pins_s(to_integer(unsigned(MISC_EDGE_ADDR_C))), -- : out std_logic_vector(reg_width-1 downto 0);
+                  edge_detect_reg => edge_detect_status_to_spi_s,                                      -- : out std_logic_vector(reg_width-1 downto 0);
+                  interupt_mask_reg => misc_int_mask_s,                                                -- : in std_logic_vector(reg_width-1 downto 0);
+                  interupt_flag => misc_interupt_flag_s                                                -- : out std_logic := '0'
+                  );
+    
+
+    --And various interupt detect register outputs together for testbench testing/diagnostics
+    global_interupt_flag_s <= sensor_interupt_flag_s or fault_interupt_flag_s or misc_interupt_flag_s;
+    interupt_flag <= global_interupt_flag_s;
+    
+    diagnostics_interupts_data_s(0) <= sensor_interupt_flag_s;
+    diagnostics_interupts_data_s(1) <= fault_interupt_flag_s;
+    diagnostics_interupts_data_s(2) <= misc_interupt_flag_s;
+    diagnostics_interupts_data_s(diagnostics_interupts_data_s'LEFT) <= global_interupt_flag_s;
 
 
 end generate non_testbenching_gen;
