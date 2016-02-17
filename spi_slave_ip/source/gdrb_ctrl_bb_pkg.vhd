@@ -38,9 +38,9 @@ use work.multi_array_types_pkg.all;
 package gdrb_ctrl_bb_pkg is
 
     --Set sizes of data and addresse as required for particular application
-    constant SPI_ADDRESS_BITS : integer := 4;
-    constant SPI_DATA_BITS : integer := 16;
-    constant DATA_SIZE_C : integer   := SPI_ADDRESS_BITS+SPI_DATA_BITS+1;                             -- Total data size = read/write bit + address + data
+    constant SPI_ADDRESS_BITS : integer := 4;                             -- This has to be a multiple of 4 for HREAD to work OK in testbench
+    constant SPI_DATA_BITS : integer := 16;                               -- This has to be a multiple of 4 for HREAD to work OK in testbench
+    constant DATA_SIZE_C : integer   := SPI_ADDRESS_BITS+SPI_DATA_BITS+1; -- Total data size = read/write bit + address + data
     --Array type for all register map values
     type gdrb_ctrl_address_type is array (integer range 0 to (SPI_ADDRESS_BITS**2)-1) of std_logic_vector(SPI_DATA_BITS-1 downto 0);
     --This function allows non-zero initialising of register map array for testing and possible other uses

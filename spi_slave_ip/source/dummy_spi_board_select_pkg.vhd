@@ -37,6 +37,8 @@ package spi_board_select_pkg is
 
     --Set sizes of board select address as required for particular application
     constant SPI_BOARD_SEL_ADDR_BITS : integer := 0;
+    constant SPI_BOARD_SEL_PROTOCOL_ADDR_BITS : integer := 8;	-- This has to be a multiple of 4 for HREAD to work OK in testbench
+    constant SPI_BOARD_SEL_PROTOCOL_DATA_BITS : integer := 8;	-- This has to be a multiple of 4 for HREAD to work OK in testbench
 
 end spi_board_select_pkg;
 

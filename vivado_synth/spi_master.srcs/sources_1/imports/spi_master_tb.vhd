@@ -69,7 +69,7 @@ use std.textio.all;
 use ieee.std_logic_textio.all;
 
 use work.gdrb_ctrl_bb_pkg.ALL;
-use work.gdrb_ctrl_bb_address_pkg.ALL;
+--use work.gdrb_ctrl_bb_address_pkg.ALL;
 use work.spi_board_select_pkg.ALL;
 use work.multi_array_types_pkg.all;
 
@@ -144,7 +144,11 @@ component spi_master_top
 end component;
 
 component gdrb_ctrl_reg_map_top is
-    generic ( make_all_addresses_writeable_for_testing : boolean := FALSE );
+    generic ( 
+            make_all_addresses_writeable_for_testing : boolean := FALSE; -- This is for testbenching only
+            SPI_ADDRESS_BITS : integer := 4;
+            SPI_DATA_BITS : integer := 16
+           );
     Port (  
             clk : in std_logic;
             reset : in std_logic;
@@ -161,7 +165,12 @@ component gdrb_ctrl_reg_map_top is
 end component;
 
 component spi_board_select_top is
-    generic ( make_all_addresses_writeable_for_testing : boolean := TRUE ); -- This is for testbenching only
+    generic ( 
+            make_all_addresses_writeable_for_testing : boolean := FALSE; -- This is for testbenching only
+            SPI_BOARD_SEL_ADDR_BITS : integer := 4;
+            SPI_ADDRESS_BITS : integer := 4;
+            SPI_DATA_BITS : integer := 16
+           );
     Port ( 
             clk : in std_logic;
             reset : in std_logic;
@@ -230,6 +239,7 @@ shared variable cnt      : integer                       := 0;
     --signal gdrb_ctrl_data_array_tb_s : gdrb_ctrl_address_type := gdrb_ctrl_data_array_initalise_offset;
 --    signal discrete_reg_map_array_to_script_s, discrete_reg_map_array_from_script_s : gdrb_ctrl_address_type := (others => (others => '0'));
     signal discrete_reg_map_array_to_script_s, discrete_reg_map_array_from_script_s : mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0')); -- This may be safer but not as nice
+    signal bs_discrete_reg_map_array_to_script_s, bs_discrete_reg_map_array_from_script_s : mem_array_t( 0 to (SPI_BOARD_SEL_PROTOCOL_ADDR_BITS**2)-1, SPI_BOARD_SEL_PROTOCOL_DATA_BITS-1 downto 0) := (others => (others => '0')); -- This may be safer but not as nice
 
     type command_t is (read_write_spi_cmd, read_port_cmd, write_port_cmd, print_comment_line);
     signal input_command_type : command_t;
@@ -258,7 +268,7 @@ shared variable cnt      : integer                       := 0;
                         spi_start_i     <= '0';
                         
                         if board_select then
-                            data_i      <= std_logic_vector(to_unsigned(board_sel_to_spi,SPI_BOARD_SEL_ADDR_BITS)) & read_write_to_spi & std_logic_vector(to_unsigned(address_to_spi,SPI_ADDRESS_BITS)) & std_logic_vector(to_unsigned(data_to_spi,SPI_DATA_BITS)); -- send write data over SPI (just write all data to a fixed pattern and check it propergates thru array in reg map)
+                            data_i      <= std_logic_vector(to_unsigned(board_sel_to_spi,SPI_BOARD_SEL_ADDR_BITS)) & read_write_to_spi & std_logic_vector(to_unsigned(address_to_spi,SPI_BOARD_SEL_PROTOCOL_ADDR_BITS)) & std_logic_vector(to_unsigned(data_to_spi,SPI_DATA_BITS)); -- send write data over SPI (just write all data to a fixed pattern and check it propergates thru array in reg map)
                         else
                             data_i      <= read_write_to_spi & std_logic_vector(to_unsigned(address_to_spi,SPI_ADDRESS_BITS)) & std_logic_vector(to_unsigned(data_to_spi,SPI_DATA_BITS)); -- send write data over SPI (just write all data to a fixed pattern and check it propergates thru array in reg map)
                         end if;
@@ -462,7 +472,9 @@ spi_reg_map_gen : if not board_select generate
 
     reg_map_proc : gdrb_ctrl_reg_map_top
         generic map(
-                make_all_addresses_writeable_for_testing => make_all_addresses_writeable_for_testing -- :     natural := 16
+                make_all_addresses_writeable_for_testing => make_all_addresses_writeable_for_testing, -- :     natural := 16
+                SPI_ADDRESS_BITS => SPI_ADDRESS_BITS,                 -- : integer := 4;
+                SPI_DATA_BITS => SPI_DATA_BITS                        -- : integer := 16
                 )
         Port map(  
                 clk => dut_sys_clk_i,                                          -- : std_logic;
@@ -481,12 +493,17 @@ spi_reg_map_gen : if not board_select generate
 end generate spi_reg_map_gen;
 
 --------------------------Board Select Register Map SPI DUT----------------------------.
+--    constant SPI_BOARD_SEL_PROTOCOL_ADDR_BITS : integer := 4;
+--    constant SPI_BOARD_SEL_PROTOCOL_DATA_BITS : integer := 16;
 
 board_sel_spi_reg_map_gen : if board_select generate
 
     reg_map_proc : spi_board_select_top
         generic map(
-                make_all_addresses_writeable_for_testing => make_all_addresses_writeable_for_testing -- :     natural := 16
+                make_all_addresses_writeable_for_testing => make_all_addresses_writeable_for_testing, -- :     natural := 16
+                SPI_BOARD_SEL_ADDR_BITS => SPI_BOARD_SEL_ADDR_BITS,                 -- : integer := 4;
+                SPI_ADDRESS_BITS => SPI_BOARD_SEL_PROTOCOL_ADDR_BITS,                                              -- : integer := 4;
+                SPI_DATA_BITS => SPI_BOARD_SEL_PROTOCOL_DATA_BITS                                                 -- : integer := 16
                 )
         Port map(  
                 clk => dut_sys_clk_i,                                          -- : std_logic;
@@ -497,8 +514,8 @@ board_sel_spi_reg_map_gen : if board_select generate
                 mosi => mosi_i,                                                -- : in STD_LOGIC;
                 miso => miso,                                                  -- : out STD_LOGIC;
                 --Discrete signals
-                reg_map_array_from_pins => discrete_reg_map_array_from_script_s, -- : in gdrb_ctrl_address_type := (others => (others => '0'));
-                reg_map_array_to_pins => discrete_reg_map_array_to_script_s      -- : out gdrb_ctrl_address_type
+                reg_map_array_from_pins => bs_discrete_reg_map_array_from_script_s, -- : in gdrb_ctrl_address_type := (others => (others => '0'));
+                reg_map_array_to_pins => bs_discrete_reg_map_array_to_script_s      -- : out gdrb_ctrl_address_type
                 );
 
 end generate board_sel_spi_reg_map_gen;
@@ -578,6 +595,7 @@ input_vector_file_test_gen : if DUT_TYPE = "input_vector_file_test" generate
         variable input_command_v : string(1 to 4);
         variable board_sel_to_spi_v : std_logic_vector(SPI_BOARD_SEL_ADDR_BITS - 1 downto 0) := (others => '0');
         variable address_to_spi_v, address_of_port_v : std_logic_vector(SPI_ADDRESS_BITS - 1 downto 0) := (others => '1');
+        variable bs_address_to_spi_v, bs_address_of_port_v : std_logic_vector(SPI_BOARD_SEL_PROTOCOL_ADDR_BITS - 1 downto 0) := (others => '1');
         variable data_to_spi_v, data_of_port_v : std_logic_vector(SPI_DATA_BITS - 1 downto 0) := (others => '1');
         variable check_data_from_spi_v : std_logic_vector(SPI_DATA_BITS - 1 downto 0) := (others => '1');
         variable check_data_mask_v : std_logic_vector(SPI_DATA_BITS - 1 downto 0) := (others => '1'); -- Default to all '1's so that all bits of the result are checked unless mask set otherwise by input testing parameters
@@ -614,17 +632,23 @@ input_vector_file_test_gen : if DUT_TYPE = "input_vector_file_test" generate
                         HREAD(L, board_sel_to_spi_v, good);
                         assert good report "Text input file format read error" severity FAILURE;
                         board_sel_to_spi <= to_integer(unsigned(board_sel_to_spi_v));
+                        HREAD(L, bs_address_to_spi_v, good);
+                        assert good report "Text input file format read error" severity FAILURE;
+                        address_to_spi <= to_integer(unsigned(bs_address_to_spi_v));
                     end if;
 
-                    HREAD(L, address_to_spi_v, good);
-                    assert good report "Text input file format read error" severity FAILURE;
+                    if not board_select then
+                        HREAD(L, address_to_spi_v, good);
+                        assert good report "Text input file format read error" severity FAILURE;
+                        address_to_spi <= to_integer(unsigned(address_to_spi_v));
+                    end if;
+
                     HREAD(L, data_to_spi_v, good);
                     assert good report "Text input file format read error" severity FAILURE;
                     HREAD(L, check_data_from_spi_v, good);
                     assert good report "Text input file format read error" severity FAILURE;
                     HREAD(L, check_data_mask_v, good);
                     assert good report "Text input file format read error" severity FAILURE;
-                    address_to_spi <= to_integer(unsigned(address_to_spi_v));
                     data_to_spi <= to_integer(unsigned(data_to_spi_v));
                     check_data_from_spi <= to_integer(unsigned(check_data_from_spi_v));
                     check_data_mask <= to_integer(unsigned(check_data_mask_v));
@@ -720,9 +744,13 @@ begin
                 if board_select then
                     WRITE (L, string'("Board Select Address = "));
                     HWRITE (L, std_logic_vector(to_unsigned(board_sel_to_spi,SPI_BOARD_SEL_ADDR_BITS)), left, 10);
+                    WRITE (L, string'("Address = "));
+                    HWRITE (L, std_logic_vector(to_unsigned(address_to_spi,SPI_BOARD_SEL_PROTOCOL_ADDR_BITS)), left, 10);
                 end if;
-                WRITE (L, string'("Address = "));
-                HWRITE (L, std_logic_vector(to_unsigned(address_to_spi,SPI_ADDRESS_BITS)), left, 10);
+                if not board_select then --SPI_BOARD_SEL_PROTOCOL_ADDR_BITS
+                    WRITE (L, string'("Address = "));
+                    HWRITE (L, std_logic_vector(to_unsigned(address_to_spi,SPI_ADDRESS_BITS)), left, 10);
+                end if;
                 WRITE (L, string'("Write Data = "));
                 HWRITE (L, std_logic_vector(to_unsigned(data_to_spi,SPI_DATA_BITS)), left, 10);
                 WRITE (L, string'("Expected data = "));
