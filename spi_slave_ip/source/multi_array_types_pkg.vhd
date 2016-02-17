@@ -35,7 +35,7 @@ package multi_array_types_pkg is
                         bit_address : natural) return std_logic;
 
     procedure set_data_v (--signal clk : in std_logic;
-                        variable mem_array : out mem_array_t;
+                        variable mem_array : inout mem_array_t;
                         address : in natural;
                         data : in std_logic_vector
                         );
@@ -91,7 +91,7 @@ package body multi_array_types_pkg is
     end get_data_bit;
     
     procedure set_data_v (--signal clk : in std_logic;
-                        variable mem_array : out mem_array_t;
+                        variable mem_array : inout mem_array_t;
                         address : in natural;
                         data : in std_logic_vector
                         ) is
