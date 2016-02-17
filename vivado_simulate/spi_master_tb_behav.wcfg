@@ -13,10 +13,20 @@
          </top_modules>
       </db_ref>
    </db_ref_list>
-   <WVObjectSize size="38" />
+   <WVObjectSize size="40" />
    <wvobject db_ref_id="1" fp_name="/spi_master_tb/sys_clk_i" type="logic">
       <obj_property name="ElementShortName">sys_clk_i</obj_property>
       <obj_property name="ObjectShortName">sys_clk_i</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_reg_map_gen/reg_map_proc/reg_map_spi_slave_inst/reg_map_array_from_pins" type="array">
+      <obj_property name="ElementShortName">reg_map_array_from_pins[0:15,15:0]</obj_property>
+      <obj_property name="ObjectShortName">reg_map_array_from_pins[0:15,15:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/spi_master_tb/spi_reg_map_gen/reg_map_proc/reg_map_spi_slave_inst/reg_map_array_to_pins" type="array">
+      <obj_property name="ElementShortName">reg_map_array_to_pins[0:15,15:0]</obj_property>
+      <obj_property name="ObjectShortName">reg_map_array_to_pins[0:15,15:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
    </wvobject>
    <wvobject db_ref_id="1" fp_name="/spi_master_tb/sys_rst_i" type="logic">
       <obj_property name="ElementShortName">sys_rst_i</obj_property>

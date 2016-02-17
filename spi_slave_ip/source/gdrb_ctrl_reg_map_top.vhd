@@ -26,6 +26,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 -- arithmetic functions with Signed or Unsigned values
 use IEEE.NUMERIC_STD.ALL;
 
+use work.gdrb_ctrl_bb_pkg.ALL;
 use work.gdrb_ctrl_bb_address_pkg.ALL;  -- Address constants used in non_testbenching_gen if 'make_all_addresses_writeable_for_testing' set to FALSE
 
 use work.multi_array_types_pkg.all;
@@ -76,7 +77,7 @@ component reg_map_spi_slave is
             miso : out STD_LOGIC;
             --Array of data spanning entire address range declared and initialised in 'package' for particular register map being implemented - (multi_array_types_pkg.vhd)
             reg_map_array_from_pins : in mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0);
-            reg_map_array_to_pins : out mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0);
+            reg_map_array_to_pins : out mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0) := mem_array_t_initalised;
             --Write enable and address to allow some write processing of internal FPGA register map (write bit toggling, etc)
             write_enable_from_spi : out std_logic;
             write_addr_from_spi : out std_logic_vector(SPI_ADDRESS_BITS-1 downto 0)
@@ -102,8 +103,7 @@ end component;
 signal reset_s : std_logic := '0';
 signal reset_domain_cross_s : std_logic_vector(1 downto 0) := (others => '0');
 -------Array of data spanning entire address range
-signal spi_array_to_pins_s, spi_array_from_pins_s : mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0')); -- From/to SPI interface
-signal reg_map_array_internal_s : mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0'));  -- Intermediate signal for out port to pins
+signal spi_array_to_pins_s, spi_array_from_pins_s : mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0) := mem_array_t_initalised; -- From/to SPI interface
 
 signal write_enable_from_spi_s : std_logic := '0';
 signal write_addr_from_spi_s : std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) := (others => '0');
