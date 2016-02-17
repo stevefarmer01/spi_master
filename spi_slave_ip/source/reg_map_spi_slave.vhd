@@ -51,7 +51,7 @@ entity reg_map_spi_slave is
             miso : out STD_LOGIC;
             ---Array of data spanning entire address range declared and initialised in 'spi_package'
             reg_map_array_from_pins : in mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0);
-            reg_map_array_to_pins : out mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0) := mem_array_t_initalised;
+            reg_map_array_to_pins : out mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0);
             --Write enable and address to allow some write processing of internal FPGA register map (write bit toggling, etc)
             write_enable_from_spi : out std_logic := '0';
             write_addr_from_spi : out std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) := (others => '0')
@@ -167,26 +167,9 @@ begin
 end process;
 
 ---Extract read data from reg map array and send it back across SPI to master
---read_data_s <= reg_map_array_from_pins(to_integer(unsigned(rx_address_s)));           -- Use address received  to extract read data from reg map array to send back on next tx
 read_data_s <= get_data(reg_map_array_from_pins, to_integer(unsigned(rx_address_s)));           -- Use address received  to extract read data from reg map array to send back on next tx
 
 tx_data_s(tx_data_s'LEFT downto (tx_data_s'LEFT-read_data_s'LEFT)) <= read_data_s; -- Read data goes into MSb's of data sent back (no address or Read/Write bit sent back as per protocol)
-
------When valid data recieved load read data from reg map into spi interface to be sent back during next spi transaction (spi reads are always sent back during next spi transaction as per standard spi protocol)
---spi_read_from_reg_map_proc : process(clk)
---beginget_data(spi_mem_array_to_pins_s, i)
---
---ising_edge(clk) then
---        if reset = '1' then
---            wr_en_to_spi_slave_s <= '0';
---        else
---            wr_en_to_spi_slave_s <= '0';
---            if rx_valid_s = '1' then
---                wr_en_to_spi_slave_s <= '1';                                           -- Enable to latch send read or write data back across SPI by slave
---            end if;
---        end if;
---    end if;
---end process;
 
 ---When valid data recieved load read data from reg map into spi interface to be sent back during next spi transaction (spi reads are always sent back during next spi transaction as per standard spi protocol)
 spi_read_from_reg_map_proc : process(clk)
@@ -213,7 +196,6 @@ spi_write_to_reg_map_proc : process(clk)
 begin
     if rising_edge(clk) then
         if reset = '1' then
---            set_all_data (mem_array_t_initalised, reg_map_array_to_pins_s);
         else
             write_enable_from_spi <= '0';
             if write_enable_from_spi_s = '1' then
@@ -231,6 +213,5 @@ begin
 --    reg_map_array_to_pins <= reg_map_array_to_pins_s;
     set_all_data (reg_map_array_to_pins_s, reg_map_array_to_pins);
 end process;
---reg_map_array_to_pins <= (others => (others => '0'));
 
 end Behavioral;
