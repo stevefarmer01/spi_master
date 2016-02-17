@@ -30,6 +30,8 @@ use work.gdrb_ctrl_bb_address_pkg.ALL;
 
 use work.spi_board_select_pkg.ALL;
 
+use work.multi_array_types_pkg.all;
+
 -- Uncomment the following library declaration if instantiating
 -- any Xilinx leaf cells in this code.
 --library UNISIM;
@@ -46,8 +48,8 @@ entity spi_board_select_top is
             mosi : in STD_LOGIC;
             miso : out STD_LOGIC;
             --Discrete signals
-            reg_map_array_from_pins : in gdrb_ctrl_address_type := (others => (others => '0'));
-            reg_map_array_to_pins : out gdrb_ctrl_address_type;
+            reg_map_array_from_pins : in gdrb_ctrl_mem_array_t := (others => (others => '0'));
+            reg_map_array_to_pins : out gdrb_ctrl_mem_array_t;
             --Non-register map read/control bits
             interupt_flag : out std_logic := '0'
           );
@@ -84,8 +86,8 @@ component gdrb_ctrl_reg_map_top is
             mosi : in STD_LOGIC;
             miso : out STD_LOGIC;
             --Discrete signals
-            reg_map_array_from_pins : in gdrb_ctrl_address_type := (others => (others => '0'));
-            reg_map_array_to_pins : out gdrb_ctrl_address_type;
+            reg_map_array_from_pins : in gdrb_ctrl_mem_array_t := (others => (others => '0'));
+            reg_map_array_to_pins : out gdrb_ctrl_mem_array_t;
             --Non-register map read/control bits
             interupt_flag : out std_logic := '0'
             );
@@ -193,10 +195,11 @@ reg_map_selected_inst : gdrb_ctrl_reg_map_top
             mosi => mosi,                                       -- : in STD_LOGIC;
             miso => miso_s(board_select_addr_0_c),                                       -- : out STD_LOGIC;
             --Discrete signals
-            reg_map_array_from_pins => reg_map_array_from_pins, -- : in gdrb_ctrl_address_type := (others => (others => '0'));
-            reg_map_array_to_pins => reg_map_array_to_pins      -- : out gdrb_ctrl_address_type
+            reg_map_array_from_pins => reg_map_array_from_pins, -- : in gdrb_ctrl_mem_array_t := (others => (others => '0'));
+            reg_map_array_to_pins => reg_map_array_to_pins      -- : out gdrb_ctrl_mem_array_t
             );
 
+--    set_all_data(spi_array_to_pins_s, spi_array_from_pins_s);
 
 --.--Example of all 16 spi_slace register maps connected to board select addresses 0 thru 15
 --.reg_map_gen : for i in 0 to ((SPI_BOARD_SEL_ADDR_BITS**2)-1) generate
@@ -214,8 +217,8 @@ reg_map_selected_inst : gdrb_ctrl_reg_map_top
 --.                mosi => mosi,                                       -- : in STD_LOGIC;
 --.                miso => miso_s(i),                                       -- : out STD_LOGIC;
 --.                --Discrete signals
---.                reg_map_array_from_pins => open, -- : in gdrb_ctrl_address_type := (others => (others => '0'));
---.                reg_map_array_to_pins => open      -- : out gdrb_ctrl_address_type
+--.                reg_map_array_from_pins => open, -- : in gdrb_ctrl_mem_array_t := (others => (others => '0'));
+--.                reg_map_array_to_pins => open      -- : out gdrb_ctrl_mem_array_t
 --.                );
 --.end generate;
 
