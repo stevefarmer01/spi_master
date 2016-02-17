@@ -15,14 +15,14 @@ package multi_array_types_pkg is
     type mem_array_t is
         array (natural range <>, natural range <>)  of std_logic;
 
-    function get_data (input_array : mem_array_t;
-                        address : natural) return std_logic_vector;
-
 --    procedure set_data (--signal clk : in std_logic;
 --                        signal mem_array : inout mem_array_t;
 --                        address : in natural;
 --                        data : in std_logic_vector
 --                        );
+
+    function get_data (input_array : mem_array_t;
+                        address : natural) return std_logic_vector;
 
     procedure set_data (--signal clk : in std_logic;
                         signal mem_array : out mem_array_t;

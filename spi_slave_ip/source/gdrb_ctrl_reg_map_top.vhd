@@ -163,17 +163,15 @@ reg_map_spi_slave_inst : reg_map_spi_slave
 ----..Map these to the actual pins required at the next level up where this components is instantiated
 non_testbenching_gen : if not make_all_addresses_writeable_for_testing generate
 
---spi_array_from_pins_s <= reg_map_array_from_pins;
---reg_map_array_to_pins <= spi_array_to_pins_s;
-process(reg_map_array_from_pins)
-begin
-    set_all_data(reg_map_array_from_pins, spi_array_from_pins_s);
-end process;
-
-process(spi_array_to_pins_s)
-begin
-    set_all_data(spi_array_to_pins_s, reg_map_array_to_pins);
-end process;
+--process(reg_map_array_from_pins)
+--begin
+--    set_all_data(reg_map_array_from_pins, spi_array_from_pins_s);
+--end process;
+--
+--process(spi_array_to_pins_s)
+--begin
+--    set_all_data(spi_array_to_pins_s, reg_map_array_to_pins);
+--end process;
 
 ----.    --Example of.....
 ----.    --Out pin (read/write over SPI)
@@ -188,18 +186,45 @@ end process;
 ----.    --Example of.....
 ----.    --Internal constants (not pins - read only over SPI)
 ----.    spi_array_from_pins_s(to_integer(unsigned(MDRB_UES1Addr_addr_c)))    <= std_logic_vector(resize(unsigned(16#5555#),SPI_DATA_BITS)); 
+
+--ENABLES_OUT
+    --Out pin (read/write over SPI)
+--    reg_map_array_to_pins(to_integer(unsigned(ENABLES_OUT_ADDR_C))) <= spi_array_to_pins_s(to_integer(unsigned(ENABLES_OUT_ADDR_C)));
+--    spi_array_from_pins_s(to_integer(unsigned(ENABLES_OUT_ADDR_C))) <= spi_array_to_pins_s(to_integer(unsigned(ENABLES_OUT_ADDR_C)));
+
+----UES
+--    --Internal constants (not pins - read only over SPI)
+--    spi_array_from_pins_s(to_integer(unsigned(MDRB_UES1Addr_addr_c)))    <= std_logic_vector(resize(unsigned(UES_1_c),SPI_DATA_BITS)); 
+--    --Internal constants (not pins - read only over SPI)
+--    spi_array_from_pins_s(to_integer(unsigned(MDRB_UES2Addr_addr_c)))    <= std_logic_vector(resize(unsigned(UES_2_c),SPI_DATA_BITS));
 --
 --
-----SENSOR_
---    --In pin (read only over SPI)
---    spi_array_from_pins_s(to_integer(unsigned(SENSOR_STATUS_ADDR_C))) <= reg_map_array_from_pins(to_integer(unsigned(SENSOR_STATUS_ADDR_C)));
---    --Internal read/write register (not pins - read/write over SPI)--use a process to manipulate data back to spi if necessary
-----.    spi_array_from_pins_s(to_integer(unsigned(SENSOR_EDGE_ADDR_C))) <= spi_array_to_pins_s(to_integer(unsigned(SENSOR_EDGE_ADDR_C)));   -- Now processed by component sensor_status_edge_interupt_inst
---    --Internal read/write register (not pins - read/write over SPI)--use a process to manipulate data back to spi if necessary
---    spi_array_from_pins_s(to_integer(unsigned(SENSOR_INT_MASK_ADDR_C))) <= spi_array_to_pins_s(to_integer(unsigned(SENSOR_INT_MASK_ADDR_C)));
---
---
+
+--Process to write to array connected to output pins of FPGA on top level
+process(spi_array_to_pins_s)
+begin
+    set_data(reg_map_array_to_pins, to_integer(unsigned(ENABLES_OUT_ADDR_C)), get_data(spi_array_to_pins_s,to_integer(unsigned(ENABLES_OUT_ADDR_C))));--Out pin (write to pins)
+end process;
+
+--Process to write to array into SPI interface
+process(spi_array_to_pins_s)
+begin
+    set_data(spi_array_from_pins_s, to_integer(unsigned(ENABLES_OUT_ADDR_C)), get_data(spi_array_to_pins_s,to_integer(unsigned(ENABLES_OUT_ADDR_C))));--Out pin (read/write over SPI)
+    set_data(spi_array_from_pins_s, to_integer(unsigned(MDRB_UES1Addr_addr_c)), std_logic_vector(resize(unsigned(UES_1_c),SPI_DATA_BITS)));--Internal constants (read only over SPI)
+    set_data(spi_array_from_pins_s, to_integer(unsigned(MDRB_UES2Addr_addr_c)), std_logic_vector(resize(unsigned(UES_2_c),SPI_DATA_BITS)));--Internal constants (read only over SPI)
+end process;
+
+
 end generate non_testbenching_gen;
+
+--    function get_data (input_array : mem_array_t;
+--                        address : natural) return std_logic_vector;
+--
+--    procedure set_data (--signal clk : in std_logic;
+--                        signal mem_array : out mem_array_t;
+--                        address : in natural;
+--                        data : in std_logic_vector
+--                        );
 
 
 ----Map array from/to SPI interface to itself to make read/write internal register map registers or to/from pins to create in/out discretes..
