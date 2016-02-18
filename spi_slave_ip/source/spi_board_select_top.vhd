@@ -35,7 +35,7 @@ use work.spi_board_select_pkg.ALL;
 
 entity spi_board_select_top is
     generic ( 
-            make_all_addresses_writeable_for_testing : boolean := TRUE; -- This is for testbenching only
+            make_all_addresses_writeable_for_testing : boolean := TRUE; -- This makes register map all read/write registers but none connected to FPGA pins
             SPI_BOARD_SEL_ADDR_BITS : integer := 4;
             SPI_ADDRESS_BITS : integer := 4;
             SPI_DATA_BITS : integer := 16;
@@ -201,10 +201,10 @@ end process;
 ----Example of one spi_slace register map connected to board select address 0
 reg_map_selected_inst : generic_spi_reg_map_top
     generic map(
-            make_all_addresses_writeable_for_testing => make_all_addresses_writeable_for_testing, -- : boolean := FALSE;                                        -- This is for testbenching only
+            make_all_addresses_writeable_for_testing => make_all_addresses_writeable_for_testing, -- : boolean := FALSE;                                         -- This is for testbenching only
             SPI_ADDRESS_BITS => SPI_ADDRESS_BITS,                                                 -- : integer := 4;
             SPI_DATA_BITS => SPI_DATA_BITS,                                                       -- : integer := 16
-            MEM_ARRAY_T_INITIALISATION => MEM_ARRAY_T_INITIALISATION -- Function that populates this constant in 'gdrb_ctrl_bb_pkg'
+            MEM_ARRAY_T_INITIALISATION => MEM_ARRAY_T_INITIALISATION                              -- Function that populates this constant in 'gdrb_ctrl_bb_pkg'
             )
     Port map(  
             clk => clk,                                                                           -- : std_logic;
@@ -212,13 +212,13 @@ reg_map_selected_inst : generic_spi_reg_map_top
             --Slave SPI interface pins
             sclk => sclk,                                                                         -- : in STD_LOGIC;
             ss_n => board_select_mux_ss_n_s(board_select_addr_0_c),                               -- : in STD_LOGIC;
-            i_raw_ssn => miso_board_select_mux_ss_n_s(board_select_addr_0_c),                     -- : in  std_logic;                                           -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to ss_n
+            i_raw_ssn => miso_board_select_mux_ss_n_s(board_select_addr_0_c),                     -- : in  std_logic;                                            -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to ss_n
             mosi => mosi,                                                                         -- : in STD_LOGIC;
             miso => miso_s(board_select_addr_0_c),                                                -- : out STD_LOGIC;
             --Low level SPI interface parameters
-            cpol => cpol,                                            -- : in std_logic := '0';                                                      -- CPOL value - 0 or 1
-            cpha => cpha,                                            -- : in std_logic := '0';                                                      -- CPHA value - 0 or 1
-            lsb_first => lsb_first,                                  -- : in std_logic := '0';                                                      -- lsb first when '1' /msb first when
+            cpol => cpol,                                                                         -- : in std_logic := '0';                                      -- CPOL value - 0 or 1
+            cpha => cpha,                                                                         -- : in std_logic := '0';                                      -- CPHA value - 0 or 1
+            lsb_first => lsb_first,                                                               -- : in std_logic := '0';                                      -- lsb first when '1' /msb first when
             --Discrete signals
             reg_map_array_from_pins => reg_map_array_from_pins,                                   -- : in gdrb_ctrl_mem_array_t := (others => (others => '0'));
             reg_map_array_to_pins => reg_map_array_to_pins                                        -- : out gdrb_ctrl_mem_array_t

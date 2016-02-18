@@ -153,7 +153,8 @@ component gdrb_ctrl_reg_map_top is
     generic ( 
             make_all_addresses_writeable_for_testing : boolean := FALSE; -- This is for testbenching only
             SPI_ADDRESS_BITS : integer := 4;
-            SPI_DATA_BITS : integer := 16
+            SPI_DATA_BITS : integer := 16;
+            REG_MAP_INITIALISATION_VALUES : mem_array_t
            );
     Port (  
             clk : in std_logic;
@@ -478,22 +479,23 @@ spi_reg_map_gen : if not board_select generate
 
     reg_map_proc : gdrb_ctrl_reg_map_top
         generic map(
-                make_all_addresses_writeable_for_testing => make_all_addresses_writeable_for_testing, -- :     natural := 16
-                SPI_ADDRESS_BITS => SPI_ADDRESS_BITS,                 -- : integer := 4;
-                SPI_DATA_BITS => SPI_DATA_BITS                        -- : integer := 16
+                make_all_addresses_writeable_for_testing => make_all_addresses_writeable_for_testing, -- : natural := 16
+                SPI_ADDRESS_BITS => SPI_ADDRESS_BITS,                                                 -- : integer := 4;
+                SPI_DATA_BITS => SPI_DATA_BITS,                                                       -- : integer := 16
+                REG_MAP_INITIALISATION_VALUES => mem_array_t_initalised                               -- : mem_array_t
                 )
         Port map(  
-                clk => dut_sys_clk_i,                                          -- : std_logic;
-                reset => sys_rst_i,                                            -- : std_logic;
+                clk => dut_sys_clk_i,                                                                 -- : std_logic;
+                reset => sys_rst_i,                                                                   -- : std_logic;
                 ---Slave SPI interface pins
-                sclk => sclk_i,                                                -- : in STD_LOGIC;
-                ss_n => ss_i,                                                  -- : in STD_LOGIC;
-                i_raw_ssn => ss_i,                                             -- : in  std_logic;    -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to same signal as 'ss_n'
-                mosi => mosi_i,                                                -- : in STD_LOGIC;
-                miso => miso,                                                  -- : out STD_LOGIC;
+                sclk => sclk_i,                                                                       -- : in STD_LOGIC;
+                ss_n => ss_i,                                                                         -- : in STD_LOGIC;
+                i_raw_ssn => ss_i,                                                                    -- : in  std_logic;                                                                                          -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to same signal as 'ss_n'
+                mosi => mosi_i,                                                                       -- : in STD_LOGIC;
+                miso => miso,                                                                         -- : out STD_LOGIC;
                 --Discrete signals
-                reg_map_array_from_pins => discrete_reg_map_array_from_script_s, -- : in mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0'));
-                reg_map_array_to_pins => discrete_reg_map_array_to_script_s      -- : out mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0)
+                reg_map_array_from_pins => discrete_reg_map_array_from_script_s,                      -- : in mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0'));
+                reg_map_array_to_pins => discrete_reg_map_array_to_script_s                           -- : out mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0)
                 );
 
 end generate spi_reg_map_gen;

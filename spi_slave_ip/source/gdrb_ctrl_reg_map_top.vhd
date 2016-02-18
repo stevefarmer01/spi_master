@@ -26,8 +26,8 @@ use IEEE.STD_LOGIC_1164.ALL;
 -- arithmetic functions with Signed or Unsigned values
 use IEEE.NUMERIC_STD.ALL;
 
-use work.gdrb_ctrl_bb_pkg.ALL;          -- Widths of SPI protocol's address, data and board select (if applicable)
-use work.gdrb_ctrl_bb_address_pkg.ALL;  -- Address constants used in non_testbenching_gen if 'make_all_addresses_writeable_for_testing' set to FALSE
+--Application specific package below only needs to be declared when register map is mapped in 'non_testbenching_gen' area and  'make_all_addresses_writeable_for_testing' set to FALSE
+use work.gdrb_ctrl_bb_address_pkg.ALL;  -- Address constants used in 'non_testbenching_gen'
 
 use work.multi_array_types_pkg.ALL;     -- Multi-dimension array functions and proceedures
 
@@ -38,9 +38,10 @@ use work.multi_array_types_pkg.ALL;     -- Multi-dimension array functions and p
 
 entity gdrb_ctrl_reg_map_top is
     generic ( 
-            make_all_addresses_writeable_for_testing : boolean := FALSE; -- This is for testbenching only
+            make_all_addresses_writeable_for_testing : boolean := FALSE; -- This makes register map all read/write registers but none connected to FPGA pins
             SPI_ADDRESS_BITS : integer := 4;
-            SPI_DATA_BITS : integer := 16
+            SPI_DATA_BITS : integer := 16;
+            REG_MAP_INITIALISATION_VALUES : mem_array_t
            );
     Port (  
             clk : in std_logic;
@@ -119,6 +120,7 @@ signal write_addr_from_spi_s : std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) := 
 
 constant mem_array_t_init_all_zeros_c : mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0'));
 
+--Application specific signals
 signal sensor_status_write_en_s : std_logic := '0';
 signal sensor_interupt_flag_s : std_logic := '0';
 signal sensor_status_s, sensor_edge_s, sensor_int_mask_s : std_logic_vector(SPI_DATA_BITS-1 downto 0) := (others => '0');
@@ -138,9 +140,6 @@ signal edge_detect_sensor_to_spi_s, edge_detect_fault_to_spi_s, edge_detect_stat
 
 begin
 
---Signal to output so that is can also be read
---reg_map_array_to_pins <= reg_map_array_to_pins_s;
-
 --Domain cross asyn reset
 sync_reset_proc : process(clk)
 begin
@@ -152,29 +151,29 @@ end process;
 
 reg_map_spi_slave_inst : reg_map_spi_slave
     generic map(
-            SPI_ADDRESS_BITS => SPI_ADDRESS_BITS,                -- : integer := 4;
-            SPI_DATA_BITS => SPI_DATA_BITS,                      -- : integer := 16
-            MEM_ARRAY_T_INITIALISATION => mem_array_t_initalised -- Function that populates this constant in 'gdrb_ctrl_bb_pkg'
+            SPI_ADDRESS_BITS => SPI_ADDRESS_BITS,                       -- : integer := 4;
+            SPI_DATA_BITS => SPI_DATA_BITS,                             -- : integer := 16
+            MEM_ARRAY_T_INITIALISATION => REG_MAP_INITIALISATION_VALUES -- Function that populates this constant in 'gdrb_ctrl_bb_pkg'
             )
     Port map(  
-            clk => clk,                                          -- : in std_logic;
-            reset => reset_s,                                    -- : in std_logic;
+            clk => clk,                                                 -- : in std_logic;
+            reset => reset_s,                                           -- : in std_logic;
             ---Slave SPI interface pins
-            sclk => sclk,                                        -- : in STD_LOGIC;
-            ss_n => ss_n,                                        -- : in STD_LOGIC;
-            i_raw_ssn => i_raw_ssn,                              -- : in  std_logic;                                                       -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to i_ssn
-            mosi => mosi,                                        -- : in STD_LOGIC;
-            miso => miso,                                        -- : out STD_LOGIC;
+            sclk => sclk,                                               -- : in STD_LOGIC;
+            ss_n => ss_n,                                               -- : in STD_LOGIC;
+            i_raw_ssn => i_raw_ssn,                                     -- : in  std_logic;                                                       -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to i_ssn
+            mosi => mosi,                                               -- : in STD_LOGIC;
+            miso => miso,                                               -- : out STD_LOGIC;
             --Low level SPI interface parameters
-            cpol => cpol,                                        -- : in std_logic := '0';                                                 -- CPOL value - 0 or 1
-            cpha => cpha,                                        -- : in std_logic := '0';                                                 -- CPHA value - 0 or 1
-            lsb_first => lsb_first,                              -- : in std_logic := '0';                                                 -- lsb first when '1' /msb first when
+            cpol => cpol,                                               -- : in std_logic := '0';                                                 -- CPOL value - 0 or 1
+            cpha => cpha,                                               -- : in std_logic := '0';                                                 -- CPHA value - 0 or 1
+            lsb_first => lsb_first,                                     -- : in std_logic := '0';                                                 -- lsb first when '1' /msb first when
             ---Array of data spanning entire address range declared and initialised in 'spi_package'
-            reg_map_array_from_pins => spi_array_from_pins_s,    -- : in gdrb_ctrl_address_type
-            reg_map_array_to_pins => spi_array_to_pins_s,        -- : out gdrb_ctrl_address_type;
+            reg_map_array_from_pins => spi_array_from_pins_s,           -- : in gdrb_ctrl_address_type
+            reg_map_array_to_pins => spi_array_to_pins_s,               -- : out gdrb_ctrl_address_type;
             --Write enable and address to allow some write processing of internal FPGA register map (write bit toggling, etc)
-            write_enable_from_spi => write_enable_from_spi_s,    -- : out std_logic := '0';
-            write_addr_from_spi => write_addr_from_spi_s         -- : out std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) := (others => '0')
+            write_enable_from_spi => write_enable_from_spi_s,           -- : out std_logic := '0';
+            write_addr_from_spi => write_addr_from_spi_s                -- : out std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) := (others => '0')
             );
 
 
@@ -324,8 +323,8 @@ non_testbenching_gen : if not make_all_addresses_writeable_for_testing generate
 end generate non_testbenching_gen;
 
 
---Only for testbenchin a vanilla DUT (no register access to pins, not read only, no interupt/edge detection/processing)...
---...this will allow test with a decreasing sclk frequency to DUT to check what frequency the SPI link will work down to (currently about 20MHz depending on start frequency decimal places)
+--Vanilla register map (no register access to pins, not read only, no interupt/edge detection/processing)...
+--...this will allow test with a decreasing sclk frequency to DUT to check what frequency the SPI link will work down to (currently about 9MHz depending on start frequency decimal places)
 testbenching_gen : if make_all_addresses_writeable_for_testing generate
 
 --    spi_array_from_pins_s <= spi_array_to_pins_s;
