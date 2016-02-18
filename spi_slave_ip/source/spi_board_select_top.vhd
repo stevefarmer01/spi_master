@@ -26,6 +26,8 @@ use IEEE.NUMERIC_STD.ALL;
 
 use work.multi_array_types_pkg.all;
 
+use work.spi_board_select_pkg.ALL;
+
 -- Uncomment the following library declaration if instantiating
 -- any Xilinx leaf cells in this code.
 --library UNISIM;
@@ -36,7 +38,8 @@ entity spi_board_select_top is
             make_all_addresses_writeable_for_testing : boolean := TRUE; -- This is for testbenching only
             SPI_BOARD_SEL_ADDR_BITS : integer := 4;
             SPI_ADDRESS_BITS : integer := 4;
-            SPI_DATA_BITS : integer := 16
+            SPI_DATA_BITS : integer := 16;
+            MEM_ARRAY_T_INITIALISATION : mem_array_t
            );
     Port ( 
             clk : in std_logic;
@@ -77,7 +80,8 @@ component generic_spi_reg_map_top is
     generic ( 
             make_all_addresses_writeable_for_testing : boolean := FALSE; -- This is for testbenching only
             SPI_ADDRESS_BITS : integer := 4;
-            SPI_DATA_BITS : integer := 16
+            SPI_DATA_BITS : integer := 16;
+            MEM_ARRAY_T_INITIALISATION : mem_array_t
            );
     Port (  
             clk : in std_logic;
@@ -99,6 +103,7 @@ end component;
 constant board_select_addr_0_c : natural := 16#8#;
 
 constant valid_delayed_c : positive := 1; -- Delay board select edge detect due to delay caused by domain crossing of sclk in spi_slave.vhd
+
 
 signal board_select_s, prev_board_select_s : std_logic_vector((SPI_BOARD_SEL_ADDR_BITS-1) downto 0) := (others => '0');
 signal board_select_valid_s : std_logic := '0';
@@ -186,7 +191,8 @@ reg_map_selected_inst : generic_spi_reg_map_top
     generic map(
             make_all_addresses_writeable_for_testing => make_all_addresses_writeable_for_testing, -- : boolean := FALSE;                                        -- This is for testbenching only
             SPI_ADDRESS_BITS => SPI_ADDRESS_BITS,                                                 -- : integer := 4;
-            SPI_DATA_BITS => SPI_DATA_BITS                                                        -- : integer := 16
+            SPI_DATA_BITS => SPI_DATA_BITS,                                                       -- : integer := 16
+            MEM_ARRAY_T_INITIALISATION => MEM_ARRAY_T_INITIALISATION -- Function that populates this constant in 'gdrb_ctrl_bb_pkg'
             )
     Port map(  
             clk => clk,                                                                           -- : std_logic;

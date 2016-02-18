@@ -39,7 +39,8 @@ entity generic_spi_reg_map_top is
     generic ( 
             make_all_addresses_writeable_for_testing : boolean := FALSE; -- This is for testbenching only
             SPI_ADDRESS_BITS : integer := 4;
-            SPI_DATA_BITS : integer := 16
+            SPI_DATA_BITS : integer := 16;
+            MEM_ARRAY_T_INITIALISATION : mem_array_t
            );
     Port (  
             clk : in std_logic;
@@ -148,7 +149,7 @@ reg_map_spi_slave_inst : reg_map_spi_slave
     generic map(
             SPI_ADDRESS_BITS => SPI_ADDRESS_BITS,             -- : integer := 4;
             SPI_DATA_BITS => SPI_DATA_BITS,                   -- : integer := 16
-            MEM_ARRAY_T_INITIALISATION => mem_array_t_init_all_zeros_c -- Function that populates this constant in 'gdrb_ctrl_bb_pkg'
+            MEM_ARRAY_T_INITIALISATION => MEM_ARRAY_T_INITIALISATION -- Function that populates this constant in 'gdrb_ctrl_bb_pkg'
             )
     Port map(  
             clk => clk,                                       -- : in std_logic;

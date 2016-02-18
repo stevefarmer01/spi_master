@@ -174,7 +174,8 @@ component spi_board_select_top is
             make_all_addresses_writeable_for_testing : boolean := FALSE; -- This is for testbenching only
             SPI_BOARD_SEL_ADDR_BITS : integer := 4;
             SPI_ADDRESS_BITS : integer := 4;
-            SPI_DATA_BITS : integer := 16
+            SPI_DATA_BITS : integer := 16;
+            MEM_ARRAY_T_INITIALISATION : mem_array_t
            );
     Port ( 
             clk : in std_logic;
@@ -507,7 +508,8 @@ board_sel_spi_reg_map_gen : if board_select generate
                 make_all_addresses_writeable_for_testing => make_all_addresses_writeable_for_testing, -- :     natural := 16
                 SPI_BOARD_SEL_ADDR_BITS => SPI_BOARD_SEL_ADDR_BITS,                 -- : integer := 4;
                 SPI_ADDRESS_BITS => SPI_BOARD_SEL_PROTOCOL_ADDR_BITS,                                              -- : integer := 4;
-                SPI_DATA_BITS => SPI_BOARD_SEL_PROTOCOL_DATA_BITS                                                 -- : integer := 16
+                SPI_DATA_BITS => SPI_BOARD_SEL_PROTOCOL_DATA_BITS,                                                 -- : integer := 16
+                MEM_ARRAY_T_INITIALISATION => bs_mem_array_t_initalised_c -- Function that populates this constant in 'gdrb_ctrl_bb_pkg'
                 )
         Port map(  
                 clk => dut_sys_clk_i,                                          -- : std_logic;
