@@ -115,6 +115,7 @@ signal wr_en_to_spi_slave_s : std_logic := '0';
 signal write_enable_from_spi_s : std_logic := '0';
 
 signal low_s : std_logic := '0';
+signal high_s : std_logic := '1';
 
 begin
 
@@ -135,7 +136,7 @@ begin
             o_tx_error  => open,                 -- o_tx_error : out std_logic;        -- Transmitter error
             o_rx_error  => open,                 -- o_rx_error : out std_logic;        -- Receiver error
             i_cpol      => low_s,                -- : in  std_logic;                   -- CPOL value - 0 or 1
-            i_cpha      => low_s,                -- : in  std_logic;                   -- CPHA value - 0 or 1
+            i_cpha      => high_s,                -- : in  std_logic;                   -- CPHA value - 0 or 1
             i_lsb_first => low_s,                -- : in  std_logic;                   -- lsb first when '1' /msb first when
             i_ssn       => ss_n,                 -- i_ssn  : in  std_logic;            -- Slave Slect Active low
             i_raw_ssn   => i_raw_ssn,            -- : in  std_logic;                   -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to i_ssn
