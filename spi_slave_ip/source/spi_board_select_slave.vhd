@@ -44,6 +44,10 @@ entity spi_board_select_slave is
             sclk : in STD_LOGIC;
             ss_n : in STD_LOGIC;
             mosi : in STD_LOGIC;
+            --Low level SPI interface parameters
+            cpol      : in std_logic := '0';                                -- CPOL value - 0 or 1
+            cpha      : in std_logic := '0';                                -- CPHA value - 0 or 1
+            lsb_first : in std_logic := '0';                                -- lsb first when '1' /msb first when
             ---Outputs
             board_select : out std_logic_vector(BOARD_SELECT_ADDRESS_SIZE-1 downto 0) := (others => '0');
             board_select_valid : out std_logic := '0'
@@ -109,9 +113,9 @@ begin
             o_rx_ready  => o_rx_ready_slave_s, -- o_rx_ready : out std_logic;                     -- Receiver ready, can read data
             o_tx_error  => open,               -- o_tx_error : out std_logic;                     -- Transmitter error
             o_rx_error  => open,               -- o_rx_error : out std_logic;                     -- Receiver error
-            i_cpol      => low_s,              -- : in  std_logic;                                -- CPOL value - 0 or 1
-            i_cpha      => low_s,              -- : in  std_logic;                                -- CPHA value - 0 or 1
-            i_lsb_first => low_s,              -- : in  std_logic;                                -- lsb first when '1' /msb first when
+            i_cpol      => cpol,                 -- : in  std_logic;                   -- CPOL value - 0 or 1
+            i_cpha      => cpha,                 -- : in  std_logic;                   -- CPHA value - 0 or 1
+            i_lsb_first => lsb_first,            -- : in  std_logic;                   -- lsb first when '1' /msb first when
             i_ssn       => ss_n,               -- i_ssn  : in  std_logic;                         -- Slave Slect Active low
             i_raw_ssn   => ss_n,               -- : in  std_logic;    -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to ss_n
             i_mosi      => mosi,               -- i_mosi : in  std_logic;                         -- Slave input from Master

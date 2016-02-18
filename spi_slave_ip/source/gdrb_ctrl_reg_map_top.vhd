@@ -51,6 +51,10 @@ entity gdrb_ctrl_reg_map_top is
             i_raw_ssn : in  std_logic;    -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to i_ssn
             mosi : in STD_LOGIC;
             miso : out STD_LOGIC;
+            --Low level SPI interface parameters
+            cpol      : in std_logic := '0';                                -- CPOL value - 0 or 1
+            cpha      : in std_logic := '0';                                -- CPHA value - 0 or 1
+            lsb_first : in std_logic := '0';                                -- lsb first when '1' /msb first when
             --Discrete signals-Array of data spanning entire address range declared and initialised in 'package' for particular register map being implemented - (multi_array_types_pkg.vhd)
             reg_map_array_from_pins : in mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
             reg_map_array_to_pins : out mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
@@ -76,6 +80,10 @@ component reg_map_spi_slave is
             i_raw_ssn : in  std_logic;    -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to i_ssn
             mosi : in STD_LOGIC;
             miso : out STD_LOGIC;
+            --Low level SPI interface parameters
+            cpol      : in std_logic := '0';                                -- CPOL value - 0 or 1
+            cpha      : in std_logic := '0';                                -- CPHA value - 0 or 1
+            lsb_first : in std_logic := '0';                                -- lsb first when '1' /msb first when
             --Array of data spanning entire address range declared and initialised in 'package' for particular register map being implemented - (multi_array_types_pkg.vhd)
             reg_map_array_from_pins : in mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
             reg_map_array_to_pins : out mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0'));
@@ -144,25 +152,29 @@ end process;
 
 reg_map_spi_slave_inst : reg_map_spi_slave
     generic map(
-            SPI_ADDRESS_BITS => SPI_ADDRESS_BITS,             -- : integer := 4;
-            SPI_DATA_BITS => SPI_DATA_BITS,                   -- : integer := 16
+            SPI_ADDRESS_BITS => SPI_ADDRESS_BITS,                -- : integer := 4;
+            SPI_DATA_BITS => SPI_DATA_BITS,                      -- : integer := 16
             MEM_ARRAY_T_INITIALISATION => mem_array_t_initalised -- Function that populates this constant in 'gdrb_ctrl_bb_pkg'
             )
     Port map(  
-            clk => clk,                                       -- : in std_logic;
-            reset => reset_s,                                 -- : in std_logic;
+            clk => clk,                                          -- : in std_logic;
+            reset => reset_s,                                    -- : in std_logic;
             ---Slave SPI interface pins
-            sclk => sclk,                                     -- : in STD_LOGIC;
-            ss_n => ss_n,                                     -- : in STD_LOGIC;
-            i_raw_ssn => i_raw_ssn,                           -- : in  std_logic;                -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to i_ssn
-            mosi => mosi,                                     -- : in STD_LOGIC;
-            miso => miso,                                     -- : out STD_LOGIC;
+            sclk => sclk,                                        -- : in STD_LOGIC;
+            ss_n => ss_n,                                        -- : in STD_LOGIC;
+            i_raw_ssn => i_raw_ssn,                              -- : in  std_logic;                                                       -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to i_ssn
+            mosi => mosi,                                        -- : in STD_LOGIC;
+            miso => miso,                                        -- : out STD_LOGIC;
+            --Low level SPI interface parameters
+            cpol => cpol,                                        -- : in std_logic := '0';                                                 -- CPOL value - 0 or 1
+            cpha => cpha,                                        -- : in std_logic := '0';                                                 -- CPHA value - 0 or 1
+            lsb_first => lsb_first,                              -- : in std_logic := '0';                                                 -- lsb first when '1' /msb first when
             ---Array of data spanning entire address range declared and initialised in 'spi_package'
-            reg_map_array_from_pins => spi_array_from_pins_s, -- : in gdrb_ctrl_address_type
-            reg_map_array_to_pins => spi_array_to_pins_s,     -- : out gdrb_ctrl_address_type;
+            reg_map_array_from_pins => spi_array_from_pins_s,    -- : in gdrb_ctrl_address_type
+            reg_map_array_to_pins => spi_array_to_pins_s,        -- : out gdrb_ctrl_address_type;
             --Write enable and address to allow some write processing of internal FPGA register map (write bit toggling, etc)
-            write_enable_from_spi => write_enable_from_spi_s, -- : out std_logic := '0';
-            write_addr_from_spi => write_addr_from_spi_s      -- : out std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) := (others => '0')
+            write_enable_from_spi => write_enable_from_spi_s,    -- : out std_logic := '0';
+            write_addr_from_spi => write_addr_from_spi_s         -- : out std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) := (others => '0')
             );
 
 
@@ -170,25 +182,47 @@ reg_map_spi_slave_inst : reg_map_spi_slave
 ----..Map these to the actual pins required at the next level up where this components is instantiated
 non_testbenching_gen : if not make_all_addresses_writeable_for_testing generate
 
-----.    --Example of.....
-----.    --Out pin (read/write over SPI)
-----.    reg_map_array_to_pins(0) <= spi_array_to_pins_s(0);
-----.    spi_array_from_pins_s(0) <= spi_array_to_pins_s(0);
-----.    --Example of.....
-----.    --In pin (read only over SPI)
-----.    spi_array_from_pins_s(1) <= reg_map_array_from_pins(1);
-----.    --Example of.....
-----.    --Internal read/write register (not pins - read/write over SPI)--use a process to manipulate data back to spi if necessary
-----.    spi_array_from_pins_s(3) <= spi_array_to_pins_s(3);
-----.    --Example of.....
-----.    --Internal constants (not pins - read only over SPI)
-----.    spi_array_from_pins_s(to_integer(unsigned(MDRB_UES1Addr_addr_c)))    <= std_logic_vector(resize(unsigned(16#5555#),SPI_DATA_BITS)); 
-
+----Example of how to connect the 2 unconstained multi-dimensional arrays that make up this parameteriseable 'SPI/register map' block of IP.
+----There is one array for the interfacing to the outside world via the SPI interface inside 'reg_map_spi_slave.vhd' (spi_array_from/to_pins_s) and
+----another for connecting to the pins of the FPGA for discrete input/outputs on the ports of this file (reg_map_array_from/to_pins).
+----These 2 arrays can be connected to themselves and/or each other to perform one of the 5 following tasks...
+------1/ In pin (read only over SPI - from FPGA pin)
+------2/ Internal read/write register (read/write over SPI)
+------3/ Out pin (read/write over SPI - to FPGA pin)
+------4/ Internal read only register (read only over SPI from FPGA register)
+------5/ Internal constants (read only over SPI from constant in vhdl package)
+----Due to the nature of unconstrained multi-dimensional arrays in sub vhdl-2008 functions are needed to access slices (these are in 'multi_array_types_pkg.vhd').
+----The 2 most useful are 'get_data' function for reading from the arrays and 'set_data' procedure for writing to the arrays.
+----Also, due to the 'longest status prefix' rule of vhdl all of the 'set_data' on a particular array have to be used inside a process so that you don't get multiple
+----drivers on the same signals.....
+----
+---------  --Process to write/read to array into SPI interface
+---------  process(spi_array_to_pins_s, reg_map_array_from_pins, edge_detect_sensor_to_spi_s, diagnostics_interupts_data_s)
+---------  begin
+---------      set_data(spi_array_from_pins_s, to_integer(unsigned(SENSOR_STATUS_ADDR_C)), get_data(reg_map_array_from_pins, to_integer(unsigned(SENSOR_STATUS_ADDR_C)))); -- In pin (read only over SPI from FPGA pin)
+---------      set_data(spi_array_from_pins_s, to_integer(unsigned(SENSOR_INT_MASK_ADDR_C)), get_data(spi_array_to_pins_s, to_integer(unsigned(SENSOR_INT_MASK_ADDR_C)))); -- Internal read/write register (read/write over SPI)
+---------      set_data(spi_array_from_pins_s, to_integer(unsigned(ENABLES_OUT_ADDR_C)), get_data(spi_array_to_pins_s,to_integer(unsigned(ENABLES_OUT_ADDR_C))));          -- Out pin (read/write over SPI)
+---------      set_data(spi_array_from_pins_s, to_integer(unsigned(DIAGNOSTICS_INTERUPTS_ADDR_C)), diagnostics_interupts_data_s);                                          -- Internal read only register (read only over SPI from FPGA register)
+---------      set_data(spi_array_from_pins_s, to_integer(unsigned(MDRB_UES2Addr_addr_c)), std_logic_vector(resize(unsigned(UES_2_c),SPI_DATA_BITS)));                     -- Internal constants (read only over SPI from constant in vhdl package)
+---------  end process;
+---------  --Process to write to array connected to output pins of FPGA on top level
+---------  process(spi_array_to_pins_s)
+---------  begin
+---------      set_data(reg_map_array_to_pins, to_integer(unsigned(ENABLES_OUT_ADDR_C)), get_data(spi_array_to_pins_s,to_integer(unsigned(ENABLES_OUT_ADDR_C))));          --Out pin (write to pins)
+---------  end process;
+----
+----...the registers for spi_array_from_pins_s/spi_array_to_pins_s is in 'spi_write_to_reg_map_proc' of 'reg_map_spi_slave.vhd' this is initialised (default values)
+----by MEM_ARRAY_T_INITIALISATION which is set-up in the register map specific package such as 'gdrb_ctrl_bb_pkg.vhd' which is also where the widths for the SPI data and
+----address are specified. Addresses for the registers are held in a package such as 'gdrb_ctrl_bb_address_pkg.vhd' and used in this block.
+----For debug top level generic make_all_addresses_writeable_for_testing can be used to make the register all read/write.
+----To detect writes on the SPI interface and hence allow some write access processing of the registers such as bit toggles for interupt style registers there are
+----the ports 'write_addr_from_spi' and 'write_enable_from_spi' avaiable.
+  
 
   --Process to write to array connected to output pins of FPGA on top level
   process(spi_array_to_pins_s)
   begin
-      set_data(reg_map_array_to_pins, to_integer(unsigned(ENABLES_OUT_ADDR_C)), get_data(spi_array_to_pins_s,to_integer(unsigned(ENABLES_OUT_ADDR_C))));--Out pin (write to pins)
+      set_data(reg_map_array_to_pins, to_integer(unsigned(ENABLES_OUT_ADDR_C)), get_data(spi_array_to_pins_s,to_integer(unsigned(ENABLES_OUT_ADDR_C))));          --Out pin (write to pins)
   end process;
   
   --Process to write to array into SPI interface

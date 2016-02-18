@@ -49,6 +49,10 @@ entity spi_board_select_top is
             ss_n : in STD_LOGIC;
             mosi : in STD_LOGIC;
             miso : out STD_LOGIC;
+            --Low level SPI interface parameters
+            cpol      : in std_logic := '0';                                -- CPOL value - 0 or 1
+            cpha      : in std_logic := '0';                                -- CPHA value - 0 or 1
+            lsb_first : in std_logic := '0';                                -- lsb first when '1' /msb first when
             --Discrete signals
             reg_map_array_from_pins : in mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0'));
             reg_map_array_to_pins : out mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
@@ -70,6 +74,10 @@ component spi_board_select_slave is
             sclk : in STD_LOGIC;
             ss_n : in STD_LOGIC;
             mosi : in STD_LOGIC;
+            --Low level SPI interface parameters
+            cpol      : in std_logic := '0';                                -- CPOL value - 0 or 1
+            cpha      : in std_logic := '0';                                -- CPHA value - 0 or 1
+            lsb_first : in std_logic := '0';                                -- lsb first when '1' /msb first when
             ---Outputs
             board_select : out std_logic_vector(BOARD_SELECT_ADDRESS_SIZE-1 downto 0) := (others => '0');
             board_select_valid : out std_logic := '0'
@@ -92,6 +100,10 @@ component generic_spi_reg_map_top is
             i_raw_ssn : in  std_logic;    -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to ss_n
             mosi : in STD_LOGIC;
             miso : out STD_LOGIC;
+            --Low level SPI interface parameters
+            cpol      : in std_logic := '0';                                -- CPOL value - 0 or 1
+            cpha      : in std_logic := '0';                                -- CPHA value - 0 or 1
+            lsb_first : in std_logic := '0';                                -- lsb first when '1' /msb first when
             --Discrete signals
             reg_map_array_from_pins : in mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0'));
             reg_map_array_to_pins : out mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
@@ -203,6 +215,10 @@ reg_map_selected_inst : generic_spi_reg_map_top
             i_raw_ssn => miso_board_select_mux_ss_n_s(board_select_addr_0_c),                     -- : in  std_logic;                                           -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to ss_n
             mosi => mosi,                                                                         -- : in STD_LOGIC;
             miso => miso_s(board_select_addr_0_c),                                                -- : out STD_LOGIC;
+            --Low level SPI interface parameters
+            cpol => cpol,                                            -- : in std_logic := '0';                                                      -- CPOL value - 0 or 1
+            cpha => cpha,                                            -- : in std_logic := '0';                                                      -- CPHA value - 0 or 1
+            lsb_first => lsb_first,                                  -- : in std_logic := '0';                                                      -- lsb first when '1' /msb first when
             --Discrete signals
             reg_map_array_from_pins => reg_map_array_from_pins,                                   -- : in gdrb_ctrl_mem_array_t := (others => (others => '0'));
             reg_map_array_to_pins => reg_map_array_to_pins                                        -- : out gdrb_ctrl_mem_array_t

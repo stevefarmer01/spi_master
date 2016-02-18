@@ -50,6 +50,10 @@ entity reg_map_spi_slave is
             i_raw_ssn : in  std_logic;    -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to i_ssn
             mosi : in STD_LOGIC;
             miso : out STD_LOGIC;
+            --Low level SPI interface parameters
+            cpol      : in std_logic := '0';                                -- CPOL value - 0 or 1
+            cpha      : in std_logic := '0';                                -- CPHA value - 0 or 1
+            lsb_first : in std_logic := '0';                                -- lsb first when '1' /msb first when
             ---Array of data spanning entire address range declared'
             reg_map_array_from_pins : in mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
             reg_map_array_to_pins : out mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
@@ -135,9 +139,9 @@ begin
             o_rx_ready  => o_rx_ready_slave_s,   -- o_rx_ready : out std_logic;        -- Receiver ready, can read data
             o_tx_error  => open,                 -- o_tx_error : out std_logic;        -- Transmitter error
             o_rx_error  => open,                 -- o_rx_error : out std_logic;        -- Receiver error
-            i_cpol      => low_s,                -- : in  std_logic;                   -- CPOL value - 0 or 1
-            i_cpha      => high_s,                -- : in  std_logic;                   -- CPHA value - 0 or 1
-            i_lsb_first => low_s,                -- : in  std_logic;                   -- lsb first when '1' /msb first when
+            i_cpol      => cpol,                 -- : in  std_logic;                   -- CPOL value - 0 or 1
+            i_cpha      => cpha,                 -- : in  std_logic;                   -- CPHA value - 0 or 1
+            i_lsb_first => lsb_first,            -- : in  std_logic;                   -- lsb first when '1' /msb first when
             i_ssn       => ss_n,                 -- i_ssn  : in  std_logic;            -- Slave Slect Active low
             i_raw_ssn   => i_raw_ssn,            -- : in  std_logic;                   -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to i_ssn
             i_mosi      => mosi,                 -- i_mosi : in  std_logic;            -- Slave input from Master

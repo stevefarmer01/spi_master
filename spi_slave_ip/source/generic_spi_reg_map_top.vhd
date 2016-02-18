@@ -48,9 +48,13 @@ entity generic_spi_reg_map_top is
             ---Slave SPI interface pins
             sclk : in STD_LOGIC;
             ss_n : in STD_LOGIC;
-            i_raw_ssn : in  std_logic;    -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to i_ssn
+            i_raw_ssn : in  std_logic;                                   -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to i_ssn
             mosi : in STD_LOGIC;
             miso : out STD_LOGIC;
+            --Low level SPI interface parameters
+            cpol      : in std_logic := '0';                             -- CPOL value - 0 or 1
+            cpha      : in std_logic := '0';                             -- CPHA value - 0 or 1
+            lsb_first : in std_logic := '0';                             -- lsb first when '1' /msb first when
             --Discrete signals-Array of data spanning entire address range declared and initialised in 'package' for particular register map being implemented - (multi_array_types_pkg.vhd)
             reg_map_array_from_pins : in mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
             reg_map_array_to_pins : out mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
@@ -76,6 +80,10 @@ component reg_map_spi_slave is
             i_raw_ssn : in  std_logic;    -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to i_ssn
             mosi : in STD_LOGIC;
             miso : out STD_LOGIC;
+            --Low level SPI interface parameters
+            cpol      : in std_logic := '0';                                -- CPOL value - 0 or 1
+            cpha      : in std_logic := '0';                                -- CPHA value - 0 or 1
+            lsb_first : in std_logic := '0';                                -- lsb first when '1' /msb first when
             --Array of data spanning entire address range declared and initialised in 'package' for particular register map being implemented - (multi_array_types_pkg.vhd)
             reg_map_array_from_pins : in mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
             reg_map_array_to_pins : out mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
@@ -147,25 +155,29 @@ end process;
 
 reg_map_spi_slave_inst : reg_map_spi_slave
     generic map(
-            SPI_ADDRESS_BITS => SPI_ADDRESS_BITS,             -- : integer := 4;
-            SPI_DATA_BITS => SPI_DATA_BITS,                   -- : integer := 16
+            SPI_ADDRESS_BITS => SPI_ADDRESS_BITS,                    -- : integer := 4;
+            SPI_DATA_BITS => SPI_DATA_BITS,                          -- : integer := 16
             MEM_ARRAY_T_INITIALISATION => MEM_ARRAY_T_INITIALISATION -- Function that populates this constant in 'gdrb_ctrl_bb_pkg'
             )
     Port map(  
-            clk => clk,                                       -- : in std_logic;
-            reset => reset_s,                                 -- : in std_logic;
+            clk => clk,                                              -- : in std_logic;
+            reset => reset_s,                                        -- : in std_logic;
             ---Slave SPI interface pins
-            sclk => sclk,                                     -- : in STD_LOGIC;
-            ss_n => ss_n,                                     -- : in STD_LOGIC;
-            i_raw_ssn => i_raw_ssn,                           -- : in  std_logic;                                                            -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to i_ssn
-            mosi => mosi,                                     -- : in STD_LOGIC;
-            miso => miso,                                     -- : out STD_LOGIC;
+            sclk => sclk,                                            -- : in STD_LOGIC;
+            ss_n => ss_n,                                            -- : in STD_LOGIC;
+            i_raw_ssn => i_raw_ssn,                                  -- : in  std_logic;                                                            -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to i_ssn
+            mosi => mosi,                                            -- : in STD_LOGIC;
+            miso => miso,                                            -- : out STD_LOGIC;
+            --Low level SPI interface parameters
+            cpol => cpol,                                            -- : in std_logic := '0';                                                      -- CPOL value - 0 or 1
+            cpha => cpha,                                            -- : in std_logic := '0';                                                      -- CPHA value - 0 or 1
+            lsb_first => lsb_first,                                  -- : in std_logic := '0';                                                      -- lsb first when '1' /msb first when
             ---Array of data spanning entire address range declared and initialised in 'spi_package'
-            reg_map_array_from_pins => spi_array_from_pins_s, -- : in mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0)
-            reg_map_array_to_pins => spi_array_to_pins_s,     -- : out mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
+            reg_map_array_from_pins => spi_array_from_pins_s,        -- : in mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0)
+            reg_map_array_to_pins => spi_array_to_pins_s,            -- : out mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
             --Write enable and address to allow some write processing of internal FPGA register map (write bit toggling, etc)
-            write_enable_from_spi => write_enable_from_spi_s, -- : out std_logic := '0';
-            write_addr_from_spi => write_addr_from_spi_s      -- : out std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) := (others => '0')
+            write_enable_from_spi => write_enable_from_spi_s,        -- : out std_logic := '0';
+            write_addr_from_spi => write_addr_from_spi_s             -- : out std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) := (others => '0')
             );
 
 
