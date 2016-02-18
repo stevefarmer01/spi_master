@@ -54,10 +54,10 @@ package body gdrb_ctrl_bb_pkg is
 
     --This function allows non-zero initialising of register map array for testing and possible other uses
     function initalise_mem_array_t(inc_values_enable : boolean; inc_data_start_value : natural ) return mem_array_t is
-        variable mem_array_v : mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0'));
+        variable mem_array_v : mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0'));
     begin
         if inc_values_enable then
-            for i in 0 to (SPI_ADDRESS_BITS**2)-1 loop
+            for i in 0 to (2**SPI_ADDRESS_BITS)-1 loop
                 set_data_v(mem_array_v, i, std_logic_vector(to_unsigned(inc_data_start_value+i,SPI_DATA_BITS)));
             end loop;
         end if;

@@ -50,8 +50,8 @@ entity spi_board_select_top is
             mosi : in STD_LOGIC;
             miso : out STD_LOGIC;
             --Discrete signals
-            reg_map_array_from_pins : in mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0'));
-            reg_map_array_to_pins : out mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0);
+            reg_map_array_from_pins : in mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0'));
+            reg_map_array_to_pins : out mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
             --Non-register map read/control bits
             interupt_flag : out std_logic := '0'
           );
@@ -93,8 +93,8 @@ component generic_spi_reg_map_top is
             mosi : in STD_LOGIC;
             miso : out STD_LOGIC;
             --Discrete signals
-            reg_map_array_from_pins : in mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0'));
-            reg_map_array_to_pins : out mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0);
+            reg_map_array_from_pins : in mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0'));
+            reg_map_array_to_pins : out mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
             --Non-register map read/control bits
             interupt_flag : out std_logic := '0'
             );
@@ -107,11 +107,11 @@ constant valid_delayed_c : positive := 1; -- Delay board select edge detect due 
 
 signal board_select_s, prev_board_select_s : std_logic_vector((SPI_BOARD_SEL_ADDR_BITS-1) downto 0) := (others => '0');
 signal board_select_valid_s : std_logic := '0';
-signal board_select_mux_ss_n_s, miso_board_select_mux_ss_n_s : std_logic_vector(((SPI_BOARD_SEL_ADDR_BITS**2)-1) downto 0) := (others => '1'); -- Default to all ss_n's de-asserted
+signal board_select_mux_ss_n_s, miso_board_select_mux_ss_n_s : std_logic_vector(((2**SPI_BOARD_SEL_ADDR_BITS)-1) downto 0) := (others => '1'); -- Default to all ss_n's de-asserted
 signal board_select_valid_r0 : std_logic := '0';
 signal board_select_valid_delayed_s : std_logic_vector(valid_delayed_c-1 downto 0) := (others => '0');
 signal board_select_valid_delayed_bit_s : std_logic := '0';
-signal miso_s : std_logic_vector(((SPI_BOARD_SEL_ADDR_BITS**2)-1) downto 0) := (others => '0');
+signal miso_s : std_logic_vector(((2**SPI_BOARD_SEL_ADDR_BITS)-1) downto 0) := (others => '0');
 
 begin
 
@@ -158,7 +158,7 @@ board_select_ss_n_mux_proc : process
 begin
     wait until rising_edge(clk);
     board_select_mux_ss_n_s <= (others => '1');      -- Default value
-    for i in 0 to ((SPI_BOARD_SEL_ADDR_BITS**2)-1) loop
+    for i in 0 to ((2**SPI_BOARD_SEL_ADDR_BITS)-1) loop
         if ((to_integer(unsigned(board_select_s))) = i) and board_select_valid_delayed_s(board_select_valid_delayed_s'LEFT) = '1' then 
             board_select_mux_ss_n_s(i) <= ss_n;         -- Mux main ss_n through to slave as per received board select bits from 'spi_board_select_slave'
 --            miso <= miso_s(i);
@@ -175,7 +175,7 @@ begin
         prev_board_select_s <= board_select_s;
     end if;
     miso_board_select_mux_ss_n_s <= (others => '1');      -- Default value
-    for i in 0 to ((SPI_BOARD_SEL_ADDR_BITS**2)-1) loop
+    for i in 0 to ((2**SPI_BOARD_SEL_ADDR_BITS)-1) loop
 --        if ((to_integer(unsigned(board_select_s))) = i) and board_select_valid_delayed_s(board_select_valid_delayed_s'LEFT) = '1' then 
         if ((to_integer(unsigned(prev_board_select_s))) = i) and ss_n = '0' then 
             miso_board_select_mux_ss_n_s(i) <= ss_n;         -- Mux main ss_n through to slave as per received board select bits from 'spi_board_select_slave'
@@ -211,7 +211,7 @@ reg_map_selected_inst : generic_spi_reg_map_top
 --    set_all_data(spi_array_to_pins_s, spi_array_from_pins_s);
 
 --.--Example of all 16 spi_slace register maps connected to board select addresses 0 thru 15
---.reg_map_gen : for i in 0 to ((SPI_BOARD_SEL_ADDR_BITS**2)-1) generate
+--.reg_map_gen : for i in 0 to ((2**SPI_BOARD_SEL_ADDR_BITS)-1) generate
 --.    reg_map_selected_inst : generic_spi_reg_map_top
 --.        generic map(
 --.                make_all_addresses_writeable_for_testing => make_all_addresses_writeable_for_testing -- :     natural := 16

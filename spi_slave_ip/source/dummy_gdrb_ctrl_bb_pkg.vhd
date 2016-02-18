@@ -42,13 +42,13 @@ package gdrb_ctrl_bb_pkg is
     constant SPI_DATA_BITS : integer := 16;
 --    constant DATA_SIZE_C : integer   := SPI_ADDRESS_BITS+SPI_DATA_BITS+1;                             -- Total data size = read/write bit + address + data
 --    --Array type for all register map values
---    type gdrb_ctrl_address_type is array (integer range 0 to (SPI_ADDRESS_BITS**2)-1) of std_logic_vector(SPI_DATA_BITS-1 downto 0);
+--    type gdrb_ctrl_address_type is array (integer range 0 to (2**SPI_ADDRESS_BITS)-1) of std_logic_vector(SPI_DATA_BITS-1 downto 0);
 --    --This function allows non-zero initialising of register map array for testing and possible other uses
 --    function initalise_gdrb_ctrl_data_array(inc_values_enable : boolean; inc_data_start_value : natural ) return gdrb_ctrl_address_type;
 --    --Deferred constants below
 --    constant gdrb_ctrl_data_array_initalise : gdrb_ctrl_address_type;
 
---    subtype gdrb_ctrl_mem_array_t is mem_array_t(0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0);
+--    subtype gdrb_ctrl_mem_array_t is mem_array_t(0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
 
 end gdrb_ctrl_bb_pkg;
 

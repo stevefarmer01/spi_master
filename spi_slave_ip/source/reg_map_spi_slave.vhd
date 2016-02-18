@@ -51,8 +51,8 @@ entity reg_map_spi_slave is
             mosi : in STD_LOGIC;
             miso : out STD_LOGIC;
             ---Array of data spanning entire address range declared'
-            reg_map_array_from_pins : in mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0);
-            reg_map_array_to_pins : out mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0);
+            reg_map_array_from_pins : in mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
+            reg_map_array_to_pins : out mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
             --Write enable and address to allow some write processing of internal FPGA register map (write bit toggling, etc)
             write_enable_from_spi : out std_logic := '0';
             write_addr_from_spi : out std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) := (others => '0')
@@ -94,9 +94,9 @@ end component;
 constant DATA_SIZE_C : integer := SPI_ADDRESS_BITS+SPI_DATA_BITS+1;                          -- Total data size = read/write bit + address + data
 constant DATA_SIZE : integer := DATA_SIZE_C;
 
---signal reg_map_array_to_pins_s : mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0')); -- This may be safer (due to syth support although tested in Diamond 3.5 and vivado 2014.1)) but not as nice
---signal reg_map_array_to_pins_s : mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0) := mem_array_t_initalised; -- This may be safer (due to syth support although tested in Diamond 3.5 and vivado 2014.1)) but not as nice
-signal reg_map_array_to_pins_s : mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0) := MEM_ARRAY_T_INITIALISATION; -- This may be safer (due to syth support although tested in Diamond 3.5 and vivado 2014.1)) but not as nice
+--signal reg_map_array_to_pins_s : mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0')); -- This may be safer (due to syth support although tested in Diamond 3.5 and vivado 2014.1)) but not as nice
+--signal reg_map_array_to_pins_s : mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0) := mem_array_t_initalised; -- This may be safer (due to syth support although tested in Diamond 3.5 and vivado 2014.1)) but not as nice
+signal reg_map_array_to_pins_s : mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0) := MEM_ARRAY_T_INITIALISATION; -- This may be safer (due to syth support although tested in Diamond 3.5 and vivado 2014.1)) but not as nice
 
 signal o_rx_ready_slave_s : std_logic := '0';
 signal o_rx_ready_slave_r0 : std_logic := '0';
