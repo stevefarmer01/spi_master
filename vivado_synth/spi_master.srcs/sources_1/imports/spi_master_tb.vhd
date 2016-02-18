@@ -84,6 +84,7 @@ entity spi_master_tb is
             board_select : boolean := FALSE; -- Use generate statement - xxxxxx_gen : if not board_select generate xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx end generate;
             make_all_addresses_writeable_for_testing : boolean := TRUE;
             DUT_TYPE : string := "write_and_then_read_an_address"
+--            DUT_TYPE : string := "spi_reg_map_simple"
             );
 end spi_master_tb;
 
