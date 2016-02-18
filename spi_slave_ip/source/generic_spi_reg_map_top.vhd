@@ -63,7 +63,8 @@ architecture Behavioral of generic_spi_reg_map_top is
 component reg_map_spi_slave is
     generic(
             SPI_ADDRESS_BITS : integer := 4;
-            SPI_DATA_BITS : integer := 16
+            SPI_DATA_BITS : integer := 16;
+            MEM_ARRAY_T_INITIALISATION : mem_array_t
         );
     Port (  
             clk : in std_logic;
@@ -107,6 +108,8 @@ signal spi_array_to_pins_s, spi_array_from_pins_s : mem_array_t( 0 to (SPI_ADDRE
 signal write_enable_from_spi_s : std_logic := '0';
 signal write_addr_from_spi_s : std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) := (others => '0');
 
+constant mem_array_t_init_all_zeros_c : mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0'));
+
 
 --signal sensor_status_write_en_s : std_logic := '0';
 --signal sensor_interupt_flag_s : std_logic := '0';
@@ -144,7 +147,8 @@ end process;
 reg_map_spi_slave_inst : reg_map_spi_slave
     generic map(
             SPI_ADDRESS_BITS => SPI_ADDRESS_BITS,             -- : integer := 4;
-            SPI_DATA_BITS => SPI_DATA_BITS                    -- : integer := 16
+            SPI_DATA_BITS => SPI_DATA_BITS,                   -- : integer := 16
+            MEM_ARRAY_T_INITIALISATION => mem_array_t_init_all_zeros_c -- Function that populates this constant in 'gdrb_ctrl_bb_pkg'
             )
     Port map(  
             clk => clk,                                       -- : in std_logic;

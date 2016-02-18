@@ -33,7 +33,7 @@ use work.multi_array_types_pkg.all;
 
 entity spi_board_select_top is
     generic ( 
-            make_all_addresses_writeable_for_testing : boolean := FALSE; -- This is for testbenching only
+            make_all_addresses_writeable_for_testing : boolean := TRUE; -- This is for testbenching only
             SPI_BOARD_SEL_ADDR_BITS : integer := 4;
             SPI_ADDRESS_BITS : integer := 4;
             SPI_DATA_BITS : integer := 16

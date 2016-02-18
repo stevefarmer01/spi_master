@@ -55,6 +55,11 @@
 ---Report back pass/fail at end of sim - done
 ---Integrate register map - done
 ---Integrate text IO, maybe start with output rporting first - done
+---Remove need package gdrb_ctrl_bb_pkg to be declared (bring in on generics or something)
+---Add abilty to use HREAD or something to read non 4bit address/data widths from text file as they fail at the moment (might need a function to slice and dice)
+---Look at way to use 'generic_spi_reg_map_top' instead of 'gdrb_ctrl_reg_map_top' by using input generics
+---Improve python to include board testing by maybe expanding the dictionary in it to include using different .prj and xelab or take in generics
+---Check speed tests still work
 ---Random seed testing option
 
 --.    --Set sizes of data and addresse as required for particular application

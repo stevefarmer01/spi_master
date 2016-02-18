@@ -109,6 +109,8 @@ signal spi_array_to_pins_s, spi_array_from_pins_s : mem_array_t( 0 to (SPI_ADDRE
 signal write_enable_from_spi_s : std_logic := '0';
 signal write_addr_from_spi_s : std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) := (others => '0');
 
+constant mem_array_t_init_all_zeros_c : mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0'));
+
 signal sensor_status_write_en_s : std_logic := '0';
 signal sensor_interupt_flag_s : std_logic := '0';
 signal sensor_status_s, sensor_edge_s, sensor_int_mask_s : std_logic_vector(SPI_DATA_BITS-1 downto 0) := (others => '0');
@@ -125,8 +127,6 @@ signal diagnostics_interupts_data_s : std_logic_vector(SPI_DATA_BITS-1 downto 0)
 signal global_interupt_flag_s : std_logic := '0';
 
 signal edge_detect_sensor_to_spi_s, edge_detect_fault_to_spi_s, edge_detect_status_to_spi_s : std_logic_vector(SPI_DATA_BITS-1 downto 0) := (others => '0');
-
-constant blank : mem_array_t( 0 to (SPI_ADDRESS_BITS**2)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0'));
 
 begin
 
