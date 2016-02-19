@@ -57,7 +57,7 @@
 ---Integrate text IO, maybe start with output rporting first - done
 ---Remove need package gdrb_ctrl_bb_pkg to be declared (bring in on generics or something)
 ---Add abilty to use HREAD or something to read non 4bit address/data widths from text file as they fail at the moment (might need a function to slice and dice)
----Look at way to use 'generic_spi_reg_map_top' instead of 'gdrb_ctrl_reg_map_top' by using input generics
+---Look at way to use 'generic_spi_reg_map_top' instead of 'gdrb_ctrl_reg_map_top' by using input generics - done (appart from application specific addresses/code)
 ---Improve python to include board testing by maybe expanding the dictionary in it to include using different .prj and xelab or take in generics
 ---Check speed tests still work
 ---Random seed testing option
@@ -116,7 +116,86 @@ architecture behave of spi_master_tb is
 --.    constant DUT_TYPE : string := "spi_slave"; -- Simple test of just the low level spi_slave.vhd
 --.    constant DUT_TYPE : string := "spi_reg_map"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board
 
-component spi_master_top
+
+ ----------------------------------------------------------------------
+  --Will take a string in the given radix and conver it to an integer
+  ----------------------------------------------------------------------
+  function string_to_int(x_str : string; radix : positive range 2 to 36 := 10) return integer is
+    constant STR_LEN          : integer := x_str'length;
+    
+    variable chr_val          : integer;
+    variable ret_int          : integer := 0;
+    variable do_mult          : boolean := true;
+    variable power            : integer := 0;
+  begin
+    
+    for i in STR_LEN downto 1 loop
+      case x_str(i) is
+        when '0'       =>   chr_val := 0;
+        when '1'       =>   chr_val := 1;
+        when '2'       =>   chr_val := 2;
+        when '3'       =>   chr_val := 3;
+        when '4'       =>   chr_val := 4;
+        when '5'       =>   chr_val := 5;
+        when '6'       =>   chr_val := 6;
+        when '7'       =>   chr_val := 7;
+        when '8'       =>   chr_val := 8;
+        when '9'       =>   chr_val := 9;
+        when 'A' | 'a' =>   chr_val := 10;
+        when 'B' | 'b' =>   chr_val := 11;
+        when 'C' | 'c' =>   chr_val := 12;
+        when 'D' | 'd' =>   chr_val := 13;
+        when 'E' | 'e' =>   chr_val := 14;
+        when 'F' | 'f' =>   chr_val := 15;
+        when 'G' | 'g' =>   chr_val := 16;
+        when 'H' | 'h' =>   chr_val := 17;
+        when 'I' | 'i' =>   chr_val := 18;
+        when 'J' | 'j' =>   chr_val := 19;
+        when 'K' | 'k' =>   chr_val := 20;
+        when 'L' | 'l' =>   chr_val := 21;
+        when 'M' | 'm' =>   chr_val := 22;
+        when 'N' | 'n' =>   chr_val := 23;
+        when 'O' | 'o' =>   chr_val := 24;
+        when 'P' | 'p' =>   chr_val := 25;
+        when 'Q' | 'q' =>   chr_val := 26;
+        when 'R' | 'r' =>   chr_val := 27;
+        when 'S' | 's' =>   chr_val := 28;
+        when 'T' | 't' =>   chr_val := 29;
+        when 'U' | 'u' =>   chr_val := 30;
+        when 'V' | 'v' =>   chr_val := 31;
+        when 'W' | 'w' =>   chr_val := 32;
+        when 'X' | 'x' =>   chr_val := 33;
+        when 'Y' | 'y' =>   chr_val := 34;
+        when 'Z' | 'z' =>   chr_val := 35;                           
+        when '-' =>   
+          if i /= 1 then
+            report "Minus sign must be at the front of the string" severity failure;
+          else
+            ret_int           := 0 - ret_int;
+            chr_val           := 0;
+            do_mult           := false;    --Minus sign - do not do any number manipulation
+          end if;
+                     
+        when others => report "Illegal character for conversion for string to integer" severity failure;
+      end case;
+      
+      if chr_val >= radix then report "Illagel character at this radix" severity failure; end if;
+        
+      if do_mult then
+        ret_int               := ret_int + (chr_val * (radix**power));
+      end if;
+        
+      power                   := power + 1;
+          
+    end loop;
+    
+    return ret_int;
+    
+  end function; 
+
+
+
+  component spi_master_top
     generic(
         DATA_SIZE      :     integer := 16;
         FIFO_REQ       :     Boolean := True
@@ -601,6 +680,7 @@ input_vector_file_test_gen : if DUT_TYPE = "input_vector_file_test" generate
         variable L : line;
         variable good : boolean;
         variable status : file_open_status;
+        variable integer_value_read_v, integer_value_read_no_of_bits_v : integer;
         variable input_command_v : string(1 to 4);
         variable board_sel_to_spi_v : std_logic_vector(SPI_BOARD_SEL_ADDR_BITS - 1 downto 0) := (others => '0');
         variable address_to_spi_v, address_of_port_v : std_logic_vector(SPI_ADDRESS_BITS - 1 downto 0) := (others => '1');
@@ -636,14 +716,18 @@ input_vector_file_test_gen : if DUT_TYPE = "input_vector_file_test" generate
                 elsif input_command_v = "Read" or input_command_v = "Writ"  then            -- Read or Write command
 
                     input_command_type <= read_write_spi_cmd;
+--  function string_to_int(x_str : string; radix : positive range 2 to 36 := 10) return integer is
 
                     if board_select then
                         HREAD(L, board_sel_to_spi_v, good);
                         assert good report "Text input file format read error" severity FAILURE;
                         board_sel_to_spi <= to_integer(unsigned(board_sel_to_spi_v));
-                        HREAD(L, bs_address_to_spi_v, good);
+--                        HREAD(L, bs_address_to_spi_v, good);
+                        READ(L, integer_value_read_v, good);
                         assert good report "Text input file format read error" severity FAILURE;
-                        address_to_spi <= to_integer(unsigned(bs_address_to_spi_v));
+--                        address_to_spi <= to_integer(unsigned((to_unsigned(integer_value_read_v,integer_value_read_v+1))(bs_address_to_spi_v'RANGE)));
+                        integer_value_read_no_of_bits_v := integer_value_read_v+1;
+                        address_to_spi <= to_integer(((to_unsigned(integer_value_read_v,integer_value_read_no_of_bits_v)(bs_address_to_spi_v'RANGE))));
                     end if;
 
                     if not board_select then

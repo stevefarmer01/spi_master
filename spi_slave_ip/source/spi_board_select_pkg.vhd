@@ -39,7 +39,7 @@ package spi_board_select_pkg is
 
     --Set sizes of data and addresse as required for particular application
     constant SPI_BOARD_SEL_ADDR_BITS : integer := 4;	-- This has to be a multiple of 4 for HREAD to work OK in testbench
-    constant SPI_BOARD_SEL_PROTOCOL_ADDR_BITS : integer := 4;	-- This has to be a multiple of 4 for HREAD to work OK in testbench
+    constant SPI_BOARD_SEL_PROTOCOL_ADDR_BITS : integer := 2;	-- This has to be a multiple of 4 for HREAD to work OK in testbench
     constant SPI_BOARD_SEL_PROTOCOL_DATA_BITS : integer := 16;	-- This has to be a multiple of 4 for HREAD to work OK in testbench
     constant DATA_SIZE_C : integer   := SPI_BOARD_SEL_PROTOCOL_ADDR_BITS+SPI_BOARD_SEL_PROTOCOL_DATA_BITS+1;                             -- Total data size = read/write bit + address + data
     --Low level SPI interface parameters
