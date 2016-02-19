@@ -55,9 +55,7 @@ entity spi_board_select_top is
             lsb_first : in std_logic := '0';                                -- lsb first when '1' /msb first when
             --Discrete signals
             reg_map_array_from_pins : in mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0'));
-            reg_map_array_to_pins : out mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
-            --Non-register map read/control bits
-            interupt_flag : out std_logic := '0'
+            reg_map_array_to_pins : out mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0)
           );
 end spi_board_select_top;
 
@@ -106,9 +104,7 @@ component generic_spi_reg_map_top is
             lsb_first : in std_logic := '0';                                -- lsb first when '1' /msb first when
             --Discrete signals
             reg_map_array_from_pins : in mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0'));
-            reg_map_array_to_pins : out mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
-            --Non-register map read/control bits
-            interupt_flag : out std_logic := '0'
+            reg_map_array_to_pins : out mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0)
             );
 end component;
 

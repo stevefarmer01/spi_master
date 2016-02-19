@@ -46,8 +46,8 @@ package gdrb_ctrl_bb_pkg is
     signal SPI_BB_CPHA      : std_logic := '0';                                -- CPHA value - 0 or 1 - these should really be constants but modelsim doesn't like it
     signal SPI_BB_LSB_FIRST : std_logic := '0';                                -- lsb first when '1' /msb first when - these should really be constants but modelsim doesn't like it
 
---    --Deferred constants below
---    constant mem_array_t_initalised : mem_array_t;
+    --Deferred constants below
+    constant mem_array_t_initalised : mem_array_t;
 --    --Function for multi-dimensional array initialisation via deferred constant
 --    function initalise_mem_array_t(inc_values_enable : boolean; inc_data_start_value : natural ) return mem_array_t;
 
@@ -73,5 +73,7 @@ package body gdrb_ctrl_bb_pkg is
 --    
 --    --Pre-load register map array for testing and possible other uses
 --    constant mem_array_t_initalised : mem_array_t := initalise_mem_array_t(inc_values_enable => FALSE, inc_data_start_value => 16#0#);
+
+constant mem_array_t_initalised : mem_array_t (0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0'));
 
 end;

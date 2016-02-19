@@ -242,7 +242,7 @@ component gdrb_ctrl_reg_map_top is
             make_all_addresses_writeable_for_testing : boolean := FALSE; -- This is for testbenching only
             SPI_ADDRESS_BITS : integer := 4;
             SPI_DATA_BITS : integer := 16;
-            REG_MAP_INITIALISATION_VALUES : mem_array_t
+            MEM_ARRAY_T_INITIALISATION : mem_array_t
            );
     Port (  
             clk : in std_logic;
@@ -277,9 +277,7 @@ component spi_board_select_top is
             miso : out STD_LOGIC;
             --Discrete signals
             reg_map_array_from_pins : in mem_array_t(0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
-            reg_map_array_to_pins : out mem_array_t(0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
-            --Non-register map read/control bits
-            interupt_flag : out std_logic := '0'
+            reg_map_array_to_pins : out mem_array_t(0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0)
           );
 end component;
 
@@ -570,7 +568,7 @@ spi_reg_map_gen : if not board_select generate
                 make_all_addresses_writeable_for_testing => make_all_addresses_writeable_for_testing, -- : natural := 16
                 SPI_ADDRESS_BITS => SPI_ADDRESS_BITS,                                                 -- : integer := 4;
                 SPI_DATA_BITS => SPI_DATA_BITS,                                                       -- : integer := 16
-                REG_MAP_INITIALISATION_VALUES => mem_array_t_initalised                               -- : mem_array_t
+                MEM_ARRAY_T_INITIALISATION => mem_array_t_initalised                               -- : mem_array_t
                 )
         Port map(  
                 clk => dut_sys_clk_i,                                                                 -- : std_logic;
