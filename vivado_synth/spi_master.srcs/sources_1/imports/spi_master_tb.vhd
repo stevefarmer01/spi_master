@@ -56,7 +56,7 @@
 ---Integrate register map - done
 ---Integrate text IO, maybe start with output rporting first - done
 ---Remove need package gdrb_ctrl_bb_pkg to be declared (bring in on generics or something)
----Add abilty to use HREAD or something to read non 4bit address/data widths from text file as they fail at the moment (might need a function to slice and dice)
+---Add abilty to use HREAD or something to read non 4bit address/data widths from text file as they fail at the moment (might need a function to slice and dice) - done
 ---Look at way to use 'generic_spi_reg_map_top' instead of 'gdrb_ctrl_reg_map_top' by using input generics - done (appart from application specific addresses/code)
 ---Improve python to include board testing by maybe expanding the dictionary in it to include using different .prj and xelab or take in generics
 ---Check speed tests still work
@@ -193,6 +193,15 @@ architecture behave of spi_master_tb is
     
   end function; 
 
+  function is_whitespace(c: character) return boolean is
+  begin
+      if (c = ' ') or (c = HT) then
+          return true;
+      else 
+        return false;
+      end if;
+  end is_whitespace;
+    
 
 
   component spi_master_top
@@ -329,7 +338,7 @@ shared variable cnt      : integer                       := 0;
 
     type command_t is (read_write_spi_cmd, read_port_cmd, write_port_cmd, print_comment_line);
     signal input_command_type : command_t;
-    signal line_of_comments : string(1 to 99);
+    signal line_of_comments : string(1 to 199);
 
 
     procedure send_to_spi_master(
@@ -680,7 +689,10 @@ input_vector_file_test_gen : if DUT_TYPE = "input_vector_file_test" generate
         variable L : line;
         variable good : boolean;
         variable status : file_open_status;
-        variable integer_value_read_v, integer_value_read_no_of_bits_v : integer;
+        variable char_v : character := ' ';
+        variable str_pointer_v : natural := 1;
+--        variable integer_value_read_v, integer_value_read_no_of_bits_v : integer;
+--        variable integer_value_read_v : integer;
         variable input_command_v : string(1 to 4);
         variable board_sel_to_spi_v : std_logic_vector(SPI_BOARD_SEL_ADDR_BITS - 1 downto 0) := (others => '0');
         variable address_to_spi_v, address_of_port_v : std_logic_vector(SPI_ADDRESS_BITS - 1 downto 0) := (others => '1');
@@ -700,6 +712,9 @@ input_vector_file_test_gen : if DUT_TYPE = "input_vector_file_test" generate
             wait for TIME_PERIOD_CLK* 20 * dut_clk_ratio_to_testbench;                                                     -- Wait for sys_rst_i to propagate through DUT especially if DUT is running a much slower clock
             
             while not ENDFILE(F) loop
+                char_v := ' ';      -- Reset textio blank space detection char
+                str_pointer_v := 0; -- Reset textio blank space detection string pointer
+                line_of_comments_v := (others => ' '); -- Reset 'line_of_comments_v' as this is used in textio blank space detection
                 READLINE(F, L);
                 next when L'LENGTH = 0;                                                     -- Skip empty lines
                 READ(L, input_command_v);
@@ -716,18 +731,21 @@ input_vector_file_test_gen : if DUT_TYPE = "input_vector_file_test" generate
                 elsif input_command_v = "Read" or input_command_v = "Writ"  then            -- Read or Write command
 
                     input_command_type <= read_write_spi_cmd;
---  function string_to_int(x_str : string; radix : positive range 2 to 36 := 10) return integer is
 
                     if board_select then
                         HREAD(L, board_sel_to_spi_v, good);
                         assert good report "Text input file format read error" severity FAILURE;
                         board_sel_to_spi <= to_integer(unsigned(board_sel_to_spi_v));
---                        HREAD(L, bs_address_to_spi_v, good);
-                        READ(L, integer_value_read_v, good);
-                        assert good report "Text input file format read error" severity FAILURE;
---                        address_to_spi <= to_integer(unsigned((to_unsigned(integer_value_read_v,integer_value_read_v+1))(bs_address_to_spi_v'RANGE)));
-                        integer_value_read_no_of_bits_v := integer_value_read_v+1;
-                        address_to_spi <= to_integer(((to_unsigned(integer_value_read_v,integer_value_read_no_of_bits_v)(bs_address_to_spi_v'RANGE))));
+                        --.HREAD(L, bs_address_to_spi_v, good);                                      -- HREAD will not deal with non-nibble (4bit) size std_logic_vector and so code below to down to next end if; used to solve this
+                        while is_whitespace(char_v) loop                                             -- Consume spaces in text file being read then..
+                            READ(L,char_v);
+                        end loop;
+                        while not is_whitespace(char_v) loop                                         -- ..read characters in text file until non-visible character is found and then...
+                            str_pointer_v := str_pointer_v + 1;
+                            line_of_comments_v(str_pointer_v) := char_v;
+                            READ(L,char_v);
+                        end loop; 
+                        address_to_spi <= string_to_int(line_of_comments_v(1 to str_pointer_v), 16); -- ..convert it from a string into a hex integer with string_to_int
                     end if;
 
                     if not board_select then
@@ -790,7 +808,6 @@ input_vector_file_test_gen : if DUT_TYPE = "input_vector_file_test" generate
 
 end generate input_vector_file_test_gen;
 
-
 ---------------------------------------------------------.
 --------------------------Outputs------------------------.
 ---------------------------------------------------------.
@@ -800,6 +817,8 @@ file_output_proc : process
     variable status : file_open_status;
     variable rx_and_expected_same : boolean := FALSE;
     variable a_test_has_failed : boolean := FALSE;
+    variable address_to_spi_length : integer := (SPI_ADDRESS_BITS + (SPI_ADDRESS_BITS rem 4));
+    variable address_to_spi_hex : std_logic_vector(address_to_spi_length-1 downto 0) := (others => '0');
 begin
     FILE_OPEN(F, "..\output_test.txt", WRITE_MODE);
     if status /= open_ok then
@@ -838,8 +857,12 @@ begin
                     WRITE (L, string'("Board Select Address = "));
                     HWRITE (L, std_logic_vector(to_unsigned(board_sel_to_spi,SPI_BOARD_SEL_ADDR_BITS)), left, 10);
                     WRITE (L, string'("Address = "));
-                    HWRITE (L, std_logic_vector(to_unsigned(address_to_spi,SPI_BOARD_SEL_PROTOCOL_ADDR_BITS)), left, 10);
-                end if;
+                    --HWRITE (L, std_logic_vector(to_unsigned(address_to_spi,SPI_BOARD_SEL_PROTOCOL_ADDR_BITS)), left, 10); -- HWRITE FAILS to write anything when trying to write out sizes that are not divisable by a nibble (4bits)..
+                    --WRITE (L, address_to_spi, left, 10);                                                                  -- ..WRITE FAILS because it writes out integers in base 10 and so..
+                    address_to_spi_hex := std_logic_vector(to_unsigned(address_to_spi, address_to_spi_hex'LENGTH));         -- ..these 2 lines below will convert std_logic_vector to a nibble divisable length and then..
+                    HWRITE (L, address_to_spi_hex, left, 10);                                                               -- ..HWRITE will work correctly priting out the number in hex
+
+                    end if;
                 if not board_select then --SPI_BOARD_SEL_PROTOCOL_ADDR_BITS
                     WRITE (L, string'("Address = "));
                     HWRITE (L, std_logic_vector(to_unsigned(address_to_spi,SPI_ADDRESS_BITS)), left, 10);
@@ -859,7 +882,6 @@ begin
                 if (input_command_type = write_port_cmd) then
                     WRITE (L, string'("PASS  "), left, 6);
                     WRITE (L, string'("Write Pins"), left, 12);
---                elsif (input_command_type = read_port_cmd) and (to_integer(unsigned(discrete_reg_map_array_to_script_s(address_of_port))) = data_of_port) then -- causes annoying - Warning: NUMERIC_STD.TO_INTEGER: metavalue detected, returning 0
                 elsif (input_command_type = read_port_cmd) and (to_integer(unsigned(get_data(discrete_reg_map_array_to_script_s, address_of_port))) = data_of_port) then -- causes annoying - Warning: NUMERIC_STD.TO_INTEGER: metavalue detected, returning 0
                     WRITE (L, string'("PASS  "), left, 6);
                     WRITE (L, string'("Read Pins"), left, 12);

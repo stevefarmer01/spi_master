@@ -38,14 +38,14 @@ use work.multi_array_types_pkg.all;
 package spi_board_select_pkg is
 
     --Set sizes of data and addresse as required for particular application
-    constant SPI_BOARD_SEL_ADDR_BITS : integer := 4;	-- This has to be a multiple of 4 for HREAD to work OK in testbench
-    constant SPI_BOARD_SEL_PROTOCOL_ADDR_BITS : integer := 2;	-- This has to be a multiple of 4 for HREAD to work OK in testbench
-    constant SPI_BOARD_SEL_PROTOCOL_DATA_BITS : integer := 16;	-- This has to be a multiple of 4 for HREAD to work OK in testbench
-    constant DATA_SIZE_C : integer   := SPI_BOARD_SEL_PROTOCOL_ADDR_BITS+SPI_BOARD_SEL_PROTOCOL_DATA_BITS+1;                             -- Total data size = read/write bit + address + data
+    constant SPI_BOARD_SEL_ADDR_BITS : integer := 4;                                                         -- This has to be a multiple of 4 for HREAD to work OK in testbench
+    constant SPI_BOARD_SEL_PROTOCOL_ADDR_BITS : integer := 6;                                                -- This---DOESN'T---has to be a multiple of 4 for HREAD to work OK in testbench
+    constant SPI_BOARD_SEL_PROTOCOL_DATA_BITS : integer := 8;                                                -- This has to be a multiple of 4 for HREAD to work OK in testbench
+    constant DATA_SIZE_C : integer   := SPI_BOARD_SEL_PROTOCOL_ADDR_BITS+SPI_BOARD_SEL_PROTOCOL_DATA_BITS+1; -- Total data size = read/write bit + address + data
     --Low level SPI interface parameters
-    signal SPI_BOARD_CPOL      : std_logic := '0';                                -- CPOL value - 0 or 1 - these should really be constants but modelsim doesn't like it
-    signal SPI_BOARD_CPHA      : std_logic := '1';                                -- CPHA value - 0 or 1 - these should really be constants but modelsim doesn't like it
-    signal SPI_BOARD_LSB_FIRST : std_logic := '0';                                -- lsb first when '1' /msb first when - these should really be constants but modelsim doesn't like it
+    signal SPI_BOARD_CPOL      : std_logic := '0';                                                           -- CPOL value - 0 or 1 - these should really be constants but modelsim doesn't like it
+    signal SPI_BOARD_CPHA      : std_logic := '1';                                                           -- CPHA value - 0 or 1 - these should really be constants but modelsim doesn't like it
+    signal SPI_BOARD_LSB_FIRST : std_logic := '0';                                                           -- lsb first when '1' /msb first when - these should really be constants but modelsim doesn't like it
 
     --Deferred constants below
     constant bs_mem_array_t_initalised_c : mem_array_t;
@@ -66,8 +66,8 @@ package body spi_board_select_pkg is
             end loop;
         end if;
         --Examples of how to manually set default values(these will overwrite incremented values above)
-        --set_data_v(mem_array_v, 0, std_logic_vector(to_unsigned(16#8#,SPI_DATA_BITS)));-- Example of how to manually set defualt values(these will overwrite incremented values above)
-        --set_data_v(mem_array_v, 1, std_logic_vector(to_unsigned(16#9#,SPI_DATA_BITS)));-- Example of how to manually set defualt values(these will overwrite incremented values above)
+    --set_data_v(mem_array_v, 0, std_logic_vector(to_unsigned(16#8#,SPI_DATA_BITS)));                        -- Example of how to manually set defualt values(these will overwrite incremented values above)
+    --set_data_v(mem_array_v, 1, std_logic_vector(to_unsigned(16#9#,SPI_DATA_BITS)));                        -- Example of how to manually set defualt values(these will overwrite incremented values above)
         return mem_array_v;
     end;
     
