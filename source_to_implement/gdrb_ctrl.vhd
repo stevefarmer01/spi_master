@@ -412,6 +412,7 @@ signal reg_map_reset_s : std_logic := '0';
 --Begalbone SPI register map discrete signals
 signal reg_map_array_from_pins_s : mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0'));
 signal reg_map_array_to_pins_s : mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0'));
+constant blank_reg_map_array_to_pins_c : mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0'));
 
 ----Map input pins to reg_map_array_to_pins_s
 --
@@ -564,6 +565,7 @@ misc_status_bits_s <= std_logic_vector(to_unsigned(0,4)) & Y_OUT3 & X_OUT3 & Z_S
 
 input_pins_proc : process(sensor_status_bits_s, fault_status_bits_s, misc_status_bits_s)
 begin
+    set_all_data(blank_reg_map_array_to_pins_c, reg_map_array_from_pins_s);         -- This is needed otherwise vivado 2014.1 throws a synth ACCESS ERROR (lattice diamond was OK anyway)
     set_data(reg_map_array_from_pins_s, (to_integer(unsigned(SENSOR_STATUS_ADDR_C))), sensor_status_bits_s);
     set_data(reg_map_array_from_pins_s, (to_integer(unsigned(FAULT_STATUS_ADDR_C))), fault_status_bits_s);
     set_data(reg_map_array_from_pins_s, (to_integer(unsigned(MISC_STATUS_ADDR_C))), misc_status_bits_s);
