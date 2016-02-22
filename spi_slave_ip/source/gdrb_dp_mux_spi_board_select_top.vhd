@@ -33,7 +33,7 @@ use work.spi_board_select_pkg.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-entity spi_board_select_top is
+entity gdrb_dp_mux_spi_board_select_top is
     generic ( 
             make_all_addresses_writeable_for_testing : boolean := TRUE; -- This makes register map all read/write registers but none connected to FPGA pins
             SPI_BOARD_SEL_ADDR_BITS : integer := 4;
@@ -57,9 +57,9 @@ entity spi_board_select_top is
             reg_map_array_from_pins : in mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0'));
             reg_map_array_to_pins : out mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0)
           );
-end spi_board_select_top;
+end gdrb_dp_mux_spi_board_select_top;
 
-architecture Behavioral of spi_board_select_top is
+architecture Behavioral of gdrb_dp_mux_spi_board_select_top is
 
 component spi_board_select_slave is
     generic(
@@ -82,7 +82,7 @@ component spi_board_select_slave is
             );
 end component;
 
-component generic_spi_reg_map_top is
+component gdrb_dp_mux_reg_map_top is
     generic ( 
             make_all_addresses_writeable_for_testing : boolean := FALSE; -- This is for testbenching only
             SPI_ADDRESS_BITS : integer := 4;
@@ -196,7 +196,7 @@ end process;
 
 
 ----Example of one spi_slace register map connected to board select address 0
-reg_map_selected_inst : generic_spi_reg_map_top
+reg_map_selected_inst : gdrb_dp_mux_reg_map_top
     generic map(
             make_all_addresses_writeable_for_testing => make_all_addresses_writeable_for_testing, -- : boolean := FALSE;                                         -- This is for testbenching only
             SPI_ADDRESS_BITS => SPI_ADDRESS_BITS,                                                 -- : integer := 4;

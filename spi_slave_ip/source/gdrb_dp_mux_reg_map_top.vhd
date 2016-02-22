@@ -33,7 +33,7 @@ use work.multi_array_types_pkg.all;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-entity generic_spi_reg_map_top is
+entity gdrb_dp_mux_reg_map_top is
     generic ( 
             make_all_addresses_writeable_for_testing : boolean := FALSE; -- This makes register map all read/write registers but none connected to FPGA pins
             SPI_ADDRESS_BITS : integer := 4;
@@ -57,9 +57,9 @@ entity generic_spi_reg_map_top is
             reg_map_array_from_pins : in mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0'));
             reg_map_array_to_pins : out mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0)
             );
-end generic_spi_reg_map_top;
+end gdrb_dp_mux_reg_map_top;
 
-architecture Behavioral of generic_spi_reg_map_top is
+architecture Behavioral of gdrb_dp_mux_reg_map_top is
 
 component reg_map_spi_slave is
     generic(
@@ -125,28 +125,28 @@ end component;
 --          );
 --end component;
 
-----EXAMPLE OF - Application specific component for mapping/processing SPI array and FPGA pins array together with application address map
---component gdrb_ctrl_reg_map
---    generic ( 
---            SPI_ADDRESS_BITS : integer := 4;
---            SPI_DATA_BITS : integer := 16;
---            MEM_ARRAY_T_INITIALISATION : mem_array_t
---           );
---  Port (
---          clk : in std_logic;
---          --Discrete signals-Array of data spanning entire address range declared and initialised in 'package' for particular register map being implemented - (multi_array_types_pkg.vhd)
---          reg_map_array_from_pins : in mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
---          reg_map_array_to_pins : out mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
---          --Non-register map read/control bits
---          interupt_flag : out std_logic := '0';
---          ---Array of data spanning entire address range declared and initialised in 'spi_package'
---          spi_array_from_pins : out mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
---          spi_array_to_pins : in mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
---          --Write enable and address to allow some write processing of internal FPGA register map (write bit toggling, etc)
---          write_enable_from_spi : in std_logic := '0';
---          write_addr_from_spi : in std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) := (others => '0')
---          );
---end component;
+--Application specific component for mapping/processing SPI array and FPGA pins array together with application address map
+component gdrb_dp_mux_reg_map
+    generic ( 
+            SPI_ADDRESS_BITS : integer := 4;
+            SPI_DATA_BITS : integer := 16;
+            MEM_ARRAY_T_INITIALISATION : mem_array_t
+           );
+  Port (
+          clk : in std_logic;
+          --Discrete signals-Array of data spanning entire address range declared and initialised in 'package' for particular register map being implemented - (multi_array_types_pkg.vhd)
+          reg_map_array_from_pins : in mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
+          reg_map_array_to_pins : out mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
+          --Non-register map read/control bits
+          --interupt_flag : out std_logic := '0';
+          ---Array of data spanning entire address range declared and initialised in 'spi_package'
+          spi_array_from_pins : out mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
+          spi_array_to_pins : in mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
+          --Write enable and address to allow some write processing of internal FPGA register map (write bit toggling, etc)
+          write_enable_from_spi : in std_logic := '0';
+          write_addr_from_spi : in std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) := (others => '0')
+          );
+end component;
 
 signal reset_s : std_logic := '0';
 signal reset_domain_cross_s : std_logic_vector(1 downto 0) := (others => '0');
@@ -202,27 +202,27 @@ reg_map_spi_slave_inst : reg_map_spi_slave
 ----..Map these to the actual pins required at the next level up where this components is instantiated
 non_testbenching_gen : if not make_all_addresses_writeable_for_testing generate
 
---  ----EXAMPLE OF - Application specific component for mapping/processing SPI array and FPGA pins array together with application address map
---    application_inst : gdrb_ctrl_reg_map
---      generic map(
---              SPI_ADDRESS_BITS => SPI_ADDRESS_BITS,                       -- : integer := 4;
---              SPI_DATA_BITS => SPI_DATA_BITS,                             -- : integer := 16
---              MEM_ARRAY_T_INITIALISATION => MEM_ARRAY_T_INITIALISATION    -- Function that populates this constant in 'gdrb_ctrl_bb_pkg'
---              )
---      Port map(
---              clk => clk,                                                 -- : in std_logic;
---              --Discrete signals-Array of data spanning entire address range declared and initialised in 'package' for particular register map being implemented - (multi_array_types_pkg.vhd)
---              reg_map_array_from_pins => reg_map_array_from_pins,         -- : in mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
---              reg_map_array_to_pins => reg_map_array_to_pins,             -- : out mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
---              --Non-register map read/control bits
---              interupt_flag => interupt_flag,                             -- : out std_logic := '0'
---              ---Array of data spanning entire address range declared and initialised in 'spi_package'
---              spi_array_from_pins => spi_array_from_pins_s,               -- : out mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
---              spi_array_to_pins => spi_array_to_pins_s,                   -- : in mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
---              --Write enable and address to allow some write processing of internal FPGA register map (write bit toggling, etc)
---              write_enable_from_spi => write_enable_from_spi_s,           -- : in std_logic := '0';
---              write_addr_from_spi => write_addr_from_spi_s                -- : in std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) := (others => '0')
---              );
+  ----EXAMPLE OF - Application specific component for mapping/processing SPI array and FPGA pins array together with application address map
+    application_inst : gdrb_dp_mux_reg_map
+      generic map(
+              SPI_ADDRESS_BITS => SPI_ADDRESS_BITS,                       -- : integer := 4;
+              SPI_DATA_BITS => SPI_DATA_BITS,                             -- : integer := 16
+              MEM_ARRAY_T_INITIALISATION => MEM_ARRAY_T_INITIALISATION    -- Function that populates this constant in 'gdrb_ctrl_bb_pkg'
+              )
+      Port map(
+              clk => clk,                                                 -- : in std_logic;
+              --Discrete signals-Array of data spanning entire address range declared and initialised in 'package' for particular register map being implemented - (multi_array_types_pkg.vhd)
+              reg_map_array_from_pins => reg_map_array_from_pins,         -- : in mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
+              reg_map_array_to_pins => reg_map_array_to_pins,             -- : out mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
+              --Non-register map read/control bits
+              --interupt_flag => interupt_flag,                             -- : out std_logic := '0'
+              ---Array of data spanning entire address range declared and initialised in 'spi_package'
+              spi_array_from_pins => spi_array_from_pins_s,               -- : out mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
+              spi_array_to_pins => spi_array_to_pins_s,                   -- : in mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
+              --Write enable and address to allow some write processing of internal FPGA register map (write bit toggling, etc)
+              write_enable_from_spi => write_enable_from_spi_s,           -- : in std_logic := '0';
+              write_addr_from_spi => write_addr_from_spi_s                -- : in std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) := (others => '0')
+              );
 
 end generate non_testbenching_gen;
 
