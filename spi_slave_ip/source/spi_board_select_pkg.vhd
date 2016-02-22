@@ -43,9 +43,9 @@ package spi_board_select_pkg is
     constant SPI_BOARD_SEL_PROTOCOL_DATA_BITS : integer := 8;                                                -- This has to be a multiple of 4 for HREAD to work OK in testbench
     constant DATA_SIZE_C : integer   := SPI_BOARD_SEL_PROTOCOL_ADDR_BITS+SPI_BOARD_SEL_PROTOCOL_DATA_BITS+1; -- Total data size = read/write bit + address + data
     --Low level SPI interface parameters
-    constant SPI_BOARD_CPOL      : std_logic := '0';                                                           -- CPOL value - 0 or 1 - these should really be constants but modelsim doesn't like it
-    constant SPI_BOARD_CPHA      : std_logic := '1';                                                           -- CPHA value - 0 or 1 - these should really be constants but modelsim doesn't like it
-    constant SPI_BOARD_LSB_FIRST : std_logic := '0';                                                           -- lsb first when '1' /msb first when - these should really be constants but modelsim doesn't like it
+    signal  SPI_BOARD_CPOL      : std_logic := '0';                                                           -- CPOL value - 0 or 1 - these should really be constants but modelsim doesn't like it
+    signal  SPI_BOARD_CPHA      : std_logic := '1';                                                           -- CPHA value - 0 or 1 - these should really be constants but modelsim doesn't like it
+    signal  SPI_BOARD_LSB_FIRST : std_logic := '0';                                                           -- lsb first when '1' /msb first when - these should really be constants but modelsim doesn't like it
 
     --Deferred constants below
     constant bs_mem_array_t_initalised_c : mem_array_t;

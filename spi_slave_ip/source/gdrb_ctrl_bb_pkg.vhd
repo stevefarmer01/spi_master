@@ -42,9 +42,9 @@ package gdrb_ctrl_bb_pkg is
     constant SPI_DATA_BITS : integer := 16;                               -- This has to be a multiple of 4 for HREAD to work OK in testbench
     constant DATA_SIZE_C : integer := SPI_ADDRESS_BITS+SPI_DATA_BITS+1; -- Total data size = read/write bit + address + data
     --Low level SPI interface parameters
-    constant SPI_BB_CPOL      : std_logic := '0';                                -- CPOL value - 0 or 1 - these should really be constants but modelsim doesn't like it
-    constant SPI_BB_CPHA      : std_logic := '0';                                -- CPHA value - 0 or 1 - these should really be constants but modelsim doesn't like it
-    constant SPI_BB_LSB_FIRST : std_logic := '0';                                -- lsb first when '1' /msb first when - these should really be constants but modelsim doesn't like it
+    signal SPI_BB_CPOL      : std_logic := '0';                                -- CPOL value - 0 or 1 - these should really be constants but modelsim doesn't like it
+    signal SPI_BB_CPHA      : std_logic := '0';                                -- CPHA value - 0 or 1 - these should really be constants but modelsim doesn't like it
+    signal SPI_BB_LSB_FIRST : std_logic := '0';                                -- lsb first when '1' /msb first when - these should really be constants but modelsim doesn't like it
 
     --Deferred constants below
     constant mem_array_t_initalised : mem_array_t;
