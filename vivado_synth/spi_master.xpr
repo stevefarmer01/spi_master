@@ -3,7 +3,7 @@
 <!--                                                         -->
 <!-- Copyright (c) 2001-2013 Xilinx Inc, All rights reserved -->
 
-<Project Version="7" Minor="0" Path="D:/Projects/Vivado/2014_1/spi_master/vivado_synth/spi_master.xpr">
+<Project Version="7" Minor="0" Path="F:/usr/SFarmer/Griffin/GDRB/common_ip/spi_master/vivado_synth/spi_master.xpr">
   <DefaultLaunch Dir="$PRUNDIR"/>
   <Configuration>
     <Option Name="Id" Val="bd11ca71e8f14045925cf73eb1a3d1b1"/>
@@ -101,7 +101,7 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../source_to_implement/gdrb_ctrl.vhd">
+      <File Path="$PPRDIR/../../../design_definition/hdl/vhdl/gdrb_ctrl.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
@@ -135,11 +135,25 @@
       <Config>
         <Option Name="DesignMode" Val="RTL"/>
         <Option Name="TopModule" Val="gdrb_ctrl"/>
+        <Option Name="TopAutoSet" Val="TRUE"/>
       </Config>
     </FileSet>
     <FileSet Name="constrs_1" Type="Constrs" RelSrcDir="$PSRCDIR/constrs_1">
       <Filter Type="Constrs"/>
+      <File Path="$PSRCDIR/constrs_1/new/gdrb_ctrl.xdc">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PIOPLANDIR/constrs_1/designprops.xml">
+        <FileInfo SFType="CompatPartsDb"/>
+      </File>
+      <File Path="$PIOPLANDIR/constrs_1/usercols.xml">
+        <FileInfo SFType="UserColsDb"/>
+      </File>
       <Config>
+        <Option Name="TargetConstrsFile" Val="$PSRCDIR/constrs_1/new/gdrb_ctrl.xdc"/>
         <Option Name="ConstrsType" Val="XDC"/>
       </Config>
     </FileSet>
