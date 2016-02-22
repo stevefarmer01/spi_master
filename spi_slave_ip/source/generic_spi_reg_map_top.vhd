@@ -89,6 +89,42 @@ component reg_map_spi_slave is
             );
 end component;
 
+component generic_reg_map is
+--.    generic ( 
+--.            SPI_ADDRESS_BITS : integer := 4;
+--.            SPI_DATA_BITS : integer := 16;
+--.            MEM_ARRAY_T_INITIALISATION : mem_array_t
+--.           );
+  Port (
+          clk : in std_logic;
+          --Discrete signals-Array of data spanning entire address range declared and initialised in 'package' for particular register map being implemented - (multi_array_types_pkg.vhd)
+          --To/from pins of FPGA
+          reg_map_array_from_pins : in mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
+          reg_map_array_to_pins : out mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
+          ---Array of data spanning entire address range declared and initialised in 'spi_package'
+          spi_array_from_pins : out mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
+          spi_array_to_pins : in mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0)
+          );
+end component;
+
+--reg_map_inst : generic_reg_map is
+----.    generic ( 
+----.            SPI_ADDRESS_BITS : integer := 4;
+----.            SPI_DATA_BITS : integer := 16;
+----.            MEM_ARRAY_T_INITIALISATION : mem_array_t
+----.           );
+--  Port (
+--          clk : in std_logic;
+--          --Discrete signals-Array of data spanning entire address range declared and initialised in 'package' for particular register map being implemented - (multi_array_types_pkg.vhd)
+--          --To/from pins of FPGA
+--          reg_map_array_from_pins : in mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
+--          reg_map_array_to_pins : out mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
+--          ---Array of data spanning entire address range declared and initialised in 'spi_package'
+--          spi_array_from_pins : out mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
+--          spi_array_to_pins : in mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0)
+--          );
+--end component;
+
 ----EXAMPLE OF - Application specific component for mapping/processing SPI array and FPGA pins array together with application address map
 --component gdrb_ctrl_reg_map
 --    generic ( 

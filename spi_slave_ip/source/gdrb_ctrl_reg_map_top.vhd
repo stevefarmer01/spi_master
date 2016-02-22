@@ -200,6 +200,19 @@ testbenching_gen : if make_all_addresses_writeable_for_testing generate
     set_all_data(spi_array_to_pins_s, spi_array_from_pins_s);
 
 end generate testbenching_gen;
-
+ 
 
 end Behavioral;
+
+--use work.all;
+--configuration cfg_gdrb_ctrl_reg_map of gdrb_ctrl_reg_map_top is
+--    for Behavioral
+----        for application_inst : gdrb_ctrl_reg_map
+--        for all: gdrb_ctrl_reg_map
+--            use entity work.gdrb_ctrl_reg_map(Behavioral);
+----            use entity work.generic_reg_map(Behavioral);
+--        end for;
+--    end for;
+--end cfg_gdrb_ctrl_reg_map;
+----generic_spi_reg_map_top
+----generic_reg_map
