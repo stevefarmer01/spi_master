@@ -73,24 +73,36 @@ use ieee.numeric_std.all;
 use std.textio.all;
 use ieee.std_logic_textio.all;
 
-use work.gdrb_ctrl_bb_pkg.ALL;
---use work.gdrb_ctrl_bb_address_pkg.ALL;
-use work.spi_board_select_pkg.ALL;
 use work.multi_array_types_pkg.all;
 
 
 entity spi_master_tb is
     generic(
-            board_select : boolean := FALSE; -- Use generate statement - xxxxxx_gen : if not board_select generate xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx end generate;
+            board_select : boolean := FALSE;                                        -- Use generate statement - xxxxxx_gen : if not board_select generate xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx end generate;
             make_all_addresses_writeable_for_testing : boolean := TRUE;
-            DUT_TYPE : string := "write_and_then_read_an_address"
---            DUT_TYPE : string := "spi_reg_map_simple"
+            DUT_TYPE : string := "write_and_then_read_an_address";
+            --.            DUT_TYPE : string := "spi_reg_map_simple"
+            --Set sizes of data and addresse as required for particular application --
+            SPI_ADDRESS_BITS : integer := 4;                                        -- This has to be a multiple of 4 for HREAD to work OK in testbench
+            SPI_DATA_BITS : integer := 16;                                          -- This has to be a multiple of 4 for HREAD to work OK in testbench
+            DATA_SIZE_C : integer := 21;                                            -- Total data size = read/write bit + address + data
+            --Low level SPI interface parameters
+            SPI_CPOL      : std_logic := '0';                                       -- CPOL value - 0 or 1 - these should really be constants but modelsim doesn't like it
+            SPI_CPHA      : std_logic := '0';                                       -- CPHA value - 0 or 1 - these should really be constants but modelsim doesn't like it
+            SPI_LSB_FIRST : std_logic := '0';                                       -- lsb first when '1' /msb first when - these should really be constants but modelsim doesn't like it
+            --Pre-load register map array for testing and possible other uses
+            mem_array_t_initalised : mem_array_t;                                   -- := initalise_mem_array_t(inc_values_enable => FALSE, inc_data_start_value => 16#0#);
+            --Board select version's parameters
+            SPI_BOARD_SEL_ADDR_BITS : integer := 0;
+            SPI_BOARD_SEL_PROTOCOL_ADDR_BITS : integer := 8;
+            SPI_BOARD_SEL_PROTOCOL_DATA_BITS : integer := 8
             );
 end spi_master_tb;
 
 architecture behave of spi_master_tb is
 
     constant FIFO_REQ  : Boolean   := FALSE;
+
 
 --.--.Test using  input file
 --.    constant DUT_TYPE : string := "input_vector_file_test"; -- Test of a reg_map_spi_slave.vhd using the SPI protocol for cummunications between BegalBone(ARM) and GDRB board unsing simple read write proceedures
@@ -253,6 +265,10 @@ component gdrb_ctrl_reg_map_top is
             i_raw_ssn : in  std_logic;    -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to ss_n
             mosi : in STD_LOGIC;
             miso : out STD_LOGIC;
+            --Low level SPI interface parameters
+            cpol      : in std_logic := '0';                                -- CPOL value - 0 or 1
+            cpha      : in std_logic := '0';                                -- CPHA value - 0 or 1
+            lsb_first : in std_logic := '0';                                -- lsb first when '1' /msb first when
             --Discrete signals
             reg_map_array_from_pins : in mem_array_t(0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
             reg_map_array_to_pins : out mem_array_t(0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0)
@@ -275,6 +291,10 @@ component spi_board_select_top is
             ss_n : in STD_LOGIC;
             mosi : in STD_LOGIC;
             miso : out STD_LOGIC;
+            --Low level SPI interface parameters
+            cpol      : in std_logic := '0';                                -- CPOL value - 0 or 1
+            cpha      : in std_logic := '0';                                -- CPHA value - 0 or 1
+            lsb_first : in std_logic := '0';                                -- lsb first when '1' /msb first when
             --Discrete signals
             reg_map_array_from_pins : in mem_array_t(0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
             reg_map_array_to_pins : out mem_array_t(0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0)
@@ -568,7 +588,7 @@ spi_reg_map_gen : if not board_select generate
                 make_all_addresses_writeable_for_testing => make_all_addresses_writeable_for_testing, -- : natural := 16
                 SPI_ADDRESS_BITS => SPI_ADDRESS_BITS,                                                 -- : integer := 4;
                 SPI_DATA_BITS => SPI_DATA_BITS,                                                       -- : integer := 16
-                MEM_ARRAY_T_INITIALISATION => mem_array_t_initalised                               -- : mem_array_t
+                MEM_ARRAY_T_INITIALISATION => mem_array_t_initalised                                  -- : mem_array_t
                 )
         Port map(  
                 clk => dut_sys_clk_i,                                                                 -- : std_logic;
@@ -579,6 +599,10 @@ spi_reg_map_gen : if not board_select generate
                 i_raw_ssn => ss_i,                                                                    -- : in  std_logic;                                                                                          -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to same signal as 'ss_n'
                 mosi => mosi_i,                                                                       -- : in STD_LOGIC;
                 miso => miso,                                                                         -- : out STD_LOGIC;
+                --Low level SPI interface parameters
+                cpol => SPI_CPOL,                                                                     -- : in std_logic := '0';                                                                                    -- CPOL value - 0 or 1
+                cpha => SPI_CPHA,                                                                     -- : in std_logic := '0';                                                                                    -- CPHA value - 0 or 1
+                lsb_first => SPI_LSB_FIRST,                                                           -- : in std_logic := '0';                                                                                    -- lsb first when '1' /msb first when
                 --Discrete signals
                 reg_map_array_from_pins => discrete_reg_map_array_from_script_s,                      -- : in mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0'));
                 reg_map_array_to_pins => discrete_reg_map_array_to_script_s                           -- : out mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0)
@@ -595,22 +619,26 @@ board_sel_spi_reg_map_gen : if board_select generate
     reg_map_proc : spi_board_select_top
         generic map(
                 make_all_addresses_writeable_for_testing => make_all_addresses_writeable_for_testing, -- :     natural := 16
-                SPI_BOARD_SEL_ADDR_BITS => SPI_BOARD_SEL_ADDR_BITS,                 -- : integer := 4;
-                SPI_ADDRESS_BITS => SPI_BOARD_SEL_PROTOCOL_ADDR_BITS,                                              -- : integer := 4;
-                SPI_DATA_BITS => SPI_BOARD_SEL_PROTOCOL_DATA_BITS,                                                 -- : integer := 16
-                MEM_ARRAY_T_INITIALISATION => bs_mem_array_t_initalised_c -- Function that populates this constant in 'gdrb_ctrl_bb_pkg'
+                SPI_BOARD_SEL_ADDR_BITS => SPI_BOARD_SEL_ADDR_BITS,                                   -- : integer := 4;
+                SPI_ADDRESS_BITS => SPI_BOARD_SEL_PROTOCOL_ADDR_BITS,                                 -- : integer := 4;
+                SPI_DATA_BITS => SPI_BOARD_SEL_PROTOCOL_DATA_BITS,                                    -- : integer := 16
+                MEM_ARRAY_T_INITIALISATION => mem_array_t_initalised                                  -- Function that populates this constant in 'gdrb_ctrl_bb_pkg'
                 )
         Port map(  
-                clk => dut_sys_clk_i,                                          -- : std_logic;
-                reset => sys_rst_i,                                            -- : std_logic;
+                clk => dut_sys_clk_i,                                                                 -- : std_logic;
+                reset => sys_rst_i,                                                                   -- : std_logic;
                 ---Slave SPI interface pins
-                sclk => sclk_i,                                                -- : in STD_LOGIC;
-                ss_n => ss_i,                                                  -- : in STD_LOGIC;
-                mosi => mosi_i,                                                -- : in STD_LOGIC;
-                miso => miso,                                                  -- : out STD_LOGIC;
+                sclk => sclk_i,                                                                       -- : in STD_LOGIC;
+                ss_n => ss_i,                                                                         -- : in STD_LOGIC;
+                mosi => mosi_i,                                                                       -- : in STD_LOGIC;
+                miso => miso,                                                                         -- : out STD_LOGIC;
+                --Low level SPI interface parameters
+                cpol => SPI_CPOL,                                                                     -- : in std_logic := '0';                                                                                    -- CPOL value - 0 or 1
+                cpha => SPI_CPHA,                                                                     -- : in std_logic := '0';                                                                                    -- CPHA value - 0 or 1
+                lsb_first => SPI_LSB_FIRST,                                                           -- : in std_logic := '0';                                                                                    -- lsb first when '1' /msb first when
                 --Discrete signals
-                reg_map_array_from_pins => bs_discrete_reg_map_array_from_script_s, -- : in mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0'));
-                reg_map_array_to_pins => bs_discrete_reg_map_array_to_script_s      -- : out mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0)
+                reg_map_array_from_pins => bs_discrete_reg_map_array_from_script_s,                   -- : in mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0'));
+                reg_map_array_to_pins => bs_discrete_reg_map_array_to_script_s                        -- : out mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0)
                 );
 
 end generate board_sel_spi_reg_map_gen;
@@ -639,14 +667,14 @@ data_i_master_tx <= (data_i(data_i'HIGH downto 1) & '1') when induce_fault_maste
             o_tx_error     => open,              -- : out std_logic;                                    -- Transmitter error
             o_rx_error     => open,              -- : out std_logic;                                    -- Receiver error
             i_slave_addr   => slave_addr_i,      -- : in  std_logic_vector(1 downto 0);                 -- Slave Address
-            i_cpol         => '0',               -- : in  std_logic;                                    -- CPOL value - 0 or 1
-            i_cpha         => '0',               -- : in  std_logic;                                    -- CPHA value - 0 or 1
-            i_lsb_first    => '0',               -- : in  std_logic;                                    -- lsb first when '1' /msb first when
+            i_cpol         => SPI_CPOL,          -- : in  std_logic;                                    -- CPOL value - 0 or 1
+            i_cpha         => SPI_CPHA,          -- : in  std_logic;                                    -- CPHA value - 0 or 1
+            i_lsb_first    => SPI_LSB_FIRST,     -- : in  std_logic;                                    -- lsb first when '1' /msb first when
             i_spi_start    => spi_start_i,       -- : in  std_logic;                                    -- START SPI Master Transactions
             i_clk_period   => "01100100",        -- : in  std_logic_vector(7 downto 0);                 -- SCL clock period in terms of i_sys_clk
             i_setup_cycles => "00011111",        -- : in  std_logic_vector(7 downto 0);                 -- SPIM setup time  in terms of i_sys_clk
             i_hold_cycles  => "00011111",        -- : in  std_logic_vector(7 downto 0);                 -- SPIM hold time  in terms of i_sys_clk
-            i_tx2tx_cycles => tx2tx_cycles_i,        -- : in  std_logic_vector(7 downto 0);                 -- SPIM interval between data transactions in terms of i_sys_clk
+            i_tx2tx_cycles => tx2tx_cycles_i,    -- : in  std_logic_vector(7 downto 0);                 -- SPIM interval between data transactions in terms of i_sys_clk
             o_slave_csn    => slave_csn_i,       -- : out std_logic_vector(3 downto 0);                 -- SPI Slave select (chip select) active low
             o_mosi         => mosi_i,            -- : out std_logic;                                    -- Master output to Slave
             i_miso         => miso,              -- : in  std_logic;                                    -- Master input from Slave
@@ -666,8 +694,6 @@ begin
 end process;
 
 ss_i <= slave_csn_i(0) and slave_csn_i(1) and slave_csn_i(2) and slave_csn_i(3);
-
-
 
 
 
