@@ -36,11 +36,11 @@ use work.gdrb_ctrl_bb_pkg.ALL;
 
 entity spi_master_tb_gdrb_ctrl_bb_wrap is
      generic(
---            board_select : boolean := FALSE; -- Use generate statement - xxxxxx_gen : if not board_select generate xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx end generate;
             external_spi_slave_dut : boolean := false;
             make_all_addresses_writeable_for_testing : boolean := TRUE;
-            DUT_TYPE : string := "write_and_then_read_an_address"
+            DUT_TYPE : string := "write_and_then_read_an_address";
 --            DUT_TYPE : string := "spi_reg_map_simple"
+            filename_prefix : string := ""
             );
     port(
             ---To DUT Slave SPI interface pins
@@ -64,6 +64,7 @@ component spi_master_tb is
             external_spi_slave_dut : boolean := false;
             make_all_addresses_writeable_for_testing : boolean := TRUE;
             DUT_TYPE : string := "write_and_then_read_an_address";
+            filename_prefix : string := "";
             --.            DUT_TYPE : string := "spi_reg_map_simple"
             --Set sizes of data and addresse as required for particular application
             SPI_ADDRESS_BITS : integer := 4;                           -- This has to be a multiple of 4 for HREAD to work OK in testbench
@@ -97,7 +98,7 @@ end component;
     --Set sizes of board select address as they are still required by testbench even though this simulation is not going to directly use them
     constant board_select : boolean := FALSE;                   -- This simulation is not using the Griffin SPI board select bits
     constant SPI_BOARD_SEL_ADDR_BITS : integer := 0;            -- This has to be zero otherwise DATA_SIZE in testbench is calculated to the wrong size for these tests
-    constant SPI_BOARD_SEL_PROTOCOL_ADDR_BITS : integer := 8;   -- These don't really matter            -- This has to be zero otherwise 
+    constant SPI_BOARD_SEL_PROTOCOL_ADDR_BITS : integer := 8;   -- These don't really matter
     constant SPI_BOARD_SEL_PROTOCOL_DATA_BITS : integer := 8;   -- These don't really matter
 
 begin
@@ -108,6 +109,7 @@ spi_master_tb_inst : spi_master_tb
             external_spi_slave_dut => external_spi_slave_dut,                                     -- : boolean := false;
             make_all_addresses_writeable_for_testing => make_all_addresses_writeable_for_testing, -- : boolean := TRUE;
             DUT_TYPE => DUT_TYPE,                                                                 -- : string := "write_and_then_read_an_address";
+            filename_prefix => filename_prefix,                                                   -- : string := "";
             --.            DUT_TYPE : string := "spi_reg_map_simple"
             --Set sizes of data and addresse as required for particular application
             SPI_ADDRESS_BITS => SPI_ADDRESS_BITS,                                                 -- : integer := 4;                                                                                    -- This has to be a multiple of 4 for HREAD to work OK in testbench

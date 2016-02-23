@@ -82,6 +82,7 @@ entity spi_master_tb is
             external_spi_slave_dut : boolean := false;
             make_all_addresses_writeable_for_testing : boolean := TRUE;
             DUT_TYPE : string := "write_and_then_read_an_address";
+            filename_prefix : string := "";
             --.            DUT_TYPE : string := "spi_reg_map_simple"
             --Set sizes of data and addresse as required for particular application --
             SPI_ADDRESS_BITS : integer := 4;                                        -- This has to be a multiple of 4 for HREAD to work OK in testbench
@@ -750,7 +751,7 @@ input_vector_file_test_gen : if DUT_TYPE = "input_vector_file_test" generate
         variable check_data_mask_v : std_logic_vector(SPI_DATA_BITS - 1 downto 0) := (others => '1'); -- Default to all '1's so that all bits of the result are checked unless mask set otherwise by input testing parameters
         variable line_of_comments_v : string(1 to line_of_comments'LENGTH) := (others => ' ');
     begin
-        FILE_OPEN(status, F, "..\input_test.txt", READ_MODE);
+        FILE_OPEN(status, F, "..\\" & filename_prefix & "input_test.txt", READ_MODE);
         if status /= OPEN_OK then
             assert FALSE
                 report "Failed to open file" severity failure;
@@ -861,6 +862,7 @@ end generate input_vector_file_test_gen;
 ---------------------------------------------------------.
 file_output_proc : process
     file F : text;
+
     variable L : line;
     variable status : file_open_status;
     variable rx_and_expected_same : boolean := FALSE;
@@ -868,7 +870,7 @@ file_output_proc : process
     variable address_to_spi_length : integer := (SPI_ADDRESS_BITS + (SPI_ADDRESS_BITS rem 4));
     variable address_to_spi_hex : std_logic_vector(address_to_spi_length-1 downto 0) := (others => '0');
 begin
-    FILE_OPEN(F, "..\output_test.txt", WRITE_MODE);
+    FILE_OPEN(F, "..\\" & filename_prefix & "output_test.txt", WRITE_MODE);
     if status /= open_ok then
         report "Failed to open file";
     else
@@ -973,8 +975,7 @@ begin
     assert not a_test_has_failed                                                                     -- ...this to stop simulation in modelsim not as nice but effective (probably due to us using old modelsim version 6.6)
         report "Error - There have been one or more ERRORS" severity failure;
     assert a_test_has_failed                                                                     -- ...this to stop simulation in modelsim not as nice but effective (probably due to us using old modelsim version 6.6)
-        report "Pass - All test completed with no fails" severity failure;
-                                                                          -- Always stop simulator when al tests have completed - this works for ISIM but not modelsim and so use...
+        report "Pass - All test completed with no fails" severity warning;  -- Reduce to warning so that multiple runs of this testbench will all finish all of their tests
     wait;
 end process;
 

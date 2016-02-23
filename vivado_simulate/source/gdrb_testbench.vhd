@@ -32,7 +32,10 @@ use IEEE.STD_LOGIC_1164.ALL;
 --use UNISIM.VComponents.all;
 
 use work.multi_array_types_pkg.all;
+
 use work.gdrb_ctrl_bb_pkg.ALL;
+
+use work.spi_board_select_pkg.ALL;
 
 
 entity gdrb_testbench is
@@ -262,12 +265,81 @@ port
 );
 end component;
 
+component gdrb_dpmux is
+generic 
+    (
+        number_of_rx_interfaces : integer := 2;
+        testbench_mode : boolean := FALSE
+    );
+port
+    (
+    
+-- pragma synthesis_off
+    
+        --. JTAG i/f
+        TCK : in std_logic := '0';  -- this will be controled by Begalbone
+        TMS : in std_logic := '0';  -- this will be controled by Begalbone
+        TDI : in std_logic := '0';  -- this will be controled by Begalbone and come in from TDO of gdrb_ctrl FPGA
+        TDO : out std_logic := '0'; -- this will be controled by Begalbone
+          
+-- pragma synthesis_on
+    
+        ---Clk/Reset
+        CLK60M : in std_logic ;
+        CLK24M : in std_logic ;
+        gdrb_reset_bar : in std_logic := '1';
+        ---SPI i/f
+        SCLK : in std_logic ;
+        SDI : in std_logic ;
+        SDO : out std_logic ;
+        SEN_BAR : in std_logic ;
+        ---Encoder Interpolators
+        X_ENC_A : in std_logic := '0';
+        X_ENC_B : in std_logic := '0';
+        X_ENC_Z : in std_logic := '0';
+        Y_ENC_A : in std_logic := '0';
+        Y_ENC_B : in std_logic := '0';
+        Y_ENC_Z : in std_logic := '0';
+        Z_ENC_A : in std_logic := '0';
+        Z_ENC_B : in std_logic := '0';
+        Z_ENC_Z : in std_logic := '0';
+        ---rx stuff                                                       -- Interface taken from amis_bufcon.vhd of E:\usr\microscan\AMIS\DPMC             -- check SER1_QUAD_MODE, SERDES1_RISING_EDGE, and SER1_HIGH_V_SWING on DHDB tx IC - these are pull up/down resisters
+        ---rx_0
+        SERDES_CLK_0 : in std_logic := '0';                               -- DS90CR218A - Digitiser 1 clock
+        SERDES_D_0 : in std_logic_vector(19 downto 0) := (others => '0'); -- DS90CR218A - Digitiser 1 data
+        SERDES_LINE_SYNC_0_BAR : in std_logic := '0';                     -- DS90CR218A - Digitiser 1 Start of Line (synced with data)                      -- bit 21 of IC interface
+        ---rx_1
+        SERDES_CLK_1 : in std_logic := '0';                               -- DS90CR218A - Digitiser 1 clock
+        SERDES_D_1 : in std_logic_vector(19 downto 0) := (others => '0'); -- DS90CR218A - Digitiser 1 data
+        SERDES_LINE_SYNC_1_BAR : in std_logic := '0';                     -- DS90CR218A - Digitiser 1 Start of Line (synced with data)                      -- bit 21 of IC interface
+        ---tx data
+        DIG_DAT : out std_logic_vector(29 downto 0);                      -- DS92LV3241TVS - bits 28 to 0
+        LINE_SYNC_BAR : out std_logic ;                                   -- DS92LV3241TVS - bit 31 goes to LINE_SYNC_BAR
+        ---tx discrete pin control signal 
+        SER_BISTEN : out std_logic := '0';                                -- goes to discrete BITSEN pin 13 on DS92LV3241TVS
+        ALT_SERDES1_CLK : out std_logic := '0';                           -- included in case needed by hardware - goes to discrete pin 11 on DS92LV3241TVS
+        TX_RESET_3V3_BAR : out std_logic := '1';                          -- included in case needed by hardware - goes to discrete pin 12 on DS92LV3241TVS
+        ---Discretes
+        gdrb_dpmux_spare1 : in std_logic := '0';
+        gdrb_dpmux_spare2 : in std_logic := '0';
+        gdrb_dpmux_spare3 : in std_logic := '0';
+        HR_ILLUM_STROBE : in std_logic := '0';                            -- Take strobe in and out just in case it needs modifying
+        HR_ILLUM_STROBE_OUT : out std_logic;                              -- Take strobe in and out just in case it needs modifying
+        CIS_LINE_SYNC_IN : in std_logic := '0';                           -- Take CIS board line sync in and out just in case it needs modifying
+        CIS_LINE_SYNC_OUT : out std_logic;                                -- Take CIS board line sync in and out just in case it needs modifying
+        INDEX_CAPTURE : in std_logic := '0';                              -- Set all camera link index's to known preset value
+        CIS_HDB_SPARE2 : out std_logic := '0'                             -- Spare connection to CIS board
+    
+    );
+end component;
+
 component spi_master_tb_gdrb_ctrl_bb_wrap is
      generic(
             external_spi_slave_dut : boolean := false;
             make_all_addresses_writeable_for_testing : boolean := TRUE;
-            DUT_TYPE : string := "write_and_then_read_an_address"
+            DUT_TYPE : string := "write_and_then_read_an_address";
 --            DUT_TYPE : string := "spi_reg_map_simple"
+            filename_prefix : string := ""
             );
     port(
             ---To DUT Slave SPI interface pins
@@ -283,22 +355,110 @@ component spi_master_tb_gdrb_ctrl_bb_wrap is
         );
 end component;
 
-constant TIME_PERIOD_CLK : time                          := 16.67 ns;
+component spi_master_tb_board_select_wrap is
+     generic(
+            external_spi_slave_dut : boolean := false;
+            make_all_addresses_writeable_for_testing : boolean := TRUE;
+            DUT_TYPE : string := "write_and_then_read_an_address";
+--            DUT_TYPE : string := "spi_reg_map_simple"
+            filename_prefix : string := ""
+            );
+    port(
+            ---To DUT Slave SPI interface pins
+            sclk : out STD_LOGIC;
+            ss_n : out STD_LOGIC;
+            mosi : out STD_LOGIC;
+            miso : in STD_LOGIC := '0';
+            --All test finished
+            stop_clks_to_dut : out boolean;
+            --Discrete signals
+            reg_map_array_from_pins : in mem_array_t(0 to (2**SPI_BOARD_SEL_PROTOCOL_ADDR_BITS)-1, SPI_BOARD_SEL_PROTOCOL_DATA_BITS-1 downto 0);
+            reg_map_array_to_pins : out mem_array_t(0 to (2**SPI_BOARD_SEL_PROTOCOL_ADDR_BITS)-1, SPI_BOARD_SEL_PROTOCOL_DATA_BITS-1 downto 0)
+        );
+end component;
 
-signal   sys_clk_60m_s       : std_logic                     := '0';  -- system clock
-signal   sys_rst_s      : std_logic                     := '1';  -- system reset
+constant testbench_mode_c : boolean := TRUE;
+
+constant TIME_PERIOD_CLK : time                          := 16.67 ns;
+constant TIME_PERIOD_CLK24 : time                          := 41.67 ns;
+
+signal sys_clk_60m_s : std_logic                     := '0';  -- system clock
+signal sys_clk_24m_s : std_logic                     := '0';  -- system clock
+signal sys_rst_s : std_logic                     := '1';  -- system reset
 
 signal ghdb_master_sclk_s, ghdb_master_ss_n_s, ghdb_master_mosi_s, ghdb_master_miso_s : std_logic := '0';
-signal ghdb_master_stop_clks_s : std_logic := '0';
+signal ghdb_master_stop_clks_s : boolean := FALSE;
+signal ghdb_reg_map_array_from_pins_s, ghdb_reg_map_array_to_pins_s : mem_array_t( 0 to (2**SPI_BOARD_SEL_PROTOCOL_ADDR_BITS)-1, SPI_BOARD_SEL_PROTOCOL_DATA_BITS-1 downto 0) := (others => (others => '0')); -- From DUT pins and to DUT pins
+
 signal bb_master_sclk_s, bb_master_ss_n_s, bb_master_mosi_s, bb_master_miso_s : std_logic := '0';
 signal bb_master_stop_clks_s : boolean := FALSE;
-signal stop_clks_S : boolean := FALSE;
+signal bb_reg_map_array_from_pins_s, bb_reg_map_array_to_pins_s : mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0')); -- From DUT pins and to DUT pins
+
+signal stop_clks_s : boolean := FALSE;
 signal trigger_another_reset_s : boolean := FALSE;
 
-signal bb_reg_map_array_from_pins_s, bb_reg_map_array_to_pins_s : mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0')); -- From DUT pins and to DUT pins
+signal CISMUX_SDI_s, cismux_sclk_s, cismux_sen_bar_s : std_logic := '1';
+signal cismux_sdo_s : std_logic := 'Z';
 
 begin
 
+
+gdrb_dpmux_inst : gdrb_dpmux
+generic map
+    (
+        --number_of_rx_interfaces : integer := 2;
+        testbench_mode => testbench_mode_c -- : boolean := FALSE
+    )
+port map
+    (
+        ---Clk/Reset
+        CLK60M => sys_clk_60m_s,    -- : in std_logic ;
+        CLK24M => sys_clk_24m_s,    -- : in std_logic ;
+        gdrb_reset_bar => open,     -- : in std_logic := '0';
+        ---SPI i/f
+        SCLK => cismux_sclk_s,      -- : in std_logic ;
+        SDI => CISMUX_SDI_s,        -- : in std_logic ;
+        SDO => cismux_sdo_s,        -- : out std_logic ;
+        SEN_BAR => cismux_sen_bar_s -- : in std_logic ;
+--        ---Encoder Interpolators
+--        X_ENC_A : in std_logic;    
+--        X_ENC_B : in std_logic;    
+--        X_ENC_Z : in std_logic;
+--        Y_ENC_A : in std_logic;    
+--        Y_ENC_B : in std_logic;    
+--        Y_ENC_Z : in std_logic;
+--        Z_ENC_A : in std_logic;    
+--        Z_ENC_B : in std_logic;    
+--        Z_ENC_Z : in std_logic;
+--        ---rx stuff                                    -- Interface taken from amis_bufcon.vhd of E:\usr\microscan\AMIS\DPMC                  -- check SER1_QUAD_MODE, SERDES1_RISING_EDGE, and SER1_HIGH_V_SWING on DHDB tx IC - these are pull up/down resisters
+--        ---rx_0
+--        SERDES_CLK_0 : in std_logic;                   -- DS90CR218A - Digitiser 1 clock
+--        SERDES_D_0 : in std_logic_vector(19 downto 0); -- DS90CR218A - Digitiser 1 data
+--        SERDES_LINE_SYNC_0_BAR : in std_logic;         -- DS90CR218A - Digitiser 1 Start of Line (synced with data)                           -- bit 21 of IC interface
+--        ---rx_1
+--        SERDES_CLK_1 : in std_logic;                   -- DS90CR218A - Digitiser 1 clock
+--        SERDES_D_1 : in std_logic_vector(19 downto 0); -- DS90CR218A - Digitiser 1 data
+--        SERDES_LINE_SYNC_1_BAR : in std_logic;         -- DS90CR218A - Digitiser 1 Start of Line (synced with data)                           -- bit 21 of IC interface
+--        ---tx data
+--        DIG_DAT : out std_logic_vector(29 downto 0);   -- DS92LV3241TVS - bits 28 to 0
+--        LINE_SYNC_BAR : out std_logic ;                -- DS92LV3241TVS - bit 31 goes to LINE_SYNC_BAR
+--        ---tx discrete pin control signal 
+--        SER_BISTEN : out std_logic := '0';                   -- goes to discrete BITSEN pin 13 on DS92LV3241TVS
+--        ALT_SERDES1_CLK : out std_logic := '0';        -- included in case needed by hardware - goes to discrete pin 11 on DS92LV3241TVS
+--        TX_RESET_3V3_BAR : out std_logic := '1';       -- included in case needed by hardware - goes to discrete pin 12 on DS92LV3241TVS
+--        ---Discretes
+--        gdrb_dpmux_spare1 : in std_logic;
+--        gdrb_dpmux_spare2 : in std_logic;
+--        gdrb_dpmux_spare3 : in std_logic;
+--        HR_ILLUM_STROBE : in std_logic;                 -- Take strobe in and out just in case it needs modifying
+--        HR_ILLUM_STROBE_OUT : out std_logic;                 -- Take strobe in and out just in case it needs modifying
+--        CIS_LINE_SYNC_IN : in std_logic;                 -- Take CIS board line sync in and out just in case it needs modifying
+--        CIS_LINE_SYNC_OUT : out std_logic;                 -- Take CIS board line sync in and out just in case it needs modifying
+--        INDEX_CAPTURE : in std_logic := '0';            -- Set all camera link index's to known preset value
+--        CIS_HDB_SPARE2 : out std_logic := '0'           -- Spare connection to CIS board
+    
+    );
+    
 ---reset and clocks
 reset_proc : process
 begin
@@ -308,11 +468,22 @@ begin
     wait until trigger_another_reset_s;
 end process;
 
+stop_clks_s <= bb_master_stop_clks_s and ghdb_master_stop_clks_s;
+
 clk_gen_proc : process
 begin
-    while not stop_clks_S loop
+    while not stop_clks_s loop
         wait for TIME_PERIOD_CLK/2;
         sys_clk_60m_s <= not sys_clk_60m_s;
+    end loop;
+    wait;
+end process;
+
+clk24_gen_proc : process
+begin
+    while not stop_clks_s loop
+        wait for TIME_PERIOD_CLK24/2;
+        sys_clk_24m_s <= not sys_clk_24m_s;
     end loop;
     wait;
 end process;
@@ -321,25 +492,46 @@ begalbone_master_spi_bfm : spi_master_tb_gdrb_ctrl_bb_wrap
      generic map(
             external_spi_slave_dut => TRUE, -- : boolean := TRUE;
             make_all_addresses_writeable_for_testing => FALSE, -- : boolean := FALSE;
-            DUT_TYPE => "input_vector_file_test" -- : string := "input_vector_file_test"
+            DUT_TYPE => "input_vector_file_test", -- : string := "input_vector_file_test"
+            filename_prefix => "begalbone_master_spi_"                     -- : string := ""
             )
     port map(
             --To DUT Slave SPI interface pins
-            sclk => bb_master_sclk_s,                  -- : out STD_LOGIC;
-            ss_n => bb_master_ss_n_s,                  -- : out STD_LOGIC;
-            mosi => bb_master_mosi_s,                  -- : out STD_LOGIC;
-            miso => bb_master_miso_s,                  -- : in STD_LOGIC;
+            sclk => bb_master_sclk_s,                              -- : out STD_LOGIC;
+            ss_n => bb_master_ss_n_s,                              -- : out STD_LOGIC;
+            mosi => bb_master_mosi_s,                              -- : out STD_LOGIC;
+            miso => bb_master_miso_s,                              -- : in STD_LOGIC;
             --All test finished
-            stop_clks_to_dut => bb_master_stop_clks_s, -- : out boolean
+            stop_clks_to_dut => bb_master_stop_clks_s,             -- : out boolean
             --Discrete signals
             reg_map_array_from_pins => bb_reg_map_array_to_pins_s, -- : in mem_array_t(0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
-            reg_map_array_to_pins => bb_reg_map_array_from_pins_s-- : out mem_array_t(0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0)
+            reg_map_array_to_pins => bb_reg_map_array_from_pins_s  -- : out mem_array_t(0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0)
+        );
+
+gdhb_master_spi_bfm : spi_master_tb_board_select_wrap
+     generic map(
+            external_spi_slave_dut => TRUE,                          -- : boolean := false;
+            make_all_addresses_writeable_for_testing => TRUE,        -- : boolean := TRUE;
+            DUT_TYPE => "input_vector_file_test",                    -- : string := "write_and_then_read_an_address"
+            filename_prefix => "gdhb_master_spi_"                     -- : string := ""
+            )
+    port map(
+            ---To DUT Slave SPI interface pins
+            sclk => ghdb_master_sclk_s,                              -- : out STD_LOGIC;
+            ss_n => ghdb_master_ss_n_s,                              -- : out STD_LOGIC;
+            mosi => ghdb_master_mosi_s,                              -- : out STD_LOGIC;
+            miso => ghdb_master_miso_s,                              -- : in STD_LOGIC := '0';
+            --All test finished
+            stop_clks_to_dut => ghdb_master_stop_clks_s,             -- : out boolean;
+            --Discrete signals
+            reg_map_array_from_pins => ghdb_reg_map_array_from_pins_s, -- : in mem_array_t(0 to (2**SPI_BOARD_SEL_PROTOCOL_ADDR_BITS)-1, SPI_BOARD_SEL_PROTOCOL_DATA_BITS-1 downto 0);
+            reg_map_array_to_pins => ghdb_reg_map_array_to_pins_s      -- : out mem_array_t(0 to (2**SPI_BOARD_SEL_PROTOCOL_ADDR_BITS)-1, SPI_BOARD_SEL_PROTOCOL_DATA_BITS-1 downto 0)
         );
 
 dut_gdrb_ctrl : gdrb_ctrl
 generic map
     ( 
-        testbench_mode => TRUE -- : boolean := FALSE
+        testbench_mode => testbench_mode_c -- : boolean := FALSE
     )
 port map
 (
@@ -354,17 +546,17 @@ port map
     GDRB_RESET_BAR => open, -- : in std_logic := '1';
 
 
---    ---GHDB master SPI from GHDB to.....
---    FOC_SDI => , -- : in std_logic;
---    FOC_SCLK => , -- : in std_logic;
---    FOC_SMODE_BAR => , -- : in std_logic;
---    FOC_SDO => , -- : out std_logic;                 -- This will go back to GDPB via a pin on the camera link tx to GHDB
---    ---......GDRB_DPMUX FPGA (straight through from FOC_xx ports unless there are issues)
---    CISMUX_SDI => , -- : out std_logic := '0';
---    cismux_sclk => , -- : out std_logic := '0';
---    cismux_sen_bar => , -- : out std_logic := '0';
---    cismux_sdo => , -- : in std_logic;
---
+    ---GHDB master SPI from GHDB to.....
+    FOC_SDI => ghdb_master_mosi_s,       -- : in std_logic;
+    FOC_SCLK => ghdb_master_sclk_s,      -- : in std_logic;
+    FOC_SMODE_BAR => ghdb_master_ss_n_s, -- : in std_logic;
+    FOC_SDO => ghdb_master_miso_s,       -- : out std_logic;        -- This will go back to GDPB via a pin on the camera link tx to GHDB
+    ---......GDRB_DPMUX FPGA (straight through from FOC_xx ports unless there are issues)
+    CISMUX_SDI => CISMUX_SDI_s,          -- : out std_logic := '0';
+    cismux_sclk => cismux_sclk_s,        -- : out std_logic := '0';
+    cismux_sen_bar => cismux_sen_bar_s,  -- : out std_logic := '0';
+    cismux_sdo => cismux_sdo_s,          -- : in std_logic;
+
 --    ---Begalbone master SPI....
 --    VC_SPI_CS : in std_logic;
 --    VC_SPI_MOSI : in std_logic;
