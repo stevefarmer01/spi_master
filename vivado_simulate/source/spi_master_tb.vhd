@@ -105,7 +105,10 @@ entity spi_master_tb is
             mosi : out STD_LOGIC;
             miso : in STD_LOGIC := '0';
             --All test finished
-            stop_clks_to_dut : out boolean
+            stop_clks_to_dut : out boolean;
+            --Discrete signals
+            reg_map_array_from_pins : in mem_array_t(0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
+            reg_map_array_to_pins : out mem_array_t(0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0)
         );
 end spi_master_tb;
 
@@ -655,12 +658,13 @@ end generate board_sel_spi_reg_map_gen;
 
 external_dut_spi_gen : if external_spi_slave_dut generate
 
-    sclk <= sclk_i;                -- : out STD_LOGIC;
-    ss_n <= ss_i;                  -- : out STD_LOGIC;
-    mosi <= mosi_i;                -- : out STD_LOGIC;
-    miso_s <= miso;                -- : in STD_LOGIC := '0'
-    stop_clks_to_dut <= stop_clks; -- : out boolean
-
+    sclk <= sclk_i;                                                -- : out STD_LOGIC;
+    ss_n <= ss_i;                                                  -- : out STD_LOGIC;
+    mosi <= mosi_i;                                                -- : out STD_LOGIC;
+    miso_s <= miso;                                                -- : in STD_LOGIC := '0'
+    stop_clks_to_dut <= stop_clks;                                 -- : out boolean
+    reg_map_array_to_pins <= discrete_reg_map_array_from_script_s; -- : in mem_array_t(0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
+    discrete_reg_map_array_to_script_s <= reg_map_array_from_pins; -- : out mem_array_t(0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0)
 
 end generate external_dut_spi_gen;
 

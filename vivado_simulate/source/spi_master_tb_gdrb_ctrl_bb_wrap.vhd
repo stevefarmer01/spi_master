@@ -49,7 +49,10 @@ entity spi_master_tb_gdrb_ctrl_bb_wrap is
             mosi : out STD_LOGIC;
             miso : in STD_LOGIC := '0';
             --All test finished
-            stop_clks_to_dut : out boolean
+            stop_clks_to_dut : out boolean;
+            --Discrete signals
+            reg_map_array_from_pins : in mem_array_t(0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
+            reg_map_array_to_pins : out mem_array_t(0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0)
         );
 end spi_master_tb_gdrb_ctrl_bb_wrap;
 
@@ -84,7 +87,10 @@ component spi_master_tb is
             mosi : out STD_LOGIC;
             miso : in STD_LOGIC := '0';
             --All test finished
-            stop_clks_to_dut : out boolean
+            stop_clks_to_dut : out boolean;
+            --Discrete signals
+            reg_map_array_from_pins : in mem_array_t(0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
+            reg_map_array_to_pins : out mem_array_t(0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0)
         );
 end component;
 
@@ -120,12 +126,15 @@ spi_master_tb_inst : spi_master_tb
             )
     port map(
             ---To DUT Slave SPI interface pins
-            sclk => sclk,                        -- : out STD_LOGIC;
-            ss_n => ss_n,                        -- : out STD_LOGIC;
-            mosi => mosi,                        -- : out STD_LOGIC;
-            miso => miso,                        -- : in STD_LOGIC
+            sclk => sclk,                                       -- : out STD_LOGIC;
+            ss_n => ss_n,                                       -- : out STD_LOGIC;
+            mosi => mosi,                                       -- : out STD_LOGIC;
+            miso => miso,                                       -- : in STD_LOGIC
             --All test finished
-            stop_clks_to_dut => stop_clks_to_dut -- : out boolean
+            stop_clks_to_dut => stop_clks_to_dut,               -- : out boolean
+            --Discrete signals
+            reg_map_array_from_pins => reg_map_array_from_pins, -- : in mem_array_t(0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
+            reg_map_array_to_pins => reg_map_array_to_pins      -- : out mem_array_t(0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0)
             );
 
 

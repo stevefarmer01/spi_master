@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="gdrb_testbench.wdb" id="1">
+         <top_modules>
+            <top_module name="gdrb_ctrl_bb_address_pkg" />
+            <top_module name="gdrb_ctrl_bb_pkg" />
+            <top_module name="gdrb_testbench" />
+            <top_module name="multi_array_types_pkg" />
+            <top_module name="spi_board_select_pkg" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <WVObjectSize size="14" />
+   <wvobject db_ref_id="1" fp_name="/gdrb_testbench/sys_clk_60m_s" type="logic">
+      <obj_property name="ElementShortName">sys_clk_60m_s</obj_property>
+      <obj_property name="ObjectShortName">sys_clk_60m_s</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/gdrb_testbench/sys_rst_s" type="logic">
+      <obj_property name="ElementShortName">sys_rst_s</obj_property>
+      <obj_property name="ObjectShortName">sys_rst_s</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/gdrb_testbench/begalbone_master_spi_bfm/sclk" type="logic">
+      <obj_property name="ElementShortName">sclk</obj_property>
+      <obj_property name="ObjectShortName">sclk</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/gdrb_testbench/begalbone_master_spi_bfm/ss_n" type="logic">
+      <obj_property name="ElementShortName">ss_n</obj_property>
+      <obj_property name="ObjectShortName">ss_n</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/gdrb_testbench/begalbone_master_spi_bfm/mosi" type="logic">
+      <obj_property name="ElementShortName">mosi</obj_property>
+      <obj_property name="ObjectShortName">mosi</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/gdrb_testbench/begalbone_master_spi_bfm/miso" type="logic">
+      <obj_property name="ElementShortName">miso</obj_property>
+      <obj_property name="ObjectShortName">miso</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/gdrb_testbench/begalbone_master_spi_bfm/stop_clks_to_dut" type="other">
+      <obj_property name="ElementShortName">stop_clks_to_dut</obj_property>
+      <obj_property name="ObjectShortName">stop_clks_to_dut</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/gdrb_testbench/begalbone_master_spi_bfm/external_spi_slave_dut" type="other">
+      <obj_property name="ElementShortName">external_spi_slave_dut</obj_property>
+      <obj_property name="ObjectShortName">external_spi_slave_dut</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/gdrb_testbench/begalbone_master_spi_bfm/make_all_addresses_writeable_for_testing" type="other">
+      <obj_property name="ElementShortName">make_all_addresses_writeable_for_testing</obj_property>
+      <obj_property name="ObjectShortName">make_all_addresses_writeable_for_testing</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/gdrb_testbench/begalbone_master_spi_bfm/DUT_TYPE" type="array">
+      <obj_property name="ElementShortName">DUT_TYPE[1:22]</obj_property>
+      <obj_property name="ObjectShortName">DUT_TYPE[1:22]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/gdrb_testbench/begalbone_master_spi_bfm/board_select" type="other">
+      <obj_property name="ElementShortName">board_select</obj_property>
+      <obj_property name="ObjectShortName">board_select</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/gdrb_testbench/begalbone_master_spi_bfm/SPI_BOARD_SEL_ADDR_BITS" type="other">
+      <obj_property name="ElementShortName">SPI_BOARD_SEL_ADDR_BITS</obj_property>
+      <obj_property name="ObjectShortName">SPI_BOARD_SEL_ADDR_BITS</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/gdrb_testbench/begalbone_master_spi_bfm/SPI_BOARD_SEL_PROTOCOL_ADDR_BITS" type="other">
+      <obj_property name="ElementShortName">SPI_BOARD_SEL_PROTOCOL_ADDR_BITS</obj_property>
+      <obj_property name="ObjectShortName">SPI_BOARD_SEL_PROTOCOL_ADDR_BITS</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/gdrb_testbench/begalbone_master_spi_bfm/SPI_BOARD_SEL_PROTOCOL_DATA_BITS" type="other">
+      <obj_property name="ElementShortName">SPI_BOARD_SEL_PROTOCOL_DATA_BITS</obj_property>
+      <obj_property name="ObjectShortName">SPI_BOARD_SEL_PROTOCOL_DATA_BITS</obj_property>
+   </wvobject>
+</wave_config>
