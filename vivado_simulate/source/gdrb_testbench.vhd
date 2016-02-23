@@ -1,0 +1,383 @@
+----------------------------------------------------------------------------------
+-- Company: 
+-- Engineer: 
+-- 
+-- Create Date: 23.02.2016 00:12:14
+-- Design Name: 
+-- Module Name: gdrb_testbench - Behavioral
+-- Project Name: 
+-- Target Devices: 
+-- Tool Versions: 
+-- Description: 
+-- 
+-- Dependencies: 
+-- 
+-- Revision:
+-- Revision 0.01 - File Created
+-- Additional Comments:
+-- 
+----------------------------------------------------------------------------------
+
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+-- Uncomment the following library declaration if using
+-- arithmetic functions with Signed or Unsigned values
+--use IEEE.NUMERIC_STD.ALL;
+
+-- Uncomment the following library declaration if instantiating
+-- any Xilinx leaf cells in this code.
+--library UNISIM;
+--use UNISIM.VComponents.all;
+
+entity gdrb_testbench is
+end gdrb_testbench;
+
+architecture Behavioral of gdrb_testbench is
+
+component gdrb_ctrl is
+port
+(
+-- pragma translate_off
+    --. JTAG i/f - 4
+    TCK : in std_logic;  -- this will be controled by Begalbone
+    TMS : in std_logic;  -- this will be controled by Begalbone
+    TDI : in std_logic;  -- this will be controled by Begalbone
+    TDO : out std_logic; -- this will be controled by Begalbone this will go to TDI of gdrb_dig_pld_dpmux FPGA
+-- pragma translate_on
+
+    ---Clk/Reset - 4
+    CLK60M : in std_logic;
+    FPGA_RESET : in std_logic := '0';       -- From Begalbone to control FPGA coming out of reset at right time
+    FPGA_ENABLE_BAR : in std_logic := '1';      -- From Begalbone to tri-state all of FPGA's ports
+    GDRB_RESET_BAR : in std_logic := '1';
+
+
+    ---GHDB master SPI from GHDB to.....
+    FOC_SDI : in std_logic;
+    FOC_SCLK : in std_logic;
+    FOC_SMODE_BAR : in std_logic;
+    FOC_SDO : out std_logic;                 -- This will go back to GDPB via a pin on the camera link tx to GHDB
+    ---......GDRB_DPMUX FPGA (straight through from FOC_xx ports unless there are issues)
+    CISMUX_SDI : out std_logic := '0';
+    cismux_sclk : out std_logic := '0';
+    cismux_sdo : in std_logic;
+    cismux_sen_bar : out std_logic := '0';
+
+    ---Begalbone master SPI....
+    VC_SPI_CS : in std_logic;
+    VC_SPI_MOSI : in std_logic;
+    VC_SPI_SCLK : in std_logic;
+    VC_SPI_LDAC_BAR : in std_logic;
+    ---....to on-board Voice Coil DAC (straight through unless there are issues)
+    VC_SPI_DAC_SYNC_BAR : out std_logic;
+    vc_spi_dac_din : out std_logic;
+    VC_SPI_DAC_SCLK : out std_logic;
+    VC_SPI_DAC_LDAC_BAR : out std_logic;
+
+    ---GHDB master SPI has access to CIS PCB.....
+    CIS_SPI_SCLK : out std_logic := '0';
+    CIS_SPI_DIN : out std_logic := '0';
+    ---....AFE's and......
+    CIS_SPI_CS_AFE1_BAR : out std_logic := '0'; -- CIS AFE's
+    CIS_SPI_CS_AFE2_BAR : out std_logic := '0';
+    CIS_SPI_DOUT_AFE1  : in std_logic;        
+    CIS_SPI_DOUT_AFE2  : in std_logic;        
+    ---.....Illumination DAC's
+    CIS_ILLUM_DAC_SYNC1_BAR : out std_logic := '0';  -- CIS DAC's are read only -- These DAC's are the same part number as 'Begalbone SPI to illumination DAC's' below
+    CIS_ILLUM_DAC_SYNC2_BAR : out std_logic := '0';
+    CIS_ILLUM_DAC_LDAC_BAR : out std_logic := '0';         
+
+    ---Another Begalbone master SPI....
+    BB_CTRL_SPI_MISO : out std_logic;
+    BB_CTRL_SPI_SCLK : in std_logic;
+    BB_CTRL_SPI_MOSI : in std_logic;
+    BB_CTRL_SPI_CS : in std_logic;
+    ---which is de_muxed onto 4 SPI ports (3 external and 1 internal).....
+    SPI_MUX0 : in std_logic := '0';
+    SPI_MUX1 : in std_logic := '0';
+    SPI_MUX2 : in std_logic := '0';
+    SPI_MUX3 : in std_logic := '0';
+    ---....one which goes to on-board illumination DAC's and.....
+    ILLUM_DAC_SPI_LDAC_BAR : out std_logic := '1';
+    ILLUM_DAC_SPI_SCLK : out std_logic := '1';
+    illum_dac_spi_din : out std_logic := '1';
+    ILLUM_DAC_SPI_SYNC1_BAR : out std_logic := '1';
+    ILLUM_DAC_SPI_SYNC2_BAR : out std_logic := '1';
+    ---....User Interface PCB
+    UI_SPI_CS_BAR : out std_logic := '1';
+    ui_spi_mosi : out std_logic := '1';
+    ui_spi_miso : in std_logic := '1';
+    UI_SPI_SCLK : out std_logic := '1';
+
+    ------Register map pins-----.
+
+    --Register Map Address - 0x0
+    ---Motor Datum
+    MOT1_DATUM : in std_logic;
+    MOT2_DATUM : in std_logic;
+    MOT3_DATUM : in std_logic;
+    MOT4_DATUM : in std_logic;
+    ---Cover detects
+    FRONT_COVER_OPEN : in std_logic;
+    LEFT_COVER_OPEN : in std_logic;
+    RIGHT_COVER_OPEN : in std_logic;
+    SPARE_SENSOR : in std_logic;
+    ---Tray detects
+    TRAY_SENS1 : in std_logic;
+    TRAY_SENS2 : in std_logic;
+    TRAY_SENS3 : in std_logic;
+    TRAY_SENS4 : in std_logic;
+    TRAY_GATE_DETECT : in std_logic;
+    ---Interlocks
+    ILOCK1_OK_BAR : in std_logic;  --changed 120216
+    ILOCK2_OK_BAR : in std_logic;  --changed 120216
+    --Plus a global fault bit for Register 0x4------------------------------.
+    
+    --Register Map Address - 0x1
+    --Detection of above Register
+
+    --Register Map Address - 0x2
+    --Interupt mask of above Register
+
+    --Register Map Address - 0x3
+    ---Fault detection discretes
+    MOT1_FAULT_BAR : in std_logic;
+    MOT2_FAULT_BAR : in std_logic;
+    MOT3_FAULT_BAR : in std_logic;
+    MOT4_FAULT_BAR : in std_logic;
+    P12V_IN_FAULT_BAR : in std_logic;
+    P24V_FAULT : in std_logic;
+    HR_LED_PWR_FAULT_BAR : in std_logic;
+    TX_LED_PWR_FAULT_BAR : in std_logic;
+    RX_LED_PWR_FAULT_BAR : in std_logic;
+    VC_DRIVER_FAULT_BAR : in std_logic;
+    SOL_FAULT_BAR : in std_logic;
+    BB_FAULT : in std_logic;
+
+    --Register Map Address - 0x4
+    --Detection of above Register
+
+    --Register Map Address - 0x5
+    --Interupt mask of above Register
+
+    --Register Map Address - 0x6
+    --Miscellaneous in discretes
+    ---CIS PCB discretes
+    CIS_HDB_SENSE_BAR : in std_logic;
+    ---GDRB to GHDB Discretes
+    FOC_SENSE_BAR : in std_logic := '0';
+    FOC_CONFIG : in std_logic := '0';
+    ---On board discretes in
+    HR_LED_SENSE_BAR : in std_logic;
+    CIS_TX_LED_SENSE_BAR : in std_logic;
+    UI_SENSE_BAR : in std_logic;
+    UI_INT_BAR : in std_logic := '0';
+
+    X_OUT3 : in std_logic := '0'; --added 120216
+    Y_OUT3 : in std_logic := '0'; --added 120216
+    X_SETUP_ALT : in std_logic := '0'; --added 120216
+    Y_SETUP_ALT : in std_logic := '0'; --added 120216
+    Z_SETUP_ALT : in std_logic := '0'; --added 120216
+
+    --Register Map Address - 0x7
+    --Detection of above Register 0x1
+
+    --Register Map Address - 0x8
+    --Interupt mask of above Register 0x1
+
+    --Register Map Address - 0x9
+    --Enables
+    MOT1_ENABLE_BAR : out std_logic := '0';
+    MOT2_ENABLE_BAR : out std_logic := '0';
+    MOT3_ENABLE_BAR : out std_logic := '0';
+    MOT4_ENABLE_BAR : out std_logic := '0';
+    VC_ENABLE_BAR : out std_logic := '0';    -- Voice Coil enable - Must set DAC to 0x800 before enabling VC PWM driver
+    TRAY_SENSOR_EN : out std_logic := '0';
+    CIS_RX_LED_ENABLE : out std_logic;  --changed 120216
+    SOL_ENABLE : out std_logic := '0';
+    INDEX_CAPTURE : out std_logic := '0';
+
+    CIS_TX_LED_ENABLE : out std_logic; --added 120216
+
+    X_CAL : out std_logic := '0'; --added 120216
+    Y_CAL : out std_logic := '0'; --added 120216
+    Z_CAL : out std_logic := '0'; --added 120216
+
+    --Register Map Address - 0xA
+    --Unused Register
+
+    --Register Map Address - 0xB
+    --Unused Register
+
+    --Register Map Address - 0xC
+    --Unused Register
+
+    --Register Map Address - 0xD
+    --Unused Register
+
+    --Register Map Address - 0xE
+    --UES Register 1
+    --Read only
+
+    --Register Map Address - 0xF
+    --UES Register 2
+    --Read only
+
+    --Miscellaneous IN discretes
+    ---Voice coil enable and interupt
+    VC_INT : out std_logic := '0';     -- TBD
+    ---Bob's boot problem fix
+    SYS_RESET_BAR : inout std_logic;
+    UBOOT_MUX : out std_logic := '0';
+    ---Discretes out
+    SENSOR_INT : out std_logic := '0'; -- Changed bits set
+    ILOCK1_OPEN_BAR : out std_logic:= '0';
+    ILOCK2_OPEN_BAR : out std_logic:= '0';
+
+    ---Spare pins for....
+    ---....Begalbone
+    BB_CTRL_SPARE1 : inout std_logic;
+    BB_CTRL_SPARE2 : inout std_logic;
+    BB_CTRL_SPARE3 : inout std_logic;
+    ---....gdrb_dpmux onboard FPGA
+    GDRB_DPMUX_SPARE1 : inout std_logic := '0';
+    GDRB_DPMUX_SPARE2 : inout std_logic := '0';
+    GDRB_DPMUX_SPARE3 : inout std_logic := '0';
+    --....CIS PCB
+    CIS_HDB_SPARE1 : out std_logic := '0'
+);
+end component;
+
+component spi_master_tb_gdrb_ctrl_bb_wrap is
+     generic(
+--            board_select : boolean := FALSE; -- Use generate statement - xxxxxx_gen : if not board_select generate xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx end generate;
+            test_external_spi_slave_dut : boolean := false;
+            make_all_addresses_writeable_for_testing : boolean := TRUE;
+            DUT_TYPE : string := "write_and_then_read_an_address"
+--            DUT_TYPE : string := "spi_reg_map_simple"
+            );
+    port(
+            ---To DUT Slave SPI interface pins
+            sclk : out STD_LOGIC;
+            ss_n : out STD_LOGIC;
+            mosi : out STD_LOGIC;
+            miso : in STD_LOGIC;
+            --All test finished
+            stop_clks_to_dut : out boolean
+        );
+end component;
+
+constant TIME_PERIOD_CLK : time                          := 10 ns;
+
+signal   sys_clk_i       : std_logic                     := '0';  -- system clock
+signal   sys_rst_i       : std_logic                     := '1';  -- system reset
+
+begin
+
+---reset and clocks
+reset_proc : process
+begin
+    sys_rst_i <= '1';
+    wait for 10 * TIME_PERIOD_CLK;
+    sys_rst_i <= '0';
+    wait until trigger_another_reset_s;
+end process;
+
+clk_gen_proc : process
+begin
+    while not stop_clks loop
+        wait for TIME_PERIOD_CLK/2;
+        sys_clk_i <= not sys_clk_i;
+    end loop;
+    wait;
+end process;
+
+component spi_master_tb_gdrb_ctrl_bb_wrap is
+     generic(
+--            board_select : boolean := FALSE; -- Use generate statement - xxxxxx_gen : if not board_select generate xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx end generate;
+            test_external_spi_slave_dut : boolean := false;
+            make_all_addresses_writeable_for_testing : boolean := TRUE;
+            DUT_TYPE : string := "write_and_then_read_an_address"
+--            DUT_TYPE : string := "spi_reg_map_simple"
+            );
+    port(
+            ---To DUT Slave SPI interface pins
+            sclk : out STD_LOGIC;
+            ss_n : out STD_LOGIC;
+            mosi : out STD_LOGIC;
+            miso : in STD_LOGIC;
+            --All test finished
+            stop_clks_to_dut : out boolean
+        );
+end component;
+
+component gdrb_ctrl is
+port
+(
+    ---Clk/Reset - 4
+    CLK60M => , -- : in std_logic;
+    FPGA_RESET => , -- : in std_logic := '0';       -- From Begalbone to control FPGA coming out of reset at right time
+    FPGA_ENABLE_BAR => , -- : in std_logic := '1';      -- From Begalbone to tri-state all of FPGA's ports
+    GDRB_RESET_BAR => , -- : in std_logic := '1';
+
+
+    ---GHDB master SPI from GHDB to.....
+    FOC_SDI => , -- : in std_logic;
+    FOC_SCLK => , -- : in std_logic;
+    FOC_SMODE_BAR => , -- : in std_logic;
+    FOC_SDO => , -- : out std_logic;                 -- This will go back to GDPB via a pin on the camera link tx to GHDB
+    ---......GDRB_DPMUX FPGA (straight through from FOC_xx ports unless there are issues)
+    CISMUX_SDI => , -- : out std_logic := '0';
+    cismux_sclk => , -- : out std_logic := '0';
+    cismux_sdo => , -- : in std_logic;
+    cismux_sen_bar => , -- : out std_logic := '0';
+
+--    ---Begalbone master SPI....
+--    VC_SPI_CS : in std_logic;
+--    VC_SPI_MOSI : in std_logic;
+--    VC_SPI_SCLK : in std_logic;
+--    VC_SPI_LDAC_BAR : in std_logic;
+--    ---....to on-board Voice Coil DAC (straight through unless there are issues)
+--    VC_SPI_DAC_SYNC_BAR : out std_logic;
+--    vc_spi_dac_din : out std_logic;
+--    VC_SPI_DAC_SCLK : out std_logic;
+--    VC_SPI_DAC_LDAC_BAR : out std_logic;
+--
+--    ---GHDB master SPI has access to CIS PCB.....
+--    CIS_SPI_SCLK : out std_logic := '0';
+--    CIS_SPI_DIN : out std_logic := '0';
+--    ---....AFE's and......
+--    CIS_SPI_CS_AFE1_BAR : out std_logic := '0'; -- CIS AFE's
+--    CIS_SPI_CS_AFE2_BAR : out std_logic := '0';
+--    CIS_SPI_DOUT_AFE1  : in std_logic;        
+--    CIS_SPI_DOUT_AFE2  : in std_logic;        
+--    ---.....Illumination DAC's
+--    CIS_ILLUM_DAC_SYNC1_BAR : out std_logic := '0';  -- CIS DAC's are read only -- These DAC's are the same part number as 'Begalbone SPI to illumination DAC's' below
+--    CIS_ILLUM_DAC_SYNC2_BAR : out std_logic := '0';
+--    CIS_ILLUM_DAC_LDAC_BAR : out std_logic := '0';         
+
+    ---Another Begalbone master SPI....
+    BB_CTRL_SPI_MISO => , -- : out std_logic;
+    BB_CTRL_SPI_SCLK => , -- : in std_logic;
+    BB_CTRL_SPI_MOSI => , -- : in std_logic;
+    BB_CTRL_SPI_CS =>  -- : in std_logic;
+--    ---which is de_muxed onto 4 SPI ports (3 external and 1 internal).....
+--    SPI_MUX0 : in std_logic := '0';
+--    SPI_MUX1 : in std_logic := '0';
+--    SPI_MUX2 : in std_logic := '0';
+--    SPI_MUX3 : in std_logic := '0';
+--    ---....one which goes to on-board illumination DAC's and.....
+--    ILLUM_DAC_SPI_LDAC_BAR : out std_logic := '1';
+--    ILLUM_DAC_SPI_SCLK : out std_logic := '1';
+--    illum_dac_spi_din : out std_logic := '1';
+--    ILLUM_DAC_SPI_SYNC1_BAR : out std_logic := '1';
+--    ILLUM_DAC_SPI_SYNC2_BAR : out std_logic := '1';
+--    ---....User Interface PCB
+--    UI_SPI_CS_BAR : out std_logic := '1';
+--    ui_spi_mosi : out std_logic := '1';
+--    ui_spi_miso : in std_logic := '1';
+--    UI_SPI_SCLK : out std_logic := '1';
+);
+end Behavioral;

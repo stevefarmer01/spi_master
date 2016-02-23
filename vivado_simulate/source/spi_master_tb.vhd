@@ -79,6 +79,7 @@ use work.multi_array_types_pkg.all;
 entity spi_master_tb is
     generic(
             board_select : boolean := FALSE;                                        -- Use generate statement - xxxxxx_gen : if not board_select generate xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx end generate;
+            external_spi_slave_dut : boolean := false;
             make_all_addresses_writeable_for_testing : boolean := TRUE;
             DUT_TYPE : string := "write_and_then_read_an_address";
             --.            DUT_TYPE : string := "spi_reg_map_simple"
@@ -97,6 +98,15 @@ entity spi_master_tb is
             SPI_BOARD_SEL_PROTOCOL_ADDR_BITS : integer := 8;
             SPI_BOARD_SEL_PROTOCOL_DATA_BITS : integer := 8
             );
+    port(
+            --To DUT Slave SPI interface pins
+            sclk : out STD_LOGIC;
+            ss_n : out STD_LOGIC;
+            mosi : out STD_LOGIC;
+            miso : in STD_LOGIC := '0';
+            --All test finished
+            stop_clks_to_dut : out boolean
+        );
 end spi_master_tb;
 
 architecture behave of spi_master_tb is
@@ -325,7 +335,7 @@ signal   spi_start_i     : std_logic                     := '0';  -- START SPI M
 signal   tx2tx_cycles_i  : std_logic_vector(7 downto 0) := std_logic_vector(to_unsigned(16,8));  -- SPIM interval between data transactions in terms of i_sys_clk
 signal   slave_csn_i     : std_logic_vector(3 downto 0);  -- SPI Slave select (chip select) active low
 signal   mosi_i          : std_logic                     := '0';  -- Master output to Slave
-signal   miso            : std_logic                     := '1';  -- Master input from Slave
+signal   miso_s          : std_logic                     := '1';  -- Master input from Slave
 signal   sclk_i          : std_logic                     := '0';  -- Master clock
 signal   ss_i            : std_logic;  -- Master
 constant TIME_PERIOD_CLK : time                          := 10 ns;
@@ -581,7 +591,7 @@ end process;
 
 --------------------------Register Map SPI DUT----------------------------.
 
-spi_reg_map_gen : if not board_select generate
+spi_reg_map_gen : if not board_select and not external_spi_slave_dut generate
 
     reg_map_proc : gdrb_ctrl_reg_map_top
         generic map(
@@ -598,7 +608,7 @@ spi_reg_map_gen : if not board_select generate
                 ss_n => ss_i,                                                                         -- : in STD_LOGIC;
                 i_raw_ssn => ss_i,                                                                    -- : in  std_logic;                                                                                          -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to same signal as 'ss_n'
                 mosi => mosi_i,                                                                       -- : in STD_LOGIC;
-                miso => miso,                                                                         -- : out STD_LOGIC;
+                miso => miso_s,                                                                       -- : out STD_LOGIC;
                 --Low level SPI interface parameters
                 cpol => SPI_CPOL,                                                                     -- : in std_logic := '0';                                                                                    -- CPOL value - 0 or 1
                 cpha => SPI_CPHA,                                                                     -- : in std_logic := '0';                                                                                    -- CPHA value - 0 or 1
@@ -614,7 +624,7 @@ end generate spi_reg_map_gen;
 --    constant SPI_BOARD_SEL_PROTOCOL_ADDR_BITS : integer := 4;
 --    constant SPI_BOARD_SEL_PROTOCOL_DATA_BITS : integer := 16;
 
-board_sel_spi_reg_map_gen : if board_select generate
+board_sel_spi_reg_map_gen : if board_select and not external_spi_slave_dut generate
 
     reg_map_proc : spi_board_select_top
         generic map(
@@ -631,7 +641,7 @@ board_sel_spi_reg_map_gen : if board_select generate
                 sclk => sclk_i,                                                                       -- : in STD_LOGIC;
                 ss_n => ss_i,                                                                         -- : in STD_LOGIC;
                 mosi => mosi_i,                                                                       -- : in STD_LOGIC;
-                miso => miso,                                                                         -- : out STD_LOGIC;
+                miso => miso_s,                                                                       -- : out STD_LOGIC;
                 --Low level SPI interface parameters
                 cpol => SPI_CPOL,                                                                     -- : in std_logic := '0';                                                                                    -- CPOL value - 0 or 1
                 cpha => SPI_CPHA,                                                                     -- : in std_logic := '0';                                                                                    -- CPHA value - 0 or 1
@@ -643,6 +653,16 @@ board_sel_spi_reg_map_gen : if board_select generate
 
 end generate board_sel_spi_reg_map_gen;
 
+external_dut_spi_gen : if external_spi_slave_dut generate
+
+    sclk <= sclk_i;                -- : out STD_LOGIC;
+    ss_n <= ss_i;                  -- : out STD_LOGIC;
+    mosi <= mosi_i;                -- : out STD_LOGIC;
+    miso_s <= miso;                -- : in STD_LOGIC := '0'
+    stop_clks_to_dut <= stop_clks; -- : out boolean
+
+
+end generate external_dut_spi_gen;
 
 --------------------------MASTER SPI----------------------------.
 
@@ -677,7 +697,7 @@ data_i_master_tx <= (data_i(data_i'HIGH downto 1) & '1') when induce_fault_maste
             i_tx2tx_cycles => tx2tx_cycles_i,    -- : in  std_logic_vector(7 downto 0);                 -- SPIM interval between data transactions in terms of i_sys_clk
             o_slave_csn    => slave_csn_i,       -- : out std_logic_vector(3 downto 0);                 -- SPI Slave select (chip select) active low
             o_mosi         => mosi_i,            -- : out std_logic;                                    -- Master output to Slave
-            i_miso         => miso,              -- : in  std_logic;                                    -- Master input from Slave
+            i_miso         => miso_s,            -- : in  std_logic;                                    -- Master input from Slave
             o_sclk         => sclk_i             -- : out std_logic;                                    -- Master clock
             );
 
