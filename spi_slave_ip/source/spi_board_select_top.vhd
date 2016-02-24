@@ -26,8 +26,6 @@ use IEEE.NUMERIC_STD.ALL;
 
 use work.multi_array_types_pkg.all;
 
-use work.spi_board_select_pkg.ALL;
-
 -- Uncomment the following library declaration if instantiating
 -- any Xilinx leaf cells in this code.
 --library UNISIM;

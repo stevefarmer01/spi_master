@@ -95,6 +95,7 @@ entity spi_master_tb is
             --Pre-load register map array for testing and possible other uses
             mem_array_t_initalised : mem_array_t;                                   -- := initalise_mem_array_t(inc_values_enable => FALSE, inc_data_start_value => 16#0#);
             --Board select version's parameters
+            SPI_BOARD_SELECT_ADDR_0_C : integer := 0;
             SPI_BOARD_SEL_ADDR_BITS : integer := 0;
             SPI_BOARD_SEL_PROTOCOL_ADDR_BITS : integer := 8;
             SPI_BOARD_SEL_PROTOCOL_DATA_BITS : integer := 8
@@ -289,12 +290,13 @@ component gdrb_ctrl_reg_map_top is
             );
 end component;
 
-component spi_board_select_top is
+component gdrb_dp_mux_spi_board_select_top is
     generic ( 
             make_all_addresses_writeable_for_testing : boolean := FALSE; -- This is for testbenching only
             SPI_BOARD_SEL_ADDR_BITS : integer := 4;
             SPI_ADDRESS_BITS : integer := 4;
             SPI_DATA_BITS : integer := 16;
+            BOARD_SELECT_ADDR_0_C : integer := 0;
             MEM_ARRAY_T_INITIALISATION : mem_array_t
            );
     Port ( 
@@ -630,12 +632,13 @@ end generate spi_reg_map_gen;
 
 board_sel_spi_reg_map_gen : if board_select and not external_spi_slave_dut generate
 
-    reg_map_proc : spi_board_select_top
+    reg_map_proc : gdrb_dp_mux_spi_board_select_top
         generic map(
                 make_all_addresses_writeable_for_testing => make_all_addresses_writeable_for_testing, -- :     natural := 16
                 SPI_BOARD_SEL_ADDR_BITS => SPI_BOARD_SEL_ADDR_BITS,                                   -- : integer := 4;
                 SPI_ADDRESS_BITS => SPI_BOARD_SEL_PROTOCOL_ADDR_BITS,                                 -- : integer := 4;
                 SPI_DATA_BITS => SPI_BOARD_SEL_PROTOCOL_DATA_BITS,                                    -- : integer := 16
+                BOARD_SELECT_ADDR_0_C => SPI_BOARD_SELECT_ADDR_0_C,           -- : integer := 0;
                 MEM_ARRAY_T_INITIALISATION => mem_array_t_initalised                                  -- Function that populates this constant in 'gdrb_ctrl_bb_pkg'
                 )
         Port map(  

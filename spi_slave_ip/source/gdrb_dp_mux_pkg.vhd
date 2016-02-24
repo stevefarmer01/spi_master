@@ -35,7 +35,7 @@ use IEEE.NUMERIC_STD.ALL;
 
 use work.multi_array_types_pkg.all;
 
-package spi_board_select_pkg is
+package gdrb_dp_mux_pkg is
 
     --Set board select address which for this application is the top 4 bits of the SPI data as specified by SPI_BOARD_SEL_ADDR_BITS below
     constant board_select_addr_0_c : natural := 16#8#;                                                      
@@ -54,9 +54,9 @@ package spi_board_select_pkg is
     --Function for multi-dimensional array initialisation via deferred constant
     function initalise_mem_array_t(inc_values_enable : boolean; inc_data_start_value : natural ) return mem_array_t;
 
-end spi_board_select_pkg;
+end gdrb_dp_mux_pkg;
 
-package body spi_board_select_pkg is
+package body gdrb_dp_mux_pkg is
 
     --This function allows non-zero initialising of register map array for testing and possible other uses
     function initalise_mem_array_t(inc_values_enable : boolean; inc_data_start_value : natural ) return mem_array_t is

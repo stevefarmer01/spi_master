@@ -4,10 +4,17 @@ vhdl work "..\spi_slave_ip\source\multi_array_types_pkg.vhd"
 vhdl work "..\spi_slave_ip\source\edge_detect_domain_crossed.vhd"
 vhdl work "..\spi_slave_ip\source\spi_board_select_pkg.vhd"
 vhdl work "..\spi_slave_ip\source\spi_slave.vhd"
-vhdl work "..\spi_slave_ip\source\reg_map_spi_slave.vhd"
 vhdl work "..\spi_slave_ip\source\spi_board_select_slave.vhd"
 vhdl work "..\spi_slave_ip\source\generic_spi_reg_map_top.vhd"
+
+vhdl work "..\spi_slave_ip\source\reg_map_spi_slave.vhd"
 vhdl work "..\spi_slave_ip\source\spi_board_select_top.vhd"
+
+vhdl work "..\spi_slave_ip\source\gdrb_dp_mux_pkg.vhd"
+vhdl work "..\spi_slave_ip\source\gdrb_dp_mux_reg_map.vhd"
+vhdl work "..\spi_slave_ip\source\gdrb_dp_mux_reg_map_top.vhd"
+vhdl work "..\spi_slave_ip\source\gdrb_dp_mux_spi_board_select_top.vhd"
+
 vhdl work "..\vivado_simulate\source\spi_data_path.vhd"
 vhdl work "..\vivado_simulate\source\sclk_gen.vhd"
 vhdl work "..\vivado_simulate\source\spi_master.vhd"

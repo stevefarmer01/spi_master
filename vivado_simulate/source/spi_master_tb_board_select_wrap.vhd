@@ -33,7 +33,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 use work.multi_array_types_pkg.all;
 
-use work.spi_board_select_pkg.ALL;
+use work.gdrb_dp_mux_pkg.ALL;
 
 entity spi_master_tb_board_select_wrap is
      generic(
@@ -78,6 +78,7 @@ component spi_master_tb is
             --Pre-load register map array for testing and possible other uses
             mem_array_t_initalised : mem_array_t := initalise_mem_array_t(inc_values_enable => FALSE, inc_data_start_value => 16#0#);
             --Board select version's parameters
+            SPI_BOARD_SELECT_ADDR_0_C : integer := 0;
             SPI_BOARD_SEL_ADDR_BITS : integer := 0;
             SPI_BOARD_SEL_PROTOCOL_ADDR_BITS : integer := 8;
             SPI_BOARD_SEL_PROTOCOL_DATA_BITS : integer := 8
@@ -124,12 +125,13 @@ spi_master_tb_inst : spi_master_tb
             SPI_DATA_BITS => SPI_DATA_BITS,                                                       -- : integer := 16;                                                                                   -- This has to be a multiple of 4 for HREAD to work OK in testbench
             DATA_SIZE_C => DATA_SIZE_C,                                                           -- : integer := SPI_ADDRESS_BITS+SPI_DATA_BITS+1;                                                     -- Total data size = read/write bit + address + data
             --Low level SPI interface parameters
-            SPI_CPOL => SPI_BOARD_CPOL,                                                        -- : std_logic := '0';                                                                                -- CPOL value - 0 or 1 - these should really be constants but modelsim doesn't like it
-            SPI_CPHA => SPI_BOARD_CPHA,                                                        -- : std_logic := '0';                                                                                -- CPHA value - 0 or 1 - these should really be constants but modelsim doesn't like it
-            SPI_LSB_FIRST => SPI_BOARD_LSB_FIRST,                                              -- : std_logic := '0';                                                                                -- lsb first when '1' /msb first when - these should really be constants but modelsim doesn't like it
+            SPI_CPOL => SPI_BOARD_CPOL,                                                           -- : std_logic := '0';                                                                                -- CPOL value - 0 or 1 - these should really be constants but modelsim doesn't like it
+            SPI_CPHA => SPI_BOARD_CPHA,                                                           -- : std_logic := '0';                                                                                -- CPHA value - 0 or 1 - these should really be constants but modelsim doesn't like it
+            SPI_LSB_FIRST => SPI_BOARD_LSB_FIRST,                                                 -- : std_logic := '0';                                                                                -- lsb first when '1' /msb first when - these should really be constants but modelsim doesn't like it
             --Pre-load register map array for testing and possible other uses
             mem_array_t_initalised => bs_mem_array_t_initalised_c,                                -- : mem_array_t := initalise_mem_array_t(inc_values_enable => FALSE, inc_data_start_value => 16#0#);
             --Board select version's parameters
+            SPI_BOARD_SELECT_ADDR_0_C => board_select_addr_0_c,                                   -- : integer := 0;
             SPI_BOARD_SEL_ADDR_BITS => SPI_BOARD_SEL_ADDR_BITS,                                   -- : integer := 0;
             SPI_BOARD_SEL_PROTOCOL_ADDR_BITS => SPI_BOARD_SEL_PROTOCOL_ADDR_BITS,                 -- : integer := 8;
             SPI_BOARD_SEL_PROTOCOL_DATA_BITS => SPI_BOARD_SEL_PROTOCOL_DATA_BITS                  -- : integer := 8

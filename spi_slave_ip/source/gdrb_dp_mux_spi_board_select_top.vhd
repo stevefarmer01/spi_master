@@ -26,8 +26,6 @@ use IEEE.NUMERIC_STD.ALL;
 
 use work.multi_array_types_pkg.all;
 
-use work.spi_board_select_pkg.ALL;
-
 -- Uncomment the following library declaration if instantiating
 -- any Xilinx leaf cells in this code.
 --library UNISIM;
@@ -39,6 +37,7 @@ entity gdrb_dp_mux_spi_board_select_top is
             SPI_BOARD_SEL_ADDR_BITS : integer := 4;
             SPI_ADDRESS_BITS : integer := 4;
             SPI_DATA_BITS : integer := 16;
+            BOARD_SELECT_ADDR_0_C : integer := 0;
             MEM_ARRAY_T_INITIALISATION : mem_array_t
            );
     Port ( 
@@ -107,8 +106,6 @@ component gdrb_dp_mux_reg_map_top is
             reg_map_array_to_pins : out mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0)
             );
 end component;
-
-constant board_select_addr_0_c : natural := 16#8#;
 
 constant valid_delayed_c : positive := 1; -- Delay board select edge detect due to delay caused by domain crossing of sclk in spi_slave.vhd
 
@@ -208,10 +205,10 @@ reg_map_selected_inst : gdrb_dp_mux_reg_map_top
             reset => reset,                                                                       -- : std_logic;
             --Slave SPI interface pins
             sclk => sclk,                                                                         -- : in STD_LOGIC;
-            ss_n => board_select_mux_ss_n_s(board_select_addr_0_c),                               -- : in STD_LOGIC;
-            i_raw_ssn => miso_board_select_mux_ss_n_s(board_select_addr_0_c),                     -- : in  std_logic;                                            -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to ss_n
+            ss_n => board_select_mux_ss_n_s(BOARD_SELECT_ADDR_0_C),                               -- : in STD_LOGIC;
+            i_raw_ssn => miso_board_select_mux_ss_n_s(BOARD_SELECT_ADDR_0_C),                     -- : in  std_logic;                                            -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to ss_n
             mosi => mosi,                                                                         -- : in STD_LOGIC;
-            miso => miso_s(board_select_addr_0_c),                                                -- : out STD_LOGIC;
+            miso => miso_s(BOARD_SELECT_ADDR_0_C),                                                -- : out STD_LOGIC;
             --Low level SPI interface parameters
             cpol => cpol,                                                                         -- : in std_logic := '0';                                      -- CPOL value - 0 or 1
             cpha => cpha,                                                                         -- : in std_logic := '0';                                      -- CPHA value - 0 or 1

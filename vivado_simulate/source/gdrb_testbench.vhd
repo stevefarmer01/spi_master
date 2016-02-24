@@ -35,7 +35,7 @@ use work.multi_array_types_pkg.all;
 
 use work.gdrb_ctrl_bb_pkg.ALL;
 
-use work.spi_board_select_pkg.ALL;
+use work.gdrb_dp_mux_pkg.ALL;
 
 
 entity gdrb_testbench is
@@ -455,7 +455,7 @@ begalbone_master_spi_bfm : spi_master_tb_gdrb_ctrl_bb_wrap
 gdhb_master_spi_bfm : spi_master_tb_board_select_wrap
      generic map(
             external_spi_slave_dut => TRUE,                          -- : boolean := false;
-            make_all_addresses_writeable_for_testing => TRUE,        -- : boolean := TRUE;
+            make_all_addresses_writeable_for_testing => FALSE,        -- : boolean := TRUE;
             DUT_TYPE => "input_vector_file_test",                    -- : string := "write_and_then_read_an_address"
             filename_prefix => "gdhb_master_spi_"                     -- : string := ""
             )
