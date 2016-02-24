@@ -829,8 +829,27 @@ input_vector_file_test_gen : if DUT_TYPE = "input_vector_file_test" generate
                         input_command_type <= write_port_cmd;
                     end if;
 
-                    HREAD(L, address_of_port_v, good);
-                    assert good report "Text input file format read error" severity FAILURE;
+                    if board_select then
+                        --.HREAD(L, address_of_port_v, good);                                      -- HREAD will not deal with non-nibble (4bit) size std_logic_vector and so code below to down to next end if; used to solve this
+                        while is_whitespace(char_v) loop                                             -- Consume spaces in text file being read then..
+                            READ(L,char_v);
+                        end loop;
+                        while not is_whitespace(char_v) loop                                         -- ..read characters in text file until non-visible character is found and then...
+                            str_pointer_v := str_pointer_v + 1;
+                            line_of_comments_v(str_pointer_v) := char_v;
+                            READ(L,char_v);
+                        end loop; 
+                        address_of_port_v := std_logic_vector(to_unsigned(string_to_int(line_of_comments_v(1 to str_pointer_v), 16),address_of_port_v'LENGTH)); -- ..convert it from a string into a hex integer with string_to_int
+                    end if;
+
+                    if not board_select then
+                        HREAD(L, address_of_port_v, good);
+                        assert good report "Text input file format read error" severity FAILURE;
+                    end if;
+
+
+
+
                     HREAD(L, data_of_port_v, good);
                     assert good report "Text input file format read error" severity FAILURE;
                     if input_command_v = "RdPo" then

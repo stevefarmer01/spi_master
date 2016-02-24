@@ -18,6 +18,7 @@ vhdl work "..\spi_slave_ip\source\gdrb_ctrl_reg_map.vhd"
 vhdl work "..\spi_slave_ip\source\gdrb_ctrl_reg_map_top.vhd"
 
 vhdl work "..\spi_slave_ip\source\gdrb_dp_mux_pkg.vhd"
+vhdl work "..\spi_slave_ip\source\gdrb_dp_mux_address_pkg.vhd"
 vhdl work "..\spi_slave_ip\source\gdrb_dp_mux_reg_map.vhd"
 vhdl work "..\spi_slave_ip\source\gdrb_dp_mux_reg_map_top.vhd"
 vhdl work "..\spi_slave_ip\source\gdrb_dp_mux_spi_board_select_top.vhd"

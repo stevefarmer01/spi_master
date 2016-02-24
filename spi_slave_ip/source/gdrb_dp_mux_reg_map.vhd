@@ -27,7 +27,7 @@ use IEEE.NUMERIC_STD.ALL;
 use work.multi_array_types_pkg.ALL;     -- Multi-dimension array functions and procedures
 
 --Application specific package
---use work.gdrb_ctrl_bb_address_pkg.ALL;  -- Address constants 
+use work.gdrb_dp_mux_address_pkg.ALL;  -- Address constants 
 
 -- Uncomment the following library declaration if instantiating
 -- any Xilinx leaf cells in this code.
@@ -62,23 +62,6 @@ architecture Behavioral of gdrb_dp_mux_reg_map is
 -------Application specific signals
 --Array of data spanning entire address range
 signal spi_array_to_pins_s, spi_array_from_pins_s : mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0')); -- From/to SPI interface
-
---signal sensor_status_write_en_s : std_logic := '0';
---signal sensor_interupt_flag_s : std_logic := '0';
---signal sensor_status_s, sensor_edge_s, sensor_int_mask_s : std_logic_vector(SPI_DATA_BITS-1 downto 0) := (others => '0');
---signal fault_status_s, fault_edge_s, fault_int_mask_s : std_logic_vector(SPI_DATA_BITS-1 downto 0) := (others => '0');
---signal misc_status_s, misc_edge_s, misc_int_mask_s : std_logic_vector(SPI_DATA_BITS-1 downto 0) := (others => '0');
---
---signal fault_status_write_en_s : std_logic := '0';
---signal fault_interupt_flag_s : std_logic := '0';
---
---signal misc_status_write_en_s : std_logic := '0';
---signal misc_interupt_flag_s : std_logic := '0';
---
---signal diagnostics_interupts_data_s : std_logic_vector(SPI_DATA_BITS-1 downto 0) := (others => '0');
---signal global_interupt_flag_s : std_logic := '0';
---
---signal edge_detect_sensor_to_spi_s, edge_detect_fault_to_spi_s, edge_detect_status_to_spi_s : std_logic_vector(SPI_DATA_BITS-1 downto 0) := (others => '0');
 
 begin
 
@@ -123,13 +106,15 @@ begin
   process(reg_map_array_from_pins)
   begin
       set_all_data(reg_map_array_from_pins, reg_map_array_to_pins);         -- This is needed otherwise vivado 2014.1 throws a synth ACCESS ERROR (lattice diamond was OK anyway)
+
 --    set_data(reg_map_array_to_pins, to_integer(unsigned(ENABLES_OUT_ADDR_C)), get_data(spi_array_to_pins,to_integer(unsigned(ENABLES_OUT_ADDR_C))));          --Out pin (write to pins)
   end process;
   
   --Process to write to array into SPI interface
   process(spi_array_to_pins)
   begin
-    set_all_data(spi_array_to_pins, spi_array_from_pins_s);         -- This is needed otherwise vivado 2014.1 throws a synth ACCESS ERROR (lattice diamond was OK anyway)
+--    set_all_data(spi_array_to_pins, spi_array_from_pins_s);         -- This is needed otherwise vivado 2014.1 throws a synth ACCESS ERROR (lattice diamond was OK anyway)
+
 --      set_data(spi_array_from_pins_s, to_integer(unsigned(SENSOR_STATUS_ADDR_C)), get_data(reg_map_array_from_pins, to_integer(unsigned(SENSOR_STATUS_ADDR_C)))); -- In pin (read only over SPI from FPGA pin)
 --      set_data(spi_array_from_pins_s, to_integer(unsigned(SENSOR_EDGE_ADDR_C)), edge_detect_sensor_to_spi_s);                                                     -- Internal read/write register (Edge detected and so processed by component sensor_status_edge_interupt_inst)
 --      set_data(spi_array_from_pins_s, to_integer(unsigned(SENSOR_INT_MASK_ADDR_C)), get_data(spi_array_to_pins, to_integer(unsigned(SENSOR_INT_MASK_ADDR_C)))); -- Internal read/write register (read/write over SPI)
@@ -142,7 +127,18 @@ begin
 --      set_data(spi_array_from_pins_s, to_integer(unsigned(ENABLES_OUT_ADDR_C)), get_data(spi_array_to_pins,to_integer(unsigned(ENABLES_OUT_ADDR_C))));          -- Out pin (read/write over SPI)
 --      set_data(spi_array_from_pins_s, to_integer(unsigned(DIAGNOSTICS_INTERUPTS_ADDR_C)), diagnostics_interupts_data_s);                                          -- Internal read only register (read only over SPI from FPGA register)
 --      set_data(spi_array_from_pins_s, to_integer(unsigned(MDRB_UES1Addr_addr_c)), std_logic_vector(resize(unsigned(UES_1_c),SPI_DATA_BITS)));                     -- Internal constants (read only over SPI from constant in vhdl package)
---      set_data(spi_array_from_pins_s, to_integer(unsigned(MDRB_UES2Addr_addr_c)), std_logic_vector(resize(unsigned(UES_2_c),SPI_DATA_BITS)));                     -- Internal constants (read only over SPI from constant in vhdl package)
+
+      set_data(spi_array_from_pins_s, gdrb_dp_mux_status_addr_c, std_logic_vector(resize(unsigned(identity_code_gdrb_c & power_ok_c),SPI_DATA_BITS))); -- Internal constants (read only over SPI from constant in vhdl package)
+      set_data(spi_array_from_pins_s, gdrb_dp_mux_line_time_0_addr_c, get_data(spi_array_to_pins, gdrb_dp_mux_line_time_0_addr_c));                    -- Internal read/write register (read/write over SPI)
+      set_data(spi_array_from_pins_s, gdrb_dp_mux_line_time_1_addr_c, get_data(spi_array_to_pins, gdrb_dp_mux_line_time_1_addr_c));                    -- Internal read/write register (read/write over SPI)
+      set_data(spi_array_from_pins_s, gdrb_dp_mux_control_addr_c, get_data(spi_array_to_pins, gdrb_dp_mux_control_addr_c));                            -- Internal read/write register (read/write over SPI)
+      set_data(spi_array_from_pins_s, gdrb_dp_mux_crop_control_addr_c, get_data(spi_array_to_pins, gdrb_dp_mux_crop_control_addr_c));                  -- Internal read/write register (read/write over SPI)
+      set_data(spi_array_from_pins_s, gdrb_dp_mux_pattern_control_addr_c, get_data(spi_array_to_pins, gdrb_dp_mux_pattern_control_addr_c));            -- Internal read/write register (read/write over SPI)
+
+      set_data(spi_array_from_pins_s, gdrb_dp_mux_ues_position_addr_c, std_logic_vector(resize(unsigned(position_c),SPI_DATA_BITS)));                  -- Internal constants (read only over SPI from constant in vhdl package)
+      set_data(spi_array_from_pins_s, gdrb_dp_mux_ues_version_addr_c, std_logic_vector(resize(unsigned(version_c),SPI_DATA_BITS)));                    -- Internal constants (read only over SPI from constant in vhdl package)
+      set_data(spi_array_from_pins_s, gdrb_dp_mux_ues_day_addr_c, std_logic_vector(resize(unsigned(day_c),SPI_DATA_BITS)));                            -- Internal constants (read only over SPI from constant in vhdl package)
+      set_data(spi_array_from_pins_s, gdrb_dp_mux_ues_year_month_addr_c, std_logic_vector(resize(unsigned(month_c & year_c),SPI_DATA_BITS)));          -- Internal constants (read only over SPI from constant in vhdl package)
   end process;
 
 

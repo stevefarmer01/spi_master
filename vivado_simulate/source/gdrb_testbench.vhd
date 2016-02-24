@@ -284,6 +284,12 @@ port
           
 -- pragma synthesis_on
     
+-- pragma translate_off
+    --Testbench only signals for SPI discrete pins testing
+        ghdb_reg_map_array_from_pins : in mem_array_t( 0 to (2**SPI_BOARD_SEL_PROTOCOL_ADDR_BITS)-1, SPI_BOARD_SEL_PROTOCOL_DATA_BITS-1 downto 0);
+        ghdb_reg_map_array_to_pins : out mem_array_t( 0 to (2**SPI_BOARD_SEL_PROTOCOL_ADDR_BITS)-1, SPI_BOARD_SEL_PROTOCOL_DATA_BITS-1 downto 0);
+-- pragma translate_on
+
         ---Clk/Reset
         CLK60M : in std_logic ;
         CLK24M : in std_logic ;
@@ -468,8 +474,8 @@ gdhb_master_spi_bfm : spi_master_tb_board_select_wrap
             --All test finished
             stop_clks_to_dut => ghdb_master_stop_clks_s,             -- : out boolean;
             --Discrete signals
-            reg_map_array_from_pins => ghdb_reg_map_array_from_pins_s, -- : in mem_array_t(0 to (2**SPI_BOARD_SEL_PROTOCOL_ADDR_BITS)-1, SPI_BOARD_SEL_PROTOCOL_DATA_BITS-1 downto 0);
-            reg_map_array_to_pins => ghdb_reg_map_array_to_pins_s      -- : out mem_array_t(0 to (2**SPI_BOARD_SEL_PROTOCOL_ADDR_BITS)-1, SPI_BOARD_SEL_PROTOCOL_DATA_BITS-1 downto 0)
+            reg_map_array_from_pins => ghdb_reg_map_array_to_pins_s, -- : in mem_array_t(0 to (2**SPI_BOARD_SEL_PROTOCOL_ADDR_BITS)-1, SPI_BOARD_SEL_PROTOCOL_DATA_BITS-1 downto 0);
+            reg_map_array_to_pins => ghdb_reg_map_array_from_pins_s      -- : out mem_array_t(0 to (2**SPI_BOARD_SEL_PROTOCOL_ADDR_BITS)-1, SPI_BOARD_SEL_PROTOCOL_DATA_BITS-1 downto 0)
         );
 
 dut_gdrb_ctrl : gdrb_ctrl
@@ -556,6 +562,10 @@ generic map
     )
 port map
     (
+    --Testbench only signals for begalbone SPI discrete pins testing
+    ghdb_reg_map_array_from_pins => ghdb_reg_map_array_from_pins_s, -- : in mem_array_t(0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
+    ghdb_reg_map_array_to_pins => ghdb_reg_map_array_to_pins_s, -- : out mem_array_t(0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0);
+
         ---Clk/Reset
         CLK60M => sys_clk_60m_s,    -- : in std_logic ;
         CLK24M => sys_clk_24m_s,    -- : in std_logic ;
