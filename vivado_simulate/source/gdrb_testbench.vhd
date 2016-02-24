@@ -403,62 +403,6 @@ signal cismux_sdo_s : std_logic := 'Z';
 begin
 
 
-gdrb_dpmux_inst : gdrb_dpmux
-generic map
-    (
-        --number_of_rx_interfaces : integer := 2;
-        testbench_mode => testbench_mode_c -- : boolean := FALSE
-    )
-port map
-    (
-        ---Clk/Reset
-        CLK60M => sys_clk_60m_s,    -- : in std_logic ;
-        CLK24M => sys_clk_24m_s,    -- : in std_logic ;
-        gdrb_reset_bar => open,     -- : in std_logic := '0';
-        ---SPI i/f
-        SCLK => cismux_sclk_s,      -- : in std_logic ;
-        SDI => CISMUX_SDI_s,        -- : in std_logic ;
-        SDO => cismux_sdo_s,        -- : out std_logic ;
-        SEN_BAR => cismux_sen_bar_s -- : in std_logic ;
---        ---Encoder Interpolators
---        X_ENC_A : in std_logic;    
---        X_ENC_B : in std_logic;    
---        X_ENC_Z : in std_logic;
---        Y_ENC_A : in std_logic;    
---        Y_ENC_B : in std_logic;    
---        Y_ENC_Z : in std_logic;
---        Z_ENC_A : in std_logic;    
---        Z_ENC_B : in std_logic;    
---        Z_ENC_Z : in std_logic;
---        ---rx stuff                                    -- Interface taken from amis_bufcon.vhd of E:\usr\microscan\AMIS\DPMC                  -- check SER1_QUAD_MODE, SERDES1_RISING_EDGE, and SER1_HIGH_V_SWING on DHDB tx IC - these are pull up/down resisters
---        ---rx_0
---        SERDES_CLK_0 : in std_logic;                   -- DS90CR218A - Digitiser 1 clock
---        SERDES_D_0 : in std_logic_vector(19 downto 0); -- DS90CR218A - Digitiser 1 data
---        SERDES_LINE_SYNC_0_BAR : in std_logic;         -- DS90CR218A - Digitiser 1 Start of Line (synced with data)                           -- bit 21 of IC interface
---        ---rx_1
---        SERDES_CLK_1 : in std_logic;                   -- DS90CR218A - Digitiser 1 clock
---        SERDES_D_1 : in std_logic_vector(19 downto 0); -- DS90CR218A - Digitiser 1 data
---        SERDES_LINE_SYNC_1_BAR : in std_logic;         -- DS90CR218A - Digitiser 1 Start of Line (synced with data)                           -- bit 21 of IC interface
---        ---tx data
---        DIG_DAT : out std_logic_vector(29 downto 0);   -- DS92LV3241TVS - bits 28 to 0
---        LINE_SYNC_BAR : out std_logic ;                -- DS92LV3241TVS - bit 31 goes to LINE_SYNC_BAR
---        ---tx discrete pin control signal 
---        SER_BISTEN : out std_logic := '0';                   -- goes to discrete BITSEN pin 13 on DS92LV3241TVS
---        ALT_SERDES1_CLK : out std_logic := '0';        -- included in case needed by hardware - goes to discrete pin 11 on DS92LV3241TVS
---        TX_RESET_3V3_BAR : out std_logic := '1';       -- included in case needed by hardware - goes to discrete pin 12 on DS92LV3241TVS
---        ---Discretes
---        gdrb_dpmux_spare1 : in std_logic;
---        gdrb_dpmux_spare2 : in std_logic;
---        gdrb_dpmux_spare3 : in std_logic;
---        HR_ILLUM_STROBE : in std_logic;                 -- Take strobe in and out just in case it needs modifying
---        HR_ILLUM_STROBE_OUT : out std_logic;                 -- Take strobe in and out just in case it needs modifying
---        CIS_LINE_SYNC_IN : in std_logic;                 -- Take CIS board line sync in and out just in case it needs modifying
---        CIS_LINE_SYNC_OUT : out std_logic;                 -- Take CIS board line sync in and out just in case it needs modifying
---        INDEX_CAPTURE : in std_logic := '0';            -- Set all camera link index's to known preset value
---        CIS_HDB_SPARE2 : out std_logic := '0'           -- Spare connection to CIS board
-    
-    );
-    
 ---reset and clocks
 reset_proc : process
 begin
@@ -604,5 +548,60 @@ port map
 --    UI_SPI_SCLK : out std_logic := '1';
 );
 
-
+gdrb_dpmux_inst : gdrb_dpmux
+generic map
+    (
+        --number_of_rx_interfaces : integer := 2;
+        testbench_mode => testbench_mode_c -- : boolean := FALSE
+    )
+port map
+    (
+        ---Clk/Reset
+        CLK60M => sys_clk_60m_s,    -- : in std_logic ;
+        CLK24M => sys_clk_24m_s,    -- : in std_logic ;
+        gdrb_reset_bar => open,     -- : in std_logic := '0';
+        ---SPI i/f
+        SCLK => cismux_sclk_s,      -- : in std_logic ;
+        SDI => CISMUX_SDI_s,        -- : in std_logic ;
+        SDO => cismux_sdo_s,        -- : out std_logic ;
+        SEN_BAR => cismux_sen_bar_s -- : in std_logic ;
+--        ---Encoder Interpolators
+--        X_ENC_A : in std_logic;    
+--        X_ENC_B : in std_logic;    
+--        X_ENC_Z : in std_logic;
+--        Y_ENC_A : in std_logic;    
+--        Y_ENC_B : in std_logic;    
+--        Y_ENC_Z : in std_logic;
+--        Z_ENC_A : in std_logic;    
+--        Z_ENC_B : in std_logic;    
+--        Z_ENC_Z : in std_logic;
+--        ---rx stuff                                    -- Interface taken from amis_bufcon.vhd of E:\usr\microscan\AMIS\DPMC                  -- check SER1_QUAD_MODE, SERDES1_RISING_EDGE, and SER1_HIGH_V_SWING on DHDB tx IC - these are pull up/down resisters
+--        ---rx_0
+--        SERDES_CLK_0 : in std_logic;                   -- DS90CR218A - Digitiser 1 clock
+--        SERDES_D_0 : in std_logic_vector(19 downto 0); -- DS90CR218A - Digitiser 1 data
+--        SERDES_LINE_SYNC_0_BAR : in std_logic;         -- DS90CR218A - Digitiser 1 Start of Line (synced with data)                           -- bit 21 of IC interface
+--        ---rx_1
+--        SERDES_CLK_1 : in std_logic;                   -- DS90CR218A - Digitiser 1 clock
+--        SERDES_D_1 : in std_logic_vector(19 downto 0); -- DS90CR218A - Digitiser 1 data
+--        SERDES_LINE_SYNC_1_BAR : in std_logic;         -- DS90CR218A - Digitiser 1 Start of Line (synced with data)                           -- bit 21 of IC interface
+--        ---tx data
+--        DIG_DAT : out std_logic_vector(29 downto 0);   -- DS92LV3241TVS - bits 28 to 0
+--        LINE_SYNC_BAR : out std_logic ;                -- DS92LV3241TVS - bit 31 goes to LINE_SYNC_BAR
+--        ---tx discrete pin control signal 
+--        SER_BISTEN : out std_logic := '0';                   -- goes to discrete BITSEN pin 13 on DS92LV3241TVS
+--        ALT_SERDES1_CLK : out std_logic := '0';        -- included in case needed by hardware - goes to discrete pin 11 on DS92LV3241TVS
+--        TX_RESET_3V3_BAR : out std_logic := '1';       -- included in case needed by hardware - goes to discrete pin 12 on DS92LV3241TVS
+--        ---Discretes
+--        gdrb_dpmux_spare1 : in std_logic;
+--        gdrb_dpmux_spare2 : in std_logic;
+--        gdrb_dpmux_spare3 : in std_logic;
+--        HR_ILLUM_STROBE : in std_logic;                 -- Take strobe in and out just in case it needs modifying
+--        HR_ILLUM_STROBE_OUT : out std_logic;                 -- Take strobe in and out just in case it needs modifying
+--        CIS_LINE_SYNC_IN : in std_logic;                 -- Take CIS board line sync in and out just in case it needs modifying
+--        CIS_LINE_SYNC_OUT : out std_logic;                 -- Take CIS board line sync in and out just in case it needs modifying
+--        INDEX_CAPTURE : in std_logic := '0';            -- Set all camera link index's to known preset value
+--        CIS_HDB_SPARE2 : out std_logic := '0'           -- Spare connection to CIS board
+    
+    );
+    
 end Behavioral;
