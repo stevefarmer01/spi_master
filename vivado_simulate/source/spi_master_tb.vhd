@@ -961,10 +961,12 @@ begin
                     WRITE (L, string'("ERROR "), left, 6);
                     WRITE (L, string'("Read Port"), left, 12);
                     a_test_has_failed := TRUE;
-                end if;
-    
+                end if;   
                 WRITE (L, string'("Address = "));
-                HWRITE (L, std_logic_vector(to_unsigned(address_of_port,SPI_ADDRESS_BITS)), left, 10);
+                --HWRITE (L, std_logic_vector(to_unsigned(address_of_port,SPI_ADDRESS_BITS)), left, 10);                -- HWRITE FAILS to write anything when trying to write out sizes that are not divisable by a nibble (4bits)..
+                --WRITE (L, address_of_port, left, 10);                                                                  -- ..WRITE FAILS because it writes out integers in base 10 and so..
+                address_to_spi_hex := std_logic_vector(to_unsigned(address_of_port, address_to_spi_hex'LENGTH));         -- ..these 2 lines below will convert std_logic_vector to a nibble divisable length and then..
+                HWRITE (L, address_to_spi_hex, left, 10);                                                               -- ..HWRITE will work correctly priting out the number in hex
                 WRITE (L, string'("Data = "));
                 HWRITE (L, std_logic_vector(to_unsigned(data_of_port,SPI_DATA_BITS)), left, 10);
 
