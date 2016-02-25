@@ -15,7 +15,23 @@
          </top_modules>
       </db_ref>
    </db_ref_list>
-   <WVObjectSize size="33" />
+   <WVObjectSize size="37" />
+   <wvobject db_ref_id="1" fp_name="/gdrb_testbench/ghdb_reg_map_array_from_pins_s" type="array">
+      <obj_property name="ElementShortName">ghdb_reg_map_array_from_pins_s[0:63,7:0]</obj_property>
+      <obj_property name="ObjectShortName">ghdb_reg_map_array_from_pins_s[0:63,7:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/gdrb_testbench/ghdb_reg_map_array_to_pins_s" type="array">
+      <obj_property name="ElementShortName">ghdb_reg_map_array_to_pins_s[0:63,7:0]</obj_property>
+      <obj_property name="ObjectShortName">ghdb_reg_map_array_to_pins_s[0:63,7:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/gdrb_testbench/bb_reg_map_array_from_pins_s" type="array">
+      <obj_property name="ElementShortName">bb_reg_map_array_from_pins_s[0:15,15:0]</obj_property>
+      <obj_property name="ObjectShortName">bb_reg_map_array_from_pins_s[0:15,15:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/gdrb_testbench/bb_reg_map_array_to_pins_s" type="array">
+      <obj_property name="ElementShortName">bb_reg_map_array_to_pins_s[0:15,15:0]</obj_property>
+      <obj_property name="ObjectShortName">bb_reg_map_array_to_pins_s[0:15,15:0]</obj_property>
+   </wvobject>
    <wvobject db_ref_id="1" fp_name="/gdrb_testbench/sys_clk_60m_s" type="logic">
       <obj_property name="ElementShortName">sys_clk_60m_s</obj_property>
       <obj_property name="ObjectShortName">sys_clk_60m_s</obj_property>
