@@ -13,13 +13,13 @@
 Read			8	 			00 			00 			0D 			FF
 
 #### internal reg Test 	- gdrb_dp_mux_line_time_0_addr_c
-Read 	 		8	 			01 			00 			E5			FF	 	# Read default value
-Writ 	 		8	 			01 			11 			E5			FF	 	# Test a SPI write....
+Read 	 		8	 			01 			00 			00			FF	 	# Read default value
+Writ 	 		8	 			01 			11 			00			FF	 	# Test a SPI write....
 Read 	 		8	 			01 			00 			11			FF	 	# ....does a write to the reg map register
 
 #### internal reg Test 	- gdrb_dp_mux_line_time_1_addr_c
-Read 	 		8	 			02 			00 			00			FF	 	# Read default value
-Writ 	 		8	 			02 			22 			00			FF	 	# Test a SPI write....
+Read 	 		8	 			02 			00 			E5			FF	 	# Read default value
+Writ 	 		8	 			02 			22 			E5			FF	 	# Test a SPI write....
 Read 	 		8	 			02 			00 			22			FF	 	# ....does a write to the reg map register
 
 #### internal reg Test 	- gdrb_dp_mux_control_addr_c
