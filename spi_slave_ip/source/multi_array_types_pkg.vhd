@@ -34,6 +34,16 @@ package multi_array_types_pkg is
                         address : natural;
                         bit_address : natural) return std_logic;
 
+    function get_data_bits (input_array : mem_array_t;
+                        address : natural;
+                        bit_address_hi_range : natural;
+                        bit_address_lo_range : natural) return std_logic_vector;
+
+--Below does not annoyingly work used above instead
+--    function get_data_bits (input_array : mem_array_t;
+--                        address : natural;
+--                        bit_address_range : natural range <>) return std_logic_vector;
+
     procedure set_data_v (--signal clk : in std_logic;
                         variable mem_array : inout mem_array_t;
                         address : in natural;
@@ -90,6 +100,35 @@ package body multi_array_types_pkg is
         return data;
     end get_data_bit;
     
+    function get_data_bits (input_array : mem_array_t;
+                        address : natural;
+                        bit_address_hi_range : natural;
+                        bit_address_lo_range : natural) return std_logic_vector is
+--                        bit_address_range : std_logic_vector) return std_logic_vector is
+        variable data : std_logic_vector(bit_address_hi_range downto bit_address_lo_range);
+    begin
+--        for i in bit_address_range'RANGE loop
+        for i in bit_address_hi_range downto bit_address_lo_range loop
+            data(i) := input_array(address,i);
+        end loop;
+        return data;
+    end get_data_bits;
+    
+--Below does not annoyingly work used above instead
+--    function get_data_bits (input_array : mem_array_t;
+--                        address : natural;
+--                        bit_address_range : natural range <>) return std_logic_vector is
+--        variable data : std_logic_vector(bit_address_range);
+--    begin
+--        for i in bit_address_range loop
+--            data(i) := input_array(address,i);
+--        end loop;
+--        return data;
+--    end get_data_bits;
+--
+--Called using....
+--BluePattern_s <= get_data_bits(reg_map_array_to_pins_s, gdrb_dp_mux_pattern_control_addr_c, 7 downto 6);
+
     procedure set_data_v (--signal clk : in std_logic;
                         variable mem_array : inout mem_array_t;
                         address : in natural;

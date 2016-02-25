@@ -27,27 +27,101 @@ Read 	 		8	 			03 			00 			00			FF	 	# Read default value
 Writ 	 		8	 			03 			33 			00			FF	 	# Test a SPI write....
 Read 	 		8	 			03 			00 			33			FF	 	# ....does a write to the reg map register
 
-#### internal reg Test 	- gdrb_dp_mux_crop_control_addr_c
-Read 	 		8	 			20 			00 			00			FF	 	# Read default value
-Writ 	 		8	 			20 			44 			00			FF	 	# Test a SPI write....
-Read 	 		8	 			20 			00 			44			FF	 	# ....does a write to the reg map register
+#### internal reg Test 	- gdrb_dp_mux_illumin_on_lo_addr_c
+Read 	 		8	 			04 			00 			3F			FF	 	# Read default value
+Writ 	 		8	 			04 			44 			00			00	 	# Test a SPI write....
+Read 	 		8	 			04 			00 			44			FF	 	# ....does a write to the reg map register
+#### internal reg Test 	- gdrb_dp_mux_illumin_on_hi_addr_c
+Read 	 		8	 			05 			00 			00			FF	 	# Read default value
+Writ 	 		8	 			05 			55 			00			FF	 	# Test a SPI write....
+Read 	 		8	 			05 			00 			55			FF	 	# ....does a write to the reg map register
 
-#### internal reg Test 	- gdrb_dp_mux_crop_control_addr_c
-Read 	 		8	 			21 			00 			00			FF	 	# Read default value
-Writ 	 		8	 			21 			44 			00			FF	 	# Test a SPI write....
-Read 	 		8	 			21 			00 			44			FF	 	# ....does a write to the reg map register
-Writ 	 		8	 			21 			00 			00			00	 	# Test a SPI write to set up next test
-
-#### out pins Test 		- gdrb_dp_mux_crop_control_addr_c
-RdPo			21				00 							# Test pins before a write 
-Writ 	 		8	 			21 			01 			00			FF	 	# Test a SPI write....
-RdPo			21				01 							# Test pins before a write 
+#### internal reg Test 	- gdrb_dp_mux_illumin_off_lo_addr_c
+Read 	 		8	 			06 			00 			3F			FF	 	# Read default value
+Writ 	 		8	 			06 			66 			00			00	 	# Test a SPI write....
+Read 	 		8	 			06 			00 			66			FF	 	# ....does a write to the reg map register
+#### internal reg Test 	- gdrb_dp_mux_illumin_off_hi_addr_c
+Read 	 		8	 			07 			00 			00			FF	 	# Read default value
+Writ 	 		8	 			07 			77 			00			00	 	# Test a SPI write....
+Read 	 		8	 			07 			00 			77			FF	 	# ....does a write to the reg map register
 
 ####  constant Test 		- gdrb_dp_mux_ues_position_addr_c thru gdrb_dp_mux_ues_year_month_addr_c
 Read			8	 			0C 			00 			FF 			FF
 Read			8	 			0D 			00 			10 			FF
 Read			8	 			0E 			00 			24 			FF
 Read			8	 			0F 			00 			26 			FF
+
+#### internal reg Test 	- gdrb_dp_mux_pattern_control_addr_c
+Read 	 		8	 			21 			00 			00			FF	 	# Read default value
+Writ 	 		8	 			21 			11 			00			FF	 	# Test a SPI write....
+Read 	 		8	 			21 			00 			11			FF	 	# ....does a write to the reg map register
+
+#### internal reg Test 	- gdrb_dp_mux_front_porch_lo_addr_c
+Read 	 		8	 			24 			00 			00			FF	 	# Read default value
+Writ 	 		8	 			24 			44 			00			FF	 	# Test a SPI write....
+Read 	 		8	 			24 			00 			44			FF	 	# ....does a write to the reg map register
+#### internal reg Test 	- gdrb_dp_mux_front_porch_hi_addr_c
+Read 	 		8	 			25 			00 			00			FF	 	# Read default value
+Writ 	 		8	 			25 			55 			00			FF	 	# Test a SPI write....
+Read 	 		8	 			25 			00 			55			FF	 	# ....does a write to the reg map register
+
+#### internal reg Test 	- gdrb_dp_mux_dark_ref_lo_addr_c
+Read 	 		8	 			26 			00 			00			FF	 	# Read default value
+Writ 	 		8	 			26 			66 			00			FF	 	# Test a SPI write....
+Read 	 		8	 			26 			00 			66			FF	 	# ....does a write to the reg map register
+#### internal reg Test 	- gdrb_dp_mux_dark_ref_hi_addr_c
+Read 	 		8	 			27 			00 			00			FF	 	# Read default value
+Writ 	 		8	 			27 			77 			00			FF	 	# Test a SPI write....
+Read 	 		8	 			27 			00 			77			FF	 	# ....does a write to the reg map register
+
+#### internal reg Test 	- gdrb_dp_mux_dark_ref_value_0_addr_c
+Read 	 		8	 			2C 			00 			00			FF	 	# Read default value
+Writ 	 		8	 			2C 			01 			00			FF	 	# Test a SPI write....
+Read 	 		8	 			2C 			00 			01			FF	 	# ....does a write to the reg map register
+#### internal reg Test 	- gdrb_dp_mux_dark_ref_value_1_addr_c
+Read 	 		8	 			2D 			00 			00			FF	 	# Read default value
+Writ 	 		8	 			2D 			08 			00			FF	 	# Test a SPI write....
+Read 	 		8	 			2D 			00 			08			FF	 	# ....does a write to the reg map register
+#### internal reg Test 	- gdrb_dp_mux_dark_ref_value_2_addr_c
+Read 	 		8	 			2E 			00 			00			FF	 	# Read default value
+Writ 	 		8	 			2E 			40 			00			FF	 	# Test a SPI write....
+Read 	 		8	 			2E 			00 			40			FF	 	# ....does a write to the reg map register
+#### internal reg Test 	- gdrb_dp_mux_dark_ref_value_3_addr_c
+Read 	 		8	 			2F 			00 			00			FF	 	# Read default value
+Writ 	 		8	 			2F 			C0 			00			FF	 	# Test a SPI write....
+Read 	 		8	 			2F 			00 			C0			FF	 	# ....does a write to the reg map register
+#### The 4 register values above when split into 3 lots of 10 bits inside FPGA should give 10 bit values of - 0x001, 0x002, 0x004
+
+#### internal reg Test 	- gdrb_dp_mux_dark_ref_value_0_addr_c
+Read 	 		8	 			30 			00 			00			FF	 	# Read default value
+Writ 	 		8	 			30 			01 			00			FF	 	# Test a SPI write....
+Read 	 		8	 			30 			00 			01			FF	 	# ....does a write to the reg map register
+#### internal reg Test 	- gdrb_dp_mux_dark_ref_value_1_addr_c
+Read 	 		8	 			31 			00 			00			FF	 	# Read default value
+Writ 	 		8	 			31 			08 			00			FF	 	# Test a SPI write....
+Read 	 		8	 			31 			00 			08			FF	 	# ....does a write to the reg map register
+#### internal reg Test 	- gdrb_dp_mux_dark_ref_value_2_addr_c
+Read 	 		8	 			32 			00 			00			FF	 	# Read default value
+Writ 	 		8	 			32 			40 			00			FF	 	# Test a SPI write....
+Read 	 		8	 			32 			00 			40			FF	 	# ....does a write to the reg map register
+#### internal reg Test 	- gdrb_dp_mux_dark_ref_value_3_addr_c
+Read 	 		8	 			33 			00 			00			FF	 	# Read default value
+Writ 	 		8	 			33 			C0 			00			FF	 	# Test a SPI write....
+Read 	 		8	 			33 			00 			C0			FF	 	# ....does a write to the reg map register
+#### The 4 register values above when split into 3 lots of 10 bits inside FPGA should give 10 bit values of - 0x001, 0x002, 0x004
+
+
+
+
+#### internal reg Test 	- gdrb_dp_mux_crop_control_addr_c							------ WRITING 1 TO BIT 7 OF gdrb_dp_mux_crop_control_addr_c WILL EVENTUALLY RESET WHOLE FPGA !!!!!!!!!!!!
+Read 	 		8	 			20 			00 			00			FF	 	# Read default value
+Writ 	 		8	 			20 			44 			00			FF	 	# Test a SPI write....
+Read 	 		8	 			20 			00 			44			FF	 	# ....does a write to the reg map register
+#### out pins Test 		- gdrb_dp_mux_crop_control_addr_c
+Writ 	 		8	 			20 			00 			00			00	 	# Test a SPI write....
+RdPo			20				00 											# Test pins after above write 
+Writ 	 		8	 			20 			AA 			00			00	 	# Test a SPI write.... 			 - bit 4 = TX_RESET_3V3_BAR, bit 6 = SER_BISTEN
+RdPo			20				AA 											# Test pins after above write 
 
 
 #### ####                                                                                                   

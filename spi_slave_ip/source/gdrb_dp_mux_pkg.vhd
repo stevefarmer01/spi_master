@@ -71,8 +71,10 @@ package body gdrb_dp_mux_pkg is
         set_data_v(mem_array_v, gdrb_dp_mux_line_time_0_addr_c, std_logic_vector(to_unsigned(16#E5#,SPI_BOARD_SEL_PROTOCOL_DATA_BITS)));                        -- Line time defaults
         set_data_v(mem_array_v, gdrb_dp_mux_line_time_1_addr_c, std_logic_vector(to_unsigned(16#0#,SPI_BOARD_SEL_PROTOCOL_DATA_BITS)));                        -- Line time defaults
         --Examples of how to manually set default values(these will overwrite incremented values above)
-        --set_data_v(mem_array_v, 0, std_logic_vector(to_unsigned(16#8#,SPI_DATA_BITS)));                        -- Example of how to manually set defualt values(these will overwrite incremented values above)
-        --set_data_v(mem_array_v, 1, std_logic_vector(to_unsigned(16#9#,SPI_DATA_BITS)));                        -- Example of how to manually set defualt values(these will overwrite incremented values above)
+        --set_data_v(mem_array_v, 0, std_logic_vector(to_unsigned(16#8#,SPI_BOARD_SEL_PROTOCOL_DATA_BITS)));                        -- Example of how to manually set defualt values(these will overwrite incremented values above)
+        --set_data_v(mem_array_v, 1, std_logic_vector(to_unsigned(16#9#,SPI_BOARD_SEL_PROTOCOL_DATA_BITS)));                        -- Example of how to manually set defualt values(these will overwrite incremented values above)
+        set_data_v(mem_array_v, gdrb_dp_mux_illumin_on_lo_addr_c, std_logic_vector(to_unsigned(16#3F#,SPI_BOARD_SEL_PROTOCOL_DATA_BITS)));                        -- Example of how to manually set defualt values(these will overwrite incremented values above)
+        set_data_v(mem_array_v, gdrb_dp_mux_illumin_off_lo_addr_c, std_logic_vector(to_unsigned(16#3F#,SPI_BOARD_SEL_PROTOCOL_DATA_BITS)));                        -- Example of how to manually set defualt values(these will overwrite incremented values above)
         return mem_array_v;
     end;
     

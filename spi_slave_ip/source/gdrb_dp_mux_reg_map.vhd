@@ -102,12 +102,17 @@ begin
 ----the ports 'write_addr_from_spi' and 'write_enable_from_spi' avaiable.
   
 
-  --Process to write to array connected to output pins of FPGA on top level
-  process(reg_map_array_from_pins)
-  begin
-      set_all_data(reg_map_array_from_pins, reg_map_array_to_pins);         -- This is needed otherwise vivado 2014.1 throws a synth ACCESS ERROR (lattice diamond was OK anyway)
+  ----Process to write all in pins to the array connected to output pins of FPGA on top level
+  --process(reg_map_array_from_pins)
+  --begin
+  --  set_all_data(reg_map_array_from_pins, reg_map_array_to_pins);         -- This is needed otherwise vivado 2014.1 throws a synth ACCESS ERROR (lattice diamond was OK anyway)
+  --end process;
 
---    set_data(reg_map_array_to_pins, to_integer(unsigned(ENABLES_OUT_ADDR_C)), get_data(spi_array_to_pins,to_integer(unsigned(ENABLES_OUT_ADDR_C))));          --Out pin (write to pins)
+  --Process to write to array connected to output pins of FPGA on top level
+  process(spi_array_to_pins)
+  begin
+    set_all_data(spi_array_to_pins, reg_map_array_to_pins);         -- Send all signals from spi array to FPGA pins unless there are spcial pins which require some processing before they are sent
+--    set_data(reg_map_array_to_pins, gdrb_dp_mux_crop_control_addr_c, get_data(spi_array_to_pins, gdrb_dp_mux_crop_control_addr_c));          --Out pin (write to pins)
   end process;
   
   --Process to write to array into SPI interface
@@ -135,10 +140,32 @@ begin
       set_data(spi_array_from_pins_s, gdrb_dp_mux_crop_control_addr_c, get_data(spi_array_to_pins, gdrb_dp_mux_crop_control_addr_c));                  -- Internal read/write register (read/write over SPI)
       set_data(spi_array_from_pins_s, gdrb_dp_mux_pattern_control_addr_c, get_data(spi_array_to_pins, gdrb_dp_mux_pattern_control_addr_c));            -- Internal read/write register (read/write over SPI)
 
+      set_data(spi_array_from_pins_s, gdrb_dp_mux_illumin_on_lo_addr_c, get_data(spi_array_to_pins, gdrb_dp_mux_illumin_on_lo_addr_c));            -- Internal read/write register (read/write over SPI)
+      set_data(spi_array_from_pins_s, gdrb_dp_mux_illumin_on_hi_addr_c, get_data(spi_array_to_pins, gdrb_dp_mux_illumin_on_hi_addr_c));            -- Internal read/write register (read/write over SPI)
+
+      set_data(spi_array_from_pins_s, gdrb_dp_mux_illumin_off_lo_addr_c, get_data(spi_array_to_pins, gdrb_dp_mux_illumin_off_lo_addr_c));            -- Internal read/write register (read/write over SPI)
+      set_data(spi_array_from_pins_s, gdrb_dp_mux_illumin_off_hi_addr_c, get_data(spi_array_to_pins, gdrb_dp_mux_illumin_off_hi_addr_c));            -- Internal read/write register (read/write over SPI)
+
       set_data(spi_array_from_pins_s, gdrb_dp_mux_ues_position_addr_c, std_logic_vector(resize(unsigned(position_c),SPI_DATA_BITS)));                  -- Internal constants (read only over SPI from constant in vhdl package)
       set_data(spi_array_from_pins_s, gdrb_dp_mux_ues_version_addr_c, std_logic_vector(resize(unsigned(version_c),SPI_DATA_BITS)));                    -- Internal constants (read only over SPI from constant in vhdl package)
       set_data(spi_array_from_pins_s, gdrb_dp_mux_ues_day_addr_c, std_logic_vector(resize(unsigned(day_c),SPI_DATA_BITS)));                            -- Internal constants (read only over SPI from constant in vhdl package)
       set_data(spi_array_from_pins_s, gdrb_dp_mux_ues_year_month_addr_c, std_logic_vector(resize(unsigned(month_c & year_c),SPI_DATA_BITS)));          -- Internal constants (read only over SPI from constant in vhdl package)
+
+      set_data(spi_array_from_pins_s, gdrb_dp_mux_front_porch_lo_addr_c, get_data(spi_array_to_pins, gdrb_dp_mux_front_porch_lo_addr_c));            -- Internal read/write register (read/write over SPI)
+      set_data(spi_array_from_pins_s, gdrb_dp_mux_front_porch_hi_addr_c, get_data(spi_array_to_pins, gdrb_dp_mux_front_porch_hi_addr_c));            -- Internal read/write register (read/write over SPI)
+
+      set_data(spi_array_from_pins_s, gdrb_dp_mux_dark_ref_lo_addr_c, get_data(spi_array_to_pins, gdrb_dp_mux_dark_ref_lo_addr_c));            -- Internal read/write register (read/write over SPI)
+      set_data(spi_array_from_pins_s, gdrb_dp_mux_dark_ref_hi_addr_c, get_data(spi_array_to_pins, gdrb_dp_mux_dark_ref_hi_addr_c));            -- Internal read/write register (read/write over SPI)
+
+      set_data(spi_array_from_pins_s, gdrb_dp_mux_dark_ref_value_0_addr_c, get_data(spi_array_to_pins, gdrb_dp_mux_dark_ref_value_0_addr_c));            -- Internal read/write register (read/write over SPI)
+      set_data(spi_array_from_pins_s, gdrb_dp_mux_dark_ref_value_1_addr_c, get_data(spi_array_to_pins, gdrb_dp_mux_dark_ref_value_1_addr_c));            -- Internal read/write register (read/write over SPI)
+      set_data(spi_array_from_pins_s, gdrb_dp_mux_dark_ref_value_2_addr_c, get_data(spi_array_to_pins, gdrb_dp_mux_dark_ref_value_2_addr_c));            -- Internal read/write register (read/write over SPI)
+      set_data(spi_array_from_pins_s, gdrb_dp_mux_dark_ref_value_3_addr_c, get_data(spi_array_to_pins, gdrb_dp_mux_dark_ref_value_3_addr_c));            -- Internal read/write register (read/write over SPI)
+
+      set_data(spi_array_from_pins_s, gdrb_dp_mux_image_value_0_addr_c, get_data(spi_array_to_pins, gdrb_dp_mux_image_value_0_addr_c));            -- Internal read/write register (read/write over SPI)
+      set_data(spi_array_from_pins_s, gdrb_dp_mux_image_value_1_addr_c, get_data(spi_array_to_pins, gdrb_dp_mux_image_value_1_addr_c));            -- Internal read/write register (read/write over SPI)
+      set_data(spi_array_from_pins_s, gdrb_dp_mux_image_value_2_addr_c, get_data(spi_array_to_pins, gdrb_dp_mux_image_value_2_addr_c));            -- Internal read/write register (read/write over SPI)
+      set_data(spi_array_from_pins_s, gdrb_dp_mux_image_value_3_addr_c, get_data(spi_array_to_pins, gdrb_dp_mux_image_value_3_addr_c));            -- Internal read/write register (read/write over SPI)
   end process;
 
 

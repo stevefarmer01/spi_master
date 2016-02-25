@@ -7,13 +7,15 @@
          <top_modules>
             <top_module name="gdrb_ctrl_bb_address_pkg" />
             <top_module name="gdrb_ctrl_bb_pkg" />
+            <top_module name="gdrb_dig_pld_pkg" />
+            <top_module name="gdrb_dp_mux_address_pkg" />
+            <top_module name="gdrb_dp_mux_pkg" />
             <top_module name="gdrb_testbench" />
             <top_module name="multi_array_types_pkg" />
-            <top_module name="spi_board_select_pkg" />
          </top_modules>
       </db_ref>
    </db_ref_list>
-   <WVObjectSize size="16" />
+   <WVObjectSize size="33" />
    <wvobject db_ref_id="1" fp_name="/gdrb_testbench/sys_clk_60m_s" type="logic">
       <obj_property name="ElementShortName">sys_clk_60m_s</obj_property>
       <obj_property name="ObjectShortName">sys_clk_60m_s</obj_property>
@@ -77,5 +79,87 @@
    <wvobject db_ref_id="1" fp_name="/gdrb_testbench/stop_clks_s" type="other">
       <obj_property name="ElementShortName">stop_clks_s</obj_property>
       <obj_property name="ObjectShortName">stop_clks_s</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/gdrb_testbench/gdrb_dpmux_inst/SDO" type="logic">
+      <obj_property name="ElementShortName">SDO</obj_property>
+      <obj_property name="ObjectShortName">SDO</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/gdrb_testbench/ghdb_master_miso_s" type="logic">
+      <obj_property name="ElementShortName">ghdb_master_miso_s</obj_property>
+      <obj_property name="ObjectShortName">ghdb_master_miso_s</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/gdrb_testbench/gdrb_dpmux_inst/IlluminationOn_s" type="array">
+      <obj_property name="ElementShortName">IlluminationOn_s[23:0]</obj_property>
+      <obj_property name="ObjectShortName">IlluminationOn_s[23:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/gdrb_testbench/gdrb_dpmux_inst/IlluminationOff_s" type="array">
+      <obj_property name="ElementShortName">IlluminationOff_s[23:0]</obj_property>
+      <obj_property name="ObjectShortName">IlluminationOff_s[23:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/gdrb_testbench/gdrb_dpmux_inst/PatternCon_s" type="array">
+      <obj_property name="ElementShortName">PatternCon_s[1:0]</obj_property>
+      <obj_property name="ObjectShortName">PatternCon_s[1:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/gdrb_testbench/gdrb_dpmux_inst/RedPattern_s" type="array">
+      <obj_property name="ElementShortName">RedPattern_s[1:0]</obj_property>
+      <obj_property name="ObjectShortName">RedPattern_s[1:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/gdrb_testbench/gdrb_dpmux_inst/GreenPattern_s" type="array">
+      <obj_property name="ElementShortName">GreenPattern_s[1:0]</obj_property>
+      <obj_property name="ObjectShortName">GreenPattern_s[1:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/gdrb_testbench/gdrb_dpmux_inst/BluePattern_s" type="array">
+      <obj_property name="ElementShortName">BluePattern_s[1:0]</obj_property>
+      <obj_property name="ObjectShortName">BluePattern_s[1:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/gdrb_testbench/gdrb_dpmux_inst/FrontPorchLen_s" type="array">
+      <obj_property name="ElementShortName">FrontPorchLen_s[8:0]</obj_property>
+      <obj_property name="ObjectShortName">FrontPorchLen_s[8:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/gdrb_testbench/gdrb_dpmux_inst/DarkRefLen_s" type="array">
+      <obj_property name="ElementShortName">DarkRefLen_s[6:0]</obj_property>
+      <obj_property name="ObjectShortName">DarkRefLen_s[6:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/gdrb_testbench/gdrb_dpmux_inst/DarkRefLen_s" type="array">
+      <obj_property name="ElementShortName">DarkRefLen_s[6:0]</obj_property>
+      <obj_property name="ObjectShortName">DarkRefLen_s[6:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/gdrb_testbench/gdrb_dpmux_inst/RedDarkRef_s" type="array">
+      <obj_property name="ElementShortName">RedDarkRef_s[9:0]</obj_property>
+      <obj_property name="ObjectShortName">RedDarkRef_s[9:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/gdrb_testbench/gdrb_dpmux_inst/GreenDarkRef_s" type="array">
+      <obj_property name="ElementShortName">GreenDarkRef_s[9:0]</obj_property>
+      <obj_property name="ObjectShortName">GreenDarkRef_s[9:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/gdrb_testbench/gdrb_dpmux_inst/BlueDarkRef_s" type="array">
+      <obj_property name="ElementShortName">BlueDarkRef_s[9:0]</obj_property>
+      <obj_property name="ObjectShortName">BlueDarkRef_s[9:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/gdrb_testbench/gdrb_dpmux_inst/RedImage_s" type="array">
+      <obj_property name="ElementShortName">RedImage_s[9:0]</obj_property>
+      <obj_property name="ObjectShortName">RedImage_s[9:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/gdrb_testbench/gdrb_dpmux_inst/GreenImage_s" type="array">
+      <obj_property name="ElementShortName">GreenImage_s[9:0]</obj_property>
+      <obj_property name="ObjectShortName">GreenImage_s[9:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" fp_name="/gdrb_testbench/gdrb_dpmux_inst/BlueImage_s" type="array">
+      <obj_property name="ElementShortName">BlueImage_s[9:0]</obj_property>
+      <obj_property name="ObjectShortName">BlueImage_s[9:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
    </wvobject>
 </wave_config>
