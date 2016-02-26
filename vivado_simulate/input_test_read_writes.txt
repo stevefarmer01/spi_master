@@ -20,7 +20,6 @@ Writ 	1 		2222 		0000 		0000 	# Test a SPI write to toggle all bits in toggle re
 Read 	1 		0000 		0000 		FFFF 	# Read default value
 Writ 	1 		3333 		0000 		0000 	# Test a SPI write....
 Read 	1 		0000 		3333 		FFFF 	# ....does a write to the reg map register
-RdPo	1		0000 							# Test this write has not made it to the pins 
 WrPo	1		4444 							# Test a write to discrete pins.... 
 Read 	1 		0000 		3333 		FFFF 	# ...does nothing to the reg map register
 
@@ -28,7 +27,6 @@ Read 	1 		0000 		3333 		FFFF 	# ...does nothing to the reg map register
 Read 	2 		0000 		0000 		FFFF 	# Read default value
 Writ 	2 		3333 		0000 		0000 	# Test a SPI write....
 Read 	2 		0000 		3333 		FFFF 	# ....does a write to the reg map register
-RdPo	2		0000 							# Test this write has not made it to the pins 
 WrPo	2		4444 							# Test a write to discrete pins.... 
 Read 	2 		0000 		3333 		FFFF 	# ...does nothing to the reg map register
 
@@ -44,7 +42,6 @@ Writ 	4 		6666 		0000 		0000 	# Test a SPI write to toggle all bits in toggle re
 Read 	4 		0000 		0000 		FFFF 	# Read default value
 Writ 	4 		4444 		0000 		0000 	# Test a SPI write....
 Read 	4 		0000 		4444 		FFFF 	# ....does a write to the reg map register
-RdPo	4		0000 							# Test this write has not made it to the pins 
 WrPo	4		5555 							# Test a write to discrete pins.... 
 Read 	4 		0000 		4444 		FFFF 	# ...does nothing to the reg map register
 
@@ -52,7 +49,6 @@ Read 	4 		0000 		4444 		FFFF 	# ...does nothing to the reg map register
 Read 	5 		0000 		0000 		FFFF 	# Read default value
 Writ 	5 		5555 		0000 		0000 	# Test a SPI write....
 Read 	5 		0000 		5555 		FFFF 	# ....does a write to the reg map register
-RdPo	5		0000 							# Test this write has not made it to the pins 
 WrPo	5		6666 							# Test a write to discrete pins.... 
 Read 	5 		0000 		5555 		FFFF 	# ...does nothing to the reg map register
 
@@ -68,7 +64,6 @@ Writ 	7 		6666 		0000 		0000 	# Test a SPI write to toggle all bits in toggle re
 Read 	7 		0000 		0000 		FFFF 	# Read default value
 Writ 	7 		4444 		0000 		0000 	# Test a SPI write....
 Read 	7 		0000 		4444 		FFFF 	# ....does a write to the reg map register
-RdPo	7		0000 							# Test this write has not made it to the pins 
 WrPo	7		5555 							# Test a write to discrete pins.... 
 Read 	7 		0000 		4444 		FFFF 	# ...does nothing to the reg map register
 
@@ -76,7 +71,6 @@ Read 	7 		0000 		4444 		FFFF 	# ...does nothing to the reg map register
 Read 	8 		0000 		0000 		FFFF 	# Read default value
 Writ 	8 		5555 		0000 		0000 	# Test a SPI write....
 Read 	8 		0000 		5555 		FFFF 	# ....does a write to the reg map register
-RdPo	8		0000 							# Test this write has not made it to the pins 
 WrPo	8		6666 							# Test a write to discrete pins.... 
 Read 	8 		0000 		5555 		FFFF 	# ...does nothing to the reg map register
 

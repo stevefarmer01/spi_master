@@ -138,7 +138,8 @@ begin
   --Process to write to array connected to output pins of FPGA on top level
   process(spi_array_to_pins)
   begin
-      set_data(reg_map_array_to_pins, to_integer(unsigned(ENABLES_OUT_ADDR_C)), get_data(spi_array_to_pins,to_integer(unsigned(ENABLES_OUT_ADDR_C))));          --Out pin (write to pins)
+    set_all_data(spi_array_to_pins, reg_map_array_to_pins);         -- Send all signals from spi array to FPGA pins to be mapped to actual pins at top level unless there are spcial pins which require some processing before they are sent
+    --set_data(reg_map_array_to_pins, to_integer(unsigned(ENABLES_OUT_ADDR_C)), get_data(spi_array_to_pins,to_integer(unsigned(ENABLES_OUT_ADDR_C))));          --Out pin (write to pins)
   end process;
   
   --Process to write to array into SPI interface
