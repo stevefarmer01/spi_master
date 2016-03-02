@@ -151,7 +151,7 @@ end component;
 signal reset_s : std_logic := '0';
 signal reset_domain_cross_s : std_logic_vector(1 downto 0) := (others => '0');
 -------Array of data spanning entire address range
-signal spi_array_to_pins_s, spi_array_from_pins_s : mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0) := (others => (others => '0')); -- From/to SPI interface
+signal spi_array_to_pins_s, spi_array_from_pins_s : mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0); -- From/to SPI interface this is initialied in common IP file 'reg_map_spi_slave' by 'MEM_ARRAY_T_INITIALISATION'
 
 signal write_enable_from_spi_s : std_logic := '0';
 signal write_addr_from_spi_s : std_logic_vector(SPI_ADDRESS_BITS-1 downto 0) := (others => '0');
