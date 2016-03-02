@@ -54,6 +54,11 @@ package gdrb_dp_mux_address_pkg is
     constant gdrb_dp_mux_ues_day_addr_c          : natural := 16#0E#;
     constant gdrb_dp_mux_ues_year_month_addr_c   : natural := 16#0F#;
 
+    constant gdrb_dp_mux_SkipPixels_0_Len_addr_c : natural := 16#10#;
+    constant gdrb_dp_mux_SkipPixels_1_Len_addr_c : natural := 16#11#;
+    constant gdrb_dp_mux_RealImage_0_Len_addr_c  : natural := 16#12#;
+    constant gdrb_dp_mux_RealImage_1_Len_addr_c  : natural := 16#13#;
+
     constant gdrb_dp_mux_crop_control_addr_c     : natural := 16#20#;
     constant gdrb_dp_mux_pattern_control_addr_c  : natural := 16#21#;
     constant gdrb_dp_mux_front_porch_lo_addr_c   : natural := 16#24#;
@@ -61,6 +66,9 @@ package gdrb_dp_mux_address_pkg is
 
     constant gdrb_dp_mux_dark_ref_lo_addr_c      : natural := 16#26#;
     constant gdrb_dp_mux_dark_ref_hi_addr_c      : natural := 16#27#;
+
+    constant gdrb_dp_mux_back_porch_lo_addr_c    : natural := 16#28#;
+    constant gdrb_dp_mux_back_porch_hi_addr_c    : natural := 16#29#;
 
     constant gdrb_dp_mux_dark_ref_value_0_addr_c : natural := 16#2C#;
     constant gdrb_dp_mux_dark_ref_value_1_addr_c : natural := 16#2D#;

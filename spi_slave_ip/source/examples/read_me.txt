@@ -1,0 +1,1 @@
+there may be better/newer examples of how to implement this IP if you look in GDRB project code for the SPI

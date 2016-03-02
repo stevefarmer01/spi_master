@@ -146,6 +146,11 @@ begin
       set_data(spi_array_from_pins_s, gdrb_dp_mux_illumin_off_lo_addr_c, get_data(spi_array_to_pins, gdrb_dp_mux_illumin_off_lo_addr_c));            -- Internal read/write register (read/write over SPI)
       set_data(spi_array_from_pins_s, gdrb_dp_mux_illumin_off_hi_addr_c, get_data(spi_array_to_pins, gdrb_dp_mux_illumin_off_hi_addr_c));            -- Internal read/write register (read/write over SPI)
 
+      set_data(spi_array_from_pins_s, gdrb_dp_mux_SkipPixels_0_Len_addr_c, get_data(spi_array_to_pins, gdrb_dp_mux_SkipPixels_0_Len_addr_c));            -- Internal read/write register (read/write over SPI)
+      set_data(spi_array_from_pins_s, gdrb_dp_mux_SkipPixels_1_Len_addr_c, get_data(spi_array_to_pins, gdrb_dp_mux_SkipPixels_1_Len_addr_c));            -- Internal read/write register (read/write over SPI)
+      set_data(spi_array_from_pins_s, gdrb_dp_mux_RealImage_0_Len_addr_c, get_data(spi_array_to_pins, gdrb_dp_mux_RealImage_0_Len_addr_c));            -- Internal read/write register (read/write over SPI)
+      set_data(spi_array_from_pins_s, gdrb_dp_mux_RealImage_1_Len_addr_c, get_data(spi_array_to_pins, gdrb_dp_mux_RealImage_1_Len_addr_c));            -- Internal read/write register (read/write over SPI)
+
       set_data(spi_array_from_pins_s, gdrb_dp_mux_ues_position_addr_c, std_logic_vector(resize(unsigned(position_c),SPI_DATA_BITS)));                  -- Internal constants (read only over SPI from constant in vhdl package)
       set_data(spi_array_from_pins_s, gdrb_dp_mux_ues_version_addr_c, std_logic_vector(resize(unsigned(version_c),SPI_DATA_BITS)));                    -- Internal constants (read only over SPI from constant in vhdl package)
       set_data(spi_array_from_pins_s, gdrb_dp_mux_ues_day_addr_c, std_logic_vector(resize(unsigned(day_c),SPI_DATA_BITS)));                            -- Internal constants (read only over SPI from constant in vhdl package)
@@ -156,6 +161,9 @@ begin
 
       set_data(spi_array_from_pins_s, gdrb_dp_mux_dark_ref_lo_addr_c, get_data(spi_array_to_pins, gdrb_dp_mux_dark_ref_lo_addr_c));            -- Internal read/write register (read/write over SPI)
       set_data(spi_array_from_pins_s, gdrb_dp_mux_dark_ref_hi_addr_c, get_data(spi_array_to_pins, gdrb_dp_mux_dark_ref_hi_addr_c));            -- Internal read/write register (read/write over SPI)
+
+      set_data(spi_array_from_pins_s, gdrb_dp_mux_back_porch_lo_addr_c, get_data(spi_array_to_pins, gdrb_dp_mux_back_porch_lo_addr_c));            -- Internal read/write register (read/write over SPI)
+      set_data(spi_array_from_pins_s, gdrb_dp_mux_back_porch_hi_addr_c, get_data(spi_array_to_pins, gdrb_dp_mux_back_porch_hi_addr_c));            -- Internal read/write register (read/write over SPI)
 
       set_data(spi_array_from_pins_s, gdrb_dp_mux_dark_ref_value_0_addr_c, get_data(spi_array_to_pins, gdrb_dp_mux_dark_ref_value_0_addr_c));            -- Internal read/write register (read/write over SPI)
       set_data(spi_array_from_pins_s, gdrb_dp_mux_dark_ref_value_1_addr_c, get_data(spi_array_to_pins, gdrb_dp_mux_dark_ref_value_1_addr_c));            -- Internal read/write register (read/write over SPI)
@@ -168,6 +176,13 @@ begin
       set_data(spi_array_from_pins_s, gdrb_dp_mux_image_value_3_addr_c, get_data(spi_array_to_pins, gdrb_dp_mux_image_value_3_addr_c));            -- Internal read/write register (read/write over SPI)
   end process;
 
+
+----register address gdrb_dp_mux_SkipPixels_0_Len_c
+----register address gdrb_dp_mux_SkipPixels_1_Len_c
+--signal SkipPixelsLHSLen_s : std_logic_vector(13 downto 0) ;
+----register address gdrb_dp_mux_RealImage_0_Len_c
+----register address gdrb_dp_mux_RealImage_1_Len_c
+--signal RealImageLHSLen_s : std_logic_vector(13 downto 0) ; 
 
 
 spi_array_from_pins <= spi_array_from_pins_s;
