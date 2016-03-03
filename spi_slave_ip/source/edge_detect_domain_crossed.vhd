@@ -43,9 +43,9 @@ architecture Behavioral of edge_detect_domain_crossed is
 
     component level_change_domain is
         generic(number_of_domain_cross_regs : natural := 2);
-        Port ( signal_in : in  STD_LOGIC;
-               SystemClk : in  STD_LOGIC;
-               signal_out : out  STD_LOGIC
+        Port ( signal_in : in  std_logic_vector;
+               SystemClk : in  std_logic;
+               signal_out : out  std_logic_vector
                );
     end component;
 
@@ -59,9 +59,9 @@ begin
                      number_of_domain_cross_regs => 2 -- : natural := 2
                      )
         Port map (  
-                  signal_in => signal_to_detect,   -- : in  STD_LOGIC;
-                  SystemClk => clk,                -- : in  STD_LOGIC;
-                  signal_out => signal_to_detect_s -- : out  STD_LOGIC
+                  signal_in(0) => signal_to_detect,   -- : in  std_logic_vector;
+                  SystemClk => clk,                   -- : in  std_logic;
+                  signal_out(0) => signal_to_detect_s -- : out  std_logic_vector
                   );
 
     reg_proc : process
