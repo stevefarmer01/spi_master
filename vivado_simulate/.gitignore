@@ -38,6 +38,6 @@
 
 ##### input test script which is being developed in conjunction with vivado_synth/spi_master.srcs/sources_1/imports/spi_master_tb.vhd ######
 !/**/input_test_*.txt
-!/**/*_input_test.txt
+#!/**/*_input_test.txt
 !/**/input_test_example.txt
 !/**/output_test_example.txt

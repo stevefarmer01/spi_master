@@ -9,12 +9,15 @@ class cmd_simple(cmd.Cmd):
 # to include test 4 need to add ability to modify vhdl generics during simulation
 #  test_list_dict = {'0' : 'input_test_read_writes.txt', '1' : 'input_test_interupt_sensor.txt', '2' : 'input_test_interupt_fault.txt', '3' : 'input_test_interupt_misc.txt', '4' : 'input_test_vanilla_read_writes.txt'}
   test_list_dict = {
-                    '0' : ['input_test_gdrb_ctrl_bb_read_writes.txt', r'simulate_gui.bat', r'simulate_no_gui.bat', 'input_test.txt', 'output_test.txt'], 
-                    '1' : ['input_test_gdrb_ctrl_bb_interupt_sensor.txt', r'simulate_gui.bat', r'simulate_no_gui.bat', 'input_test.txt', 'output_test.txt'], 
-                    '2' : ['input_test_gdrb_ctrl_bb_interupt_fault.txt', r'simulate_gui.bat', r'simulate_no_gui.bat', 'input_test.txt', 'output_test.txt'], 
-                    '3' : ['input_test_gdrb_ctrl_bb_interupt_misc.txt', r'simulate_gui.bat', r'simulate_no_gui.bat', 'input_test.txt', 'output_test.txt'], 
-                    '4' : ['input_test_gdrb_ctrl_bb_read_writes.txt', r'gdrb_testbench_simulate_gui.bat', r'gdrb_testbench_simulate_no_gui.bat', 'begalbone_master_spi_input_test.txt', 'begalbone_master_spi_output_test.txt'],
-                    '5' : ['input_test_gdrb_dp_mux_spi.txt', r'gdrb_testbench_simulate_gui.bat', r'gdrb_testbench_simulate_no_gui.bat', 'gdhb_master_spi_input_test.txt', 'gdhb_master_spi_output_test.txt'] 
+                    '0' : ['input_test_gdrb_ctrl_bb_read_writes.txt', r'simulate_gui.bat', r'simulate_no_gui.bat', 'input_test.txt', 'output_test.txt', 'DUT instantiated in -- spi_master_tb.vhd and runs test vector -- input_test_gdrb_ctrl_bb_read_writes.txt'], 
+                    '1' : ['input_test_gdrb_ctrl_bb_interupt_sensor.txt', r'simulate_gui.bat', r'simulate_no_gui.bat', 'input_test.txt', 'output_test.txt', 'DUT instantiated in -- spi_master_tb.vhd and runs test vector -- input_test_gdrb_ctrl_bb_interupt_sensor.txt'], 
+                    '2' : ['input_test_gdrb_ctrl_bb_interupt_fault.txt', r'simulate_gui.bat', r'simulate_no_gui.bat', 'input_test.txt', 'output_test.txt', 'DUT instantiated in -- spi_master_tb.vhd and runs test vector -- input_test_gdrb_ctrl_bb_interupt_fault.txt'], 
+                    '3' : ['input_test_gdrb_ctrl_bb_interupt_misc.txt', r'simulate_gui.bat', r'simulate_no_gui.bat', 'input_test.txt', 'output_test.txt', 'DUT instantiated in -- spi_master_tb.vhd and runs test vector -- input_test_gdrb_ctrl_bb_interupt_misc.txt'], 
+                    '4' : ['input_test_gdrb_ctrl_bb_read_writes.txt', r'gdrb_testbench_simulate_gui.bat', r'gdrb_testbench_simulate_no_gui.bat', 'begalbone_master_spi_input_test.txt', 'begalbone_master_spi_output_test.txt', 'DUT instantiated in -- gdrb_testbench.vhd and runs test vector -- input_test_gdrb_ctrl_bb_read_writes.txt'],
+                    '5' : ['input_test_gdrb_ctrl_bb_interupt_sensor.txt', r'gdrb_testbench_simulate_gui.bat', r'gdrb_testbench_simulate_no_gui.bat', 'begalbone_master_spi_input_test.txt', 'begalbone_master_spi_output_test.txt', 'DUT instantiated in -- gdrb_testbench.vhd and runs test vector -- input_test_gdrb_ctrl_bb_interupt_sensor.txt'],
+                    '6' : ['input_test_gdrb_ctrl_bb_interupt_fault.txt', r'gdrb_testbench_simulate_gui.bat', r'gdrb_testbench_simulate_no_gui.bat', 'begalbone_master_spi_input_test.txt', 'begalbone_master_spi_output_test.txt', 'DUT instantiated in -- gdrb_testbench.vhd and runs test vector -- input_test_gdrb_ctrl_bb_interupt_fault.txt'],
+                    '7' : ['input_test_gdrb_ctrl_bb_interupt_misc.txt', r'gdrb_testbench_simulate_gui.bat', r'gdrb_testbench_simulate_no_gui.bat', 'begalbone_master_spi_input_test.txt', 'begalbone_master_spi_output_test.txt', 'DUT instantiated in -- gdrb_testbench.vhd and runs test vector -- input_test_gdrb_ctrl_bb_interupt_misc.txt'],
+                    '8' : ['input_test_gdrb_dp_mux_spi.txt', r'gdrb_testbench_simulate_gui.bat', r'gdrb_testbench_simulate_no_gui.bat', 'gdhb_master_spi_input_test.txt', 'gdhb_master_spi_output_test.txt', 'DUT instantiated in -- gdrb_testbench.vhd and runs test vector -- input_test_gdrb_dp_mux_spi.txt'] 
                     }
 #  input_test_file = "input_test.txt"
 #  output_test_file = "output_test.txt"
@@ -110,7 +113,7 @@ class cmd_simple(cmd.Cmd):
 
   def do_list_tests(self, test_number):
     for k,v in self.test_list_dict.items():
-      print k," - ",v
+      print k," - ",v[5]
 
 
   def do_exit(self, line):
