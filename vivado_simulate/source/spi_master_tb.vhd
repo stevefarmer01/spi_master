@@ -753,6 +753,7 @@ input_vector_file_test_gen : if DUT_TYPE = "input_vector_file_test" generate
         variable check_data_from_spi_v : std_logic_vector(SPI_DATA_BITS - 1 downto 0) := (others => '1');
         variable check_data_mask_v : std_logic_vector(SPI_DATA_BITS - 1 downto 0) := (others => '1'); -- Default to all '1's so that all bits of the result are checked unless mask set otherwise by input testing parameters
         variable line_of_comments_v : string(1 to line_of_comments'LENGTH) := (others => ' ');
+        variable input_wait_time_v : time := 0 ns;
     begin
         FILE_OPEN(status, F, "..\\" & filename_prefix & "input_test.txt", READ_MODE);
         if status /= OPEN_OK then
@@ -780,6 +781,10 @@ input_vector_file_test_gen : if DUT_TYPE = "input_vector_file_test" generate
                     line_of_comments <= line_of_comments_v;
                     stop_clks <= FALSE; 
                     wait for 0 ns;  -- Allow stop_clks to get to file_output_proc process
+                elsif input_command_v = "Wait"  then                                        -- Wait command
+                    READ(L, input_wait_time_v);
+                    wait for input_wait_time_v;
+
                 elsif input_command_v = "Read" or input_command_v = "Writ"  then            -- Read or Write command
 
                     input_command_type <= read_write_spi_cmd;
