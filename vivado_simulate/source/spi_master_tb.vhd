@@ -67,6 +67,8 @@
 --.    constant SPI_DATA_BITS : integer := 16;
 --.    constant DATA_SIZE : integer   := SPI_ADDRESS_BITS+SPI_DATA_BITS+1;                             -- Total data size = read/write bit + address + data
 
+-- test
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
