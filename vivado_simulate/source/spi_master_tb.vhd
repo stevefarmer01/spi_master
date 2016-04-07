@@ -69,6 +69,8 @@
 
 -- test
 -- test_1
+-- test_2
+
 
 library ieee;
 use ieee.std_logic_1164.all;
