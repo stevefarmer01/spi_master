@@ -116,7 +116,7 @@ signal board_select_mux_ss_n_s, miso_board_select_mux_ss_n_s : std_logic_vector(
 signal board_select_valid_r0 : std_logic := '0';
 signal board_select_valid_delayed_s : std_logic_vector(valid_delayed_c-1 downto 0) := (others => '0');
 signal board_select_valid_delayed_bit_s : std_logic := '0';
-signal miso_s : std_logic_vector(((2**SPI_BOARD_SEL_ADDR_BITS)-1) downto 0) := (others => '0');
+signal miso_s : std_logic_vector(((2**SPI_BOARD_SEL_ADDR_BITS)-1) downto 0) := (others => 'Z');
 
 begin
 
