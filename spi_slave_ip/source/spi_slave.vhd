@@ -91,30 +91,30 @@ architecture rtl_arch of spi_slave is
              );
     end component;
 
-    signal data_in_reg_i            : std_logic_vector(DATA_SIZE - 1 downto 0);
-    signal rxdata_reg_i             : std_logic_vector(DATA_SIZE - 1 downto 0);
-    signal txdata_reg_i             : std_logic_vector(DATA_SIZE - 1 downto 0);
-    signal rx_shift_data_pos_sclk_i : std_logic_vector(DATA_SIZE - 1 downto 0);
-    signal rx_shift_data_neg_sclk_i : std_logic_vector(DATA_SIZE - 1 downto 0);
+    signal data_in_reg_i            : std_logic_vector(DATA_SIZE - 1 downto 0) := (others => '0');
+    signal rxdata_reg_i             : std_logic_vector(DATA_SIZE - 1 downto 0) := (others => '0');
+    signal txdata_reg_i             : std_logic_vector(DATA_SIZE - 1 downto 0) := (others => '0');
+    signal rx_shift_data_pos_sclk_i : std_logic_vector(DATA_SIZE - 1 downto 0) := (others => '0');
+    signal rx_shift_data_neg_sclk_i : std_logic_vector(DATA_SIZE - 1 downto 0) := (others => '0');
 
-    signal tx_error_i : std_logic;
-    signal rx_error_i : std_logic;
-    signal tx_ready_i : std_logic;
-    signal rx_ready_i : std_logic;
+    signal tx_error_i : std_logic := '0';
+    signal rx_error_i : std_logic := '0';
+    signal tx_ready_i : std_logic := '0';
+    signal rx_ready_i : std_logic := '0';
 
-    signal miso_00_i, miso_01_i, miso_10_i, miso_11_i : std_logic;
+    signal miso_00_i, miso_01_i, miso_10_i, miso_11_i : std_logic := '0';
 
-    signal rx_done_pos_sclk_i, rx_done_neg_sclk_i, rx_done_reg1_i, rx_done_reg2_i, rx_done_reg3_i : std_logic;
-    signal tx_done_pos_sclk_i, tx_done_neg_sclk_i, tx_done_reg1_i, tx_done_reg2_i, tx_done_reg3_i : std_logic;
-    signal rx_data_count_pos_sclk_i                                                               : std_logic_vector(5 downto 0);
-    signal rx_data_count_neg_sclk_i                                                               : std_logic_vector(5 downto 0);
-    signal tx_data_count_pos_sclk_i                                                               : std_logic_vector(5 downto 0);
-    signal tx_data_count_neg_sclk_i                                                               : std_logic_vector(5 downto 0);
+    signal rx_done_pos_sclk_i, rx_done_neg_sclk_i, rx_done_reg1_i, rx_done_reg2_i, rx_done_reg3_i : std_logic := '0';
+    signal tx_done_pos_sclk_i, tx_done_neg_sclk_i, tx_done_reg1_i, tx_done_reg2_i, tx_done_reg3_i : std_logic := '0';
+    signal rx_data_count_pos_sclk_i                                                               : std_logic_vector(5 downto 0) := (others => '0');
+    signal rx_data_count_neg_sclk_i                                                               : std_logic_vector(5 downto 0) := (others => '0');
+    signal tx_data_count_pos_sclk_i                                                               : std_logic_vector(5 downto 0) := (others => '0');
+    signal tx_data_count_neg_sclk_i                                                               : std_logic_vector(5 downto 0) := (others => '0');
 
-    signal data_valid_i : std_logic;
-    signal tx_done_pulse_i : std_logic;
-    signal tx_error_reg_1_i : std_logic;
-    signal rx_error_reg_1_i : std_logic;
+    signal data_valid_i : std_logic := '0';
+    signal tx_done_pulse_i : std_logic := '0';
+    signal tx_error_reg_1_i : std_logic := '0';
+    signal rx_error_reg_1_i : std_logic := '0';
     signal i_sclk_rising_edge_s, i_sclk_falling_edge_s : std_logic := '0';
 
 begin
@@ -232,13 +232,13 @@ begin
             rx_data_count_pos_sclk_i         <= (others => '0');
             rx_done_pos_sclk_i               <= '0';
         elsif rising_edge(i_sys_clk) then
-            if i_ssn = '1' then
-                rx_data_count_pos_sclk_i <= (others => '0');
-            else
+--            if i_ssn = '1' then
+--                rx_data_count_pos_sclk_i <= (others => '0');
+--            else
                 if i_sclk_rising_edge_s = '1' then
                     if (i_ssn = '0' and ((i_cpol = '0' and i_cpha = '0') or (i_cpol = '1' and i_cpha = '1'))) then
                         if (rx_data_count_pos_sclk_i = DATA_SIZE - 1) then
-    --                        rx_data_count_pos_sclk_i <= (others => '0');
+                            rx_data_count_pos_sclk_i <= (others => '0');
                             rx_done_pos_sclk_i       <= '1';
                         elsif (i_ssn = '0') then
                             rx_data_count_pos_sclk_i <= rx_data_count_pos_sclk_i + 1;
@@ -247,7 +247,7 @@ begin
                     end if;
                 end if;
             end if;
-        end if;
+--        end if;
     end process;
 
 ----------------------------------------------------------------------------
@@ -279,19 +279,19 @@ begin
             rx_data_count_neg_sclk_i     <= (others => '0');
             rx_done_neg_sclk_i           <= '0';
         elsif rising_edge(i_sys_clk) then
-            if i_ssn = '1' then
-                rx_data_count_neg_sclk_i <= (others => '0');
-            else
+--            if i_ssn = '1' then
+--                rx_data_count_neg_sclk_i <= (others => '0');
+--            else
                 if i_sclk_falling_edge_s = '1' then
                     if (rx_data_count_neg_sclk_i = DATA_SIZE - 1) then
---                        rx_data_count_neg_sclk_i <= (others => '0');
+                        rx_data_count_neg_sclk_i <= (others => '0');
                         rx_done_neg_sclk_i       <= '1';
                     elsif (i_ssn = '0') then
                         rx_data_count_neg_sclk_i <= rx_data_count_neg_sclk_i + 1;
                         rx_done_neg_sclk_i       <= '0';
                     end if;
                 end if;
-            end if;
+--            end if;
         end if;
     end process;
 
@@ -307,7 +307,8 @@ begin
             rx_done_reg2_i     <= '0';
             rx_done_reg3_i     <= '0';
         elsif rising_edge(i_sys_clk) then
-            if (i_ssn = '0' and ((i_cpol = '0' and i_cpha = '0') or (i_cpol = '1' and i_cpha = '1'))) then
+--            if (i_ssn = '0' and ((i_cpol = '0' and i_cpha = '0') or (i_cpol = '1' and i_cpha = '1'))) then
+            if (((i_cpol = '0' and i_cpha = '0') or (i_cpol = '1' and i_cpha = '1'))) then
                 rx_done_reg1_i <= rx_done_pos_sclk_i;
             else
                 rx_done_reg1_i <= rx_done_neg_sclk_i;
