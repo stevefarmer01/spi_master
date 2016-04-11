@@ -34,6 +34,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 entity edge_detect_domain_crossed is
     Port ( clk : in std_logic;
            signal_to_detect : in std_logic;
+           signal_out : out std_logic;
            rising_edge_detected : out std_logic;
            falling_edge_detected : out std_logic
          );
@@ -72,5 +73,7 @@ begin
 
     rising_edge_detected <= '1' when signal_to_detect_r0 = '0' and signal_to_detect_s = '1' else '0';
     falling_edge_detected <= '1' when signal_to_detect_r0 = '1' and signal_to_detect_s = '0' else '0';
+
+    signal_out <= signal_to_detect_s;
 
 end Behavioral;

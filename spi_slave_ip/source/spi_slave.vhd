@@ -86,6 +86,7 @@ architecture rtl_arch of spi_slave is
     component edge_detect_domain_crossed is
         Port ( clk : in std_logic;
                signal_to_detect : in std_logic;
+               signal_out : out std_logic;
                rising_edge_detected : out std_logic;
                falling_edge_detected : out std_logic
              );
@@ -117,6 +118,9 @@ architecture rtl_arch of spi_slave is
     signal rx_error_reg_1_i : std_logic := '0';
     signal i_sclk_rising_edge_s, i_sclk_falling_edge_s : std_logic := '0';
 
+    signal i_ssn_rising_edge_s, i_ssn_falling_edge_s : std_logic := '0';
+    signal i_ssn_s : std_logic := '0';
+
 begin
 
     o_tx_ready                <= tx_ready_i;
@@ -133,6 +137,14 @@ begin
                falling_edge_detected => i_sclk_falling_edge_s -- : out std_logic
              );
 
+    i_ssn_edge_detect : edge_detect_domain_crossed
+        Port map(
+               clk => i_sys_clk,                             -- : in std_logic;
+               signal_to_detect => i_ssn,                    -- : in std_logic;
+               signal_out => i_ssn_s,                        -- : out std_logic;
+               rising_edge_detected => i_ssn_rising_edge_s,  -- : out std_logic;
+               falling_edge_detected => i_ssn_falling_edge_s -- : out std_logic
+             );
 ----------------------------------------------------------------------------------------------------
 -- Data input latch process
 -- Latched only when slave enabled, Transmitter ready and wr is high.
@@ -167,7 +179,7 @@ begin
         end if;
     end process;
     
-    miso_tri_en               <= i_ssn;
+    miso_tri_en               <= i_ssn_s;
 
 ----------------------------------------------------------------------------------------------------
 -- Receive Data Register, mux it based on sampling
@@ -215,7 +227,7 @@ begin
             rx_shift_data_pos_sclk_i         <= (others => '0');
         elsif rising_edge(i_sys_clk) then
             if i_sclk_rising_edge_s = '1' then
-                if (i_ssn = '0' and ((i_cpol = '0' and i_cpha = '0') or (i_cpol = '1' and i_cpha = '1'))) then
+                if (i_ssn_s = '0' and ((i_cpol = '0' and i_cpha = '0') or (i_cpol = '1' and i_cpha = '1'))) then
                     if (i_lsb_first = '1') then
                         rx_shift_data_pos_sclk_i <= i_mosi & rx_shift_data_pos_sclk_i(DATA_SIZE-1 downto 1);
                     else
@@ -232,15 +244,18 @@ begin
             rx_data_count_pos_sclk_i         <= (others => '0');
             rx_done_pos_sclk_i               <= '0';
         elsif rising_edge(i_sys_clk) then
-            if i_ssn = '1' then
+--            if i_ssn_s = '1' then
+--                rx_data_count_pos_sclk_i <= (others => '0');
+            if i_ssn_rising_edge_s = '1' then
                 rx_data_count_pos_sclk_i <= (others => '0');
+                rx_done_pos_sclk_i       <= '1';
             else
                 if i_sclk_rising_edge_s = '1' then
-                    if (i_ssn = '0' and ((i_cpol = '0' and i_cpha = '0') or (i_cpol = '1' and i_cpha = '1'))) then
-                        if (rx_data_count_pos_sclk_i = DATA_SIZE - 1) then
---                            rx_data_count_pos_sclk_i <= (others => '0');
-                            rx_done_pos_sclk_i       <= '1';
-                        elsif (i_ssn = '0') then
+                    if (i_ssn_s = '0' and ((i_cpol = '0' and i_cpha = '0') or (i_cpol = '1' and i_cpha = '1'))) then
+--                        if (rx_data_count_pos_sclk_i = DATA_SIZE - 1) then
+------                            rx_data_count_pos_sclk_i <= (others => '0');
+--                            rx_done_pos_sclk_i       <= '1';
+                        if (i_ssn_s = '0') then
                             rx_data_count_pos_sclk_i <= rx_data_count_pos_sclk_i + 1;
                             rx_done_pos_sclk_i       <= '0';
                         end if;
@@ -249,6 +264,9 @@ begin
             end if;
         end if;
     end process;
+
+--               rising_edge_detected => i_ssn_rising_edge_s,  -- : out std_logic;
+--               falling_edge_detected => i_ssn_falling_edge_s -- : out std_logic
 
 ----------------------------------------------------------------------------
 --- MOSI Sampling : Sample at negedge of SCLK for
@@ -262,7 +280,7 @@ begin
             rx_shift_data_neg_sclk_i         <= (others => '0');
         elsif rising_edge(i_sys_clk) then
             if i_sclk_falling_edge_s = '1' then
-                if (i_ssn = '0' and ((i_cpol = '1' and i_cpha = '0') or (i_cpol = '0' and i_cpha = '1'))) then
+                if (i_ssn_s = '0' and ((i_cpol = '1' and i_cpha = '0') or (i_cpol = '0' and i_cpha = '1'))) then
                     if (i_lsb_first = '1') then
                         rx_shift_data_neg_sclk_i <= i_mosi & rx_shift_data_neg_sclk_i(DATA_SIZE-1 downto 1);
                     else
@@ -279,14 +297,14 @@ begin
             rx_data_count_neg_sclk_i     <= (others => '0');
             rx_done_neg_sclk_i           <= '0';
         elsif rising_edge(i_sys_clk) then
-            if i_ssn = '1' then
+            if i_ssn_s = '1' then
                 rx_data_count_neg_sclk_i <= (others => '0');
             else
                 if i_sclk_falling_edge_s = '1' then
                     if (rx_data_count_neg_sclk_i = DATA_SIZE - 1) then
 --                        rx_data_count_neg_sclk_i <= (others => '0');
                         rx_done_neg_sclk_i       <= '1';
-                    elsif (i_ssn = '0') then
+                    elsif (i_ssn_s = '0') then
                         rx_data_count_neg_sclk_i <= rx_data_count_neg_sclk_i + 1;
                         rx_done_neg_sclk_i       <= '0';
                     end if;
@@ -307,7 +325,7 @@ begin
             rx_done_reg2_i     <= '0';
             rx_done_reg3_i     <= '0';
         elsif rising_edge(i_sys_clk) then
---            if (i_ssn = '0' and ((i_cpol = '0' and i_cpha = '0') or (i_cpol = '1' and i_cpha = '1'))) then
+--            if (i_ssn_s = '0' and ((i_cpol = '0' and i_cpha = '0') or (i_cpol = '1' and i_cpha = '1'))) then
             if (((i_cpol = '0' and i_cpha = '0') or (i_cpol = '1' and i_cpha = '1'))) then
                 rx_done_reg1_i <= rx_done_pos_sclk_i;
             else
@@ -329,9 +347,9 @@ begin
         elsif rising_edge(i_sys_clk) then
             if (rx_done_reg2_i = '1' and rx_done_reg3_i = '0') then
                 rx_ready_i <= '1';
---            elsif (i_ssn = '1' and i_csn = '0') then
+--            elsif (i_ssn_s = '1' and i_csn = '0') then
 --                rx_ready_i <= '1';
-	    elsif (i_ssn = '0' and i_csn = '0') then
+	    elsif (i_ssn_s = '0' and i_csn = '0') then
                 rx_ready_i <= '0';
             end if;
         end if;
@@ -538,9 +556,9 @@ begin
 	elsif i_sys_clk'event and i_sys_clk = '1' then  -- rising clock edge
 	    if (tx_done_reg2_i = '1' and tx_done_reg3_i = '0') then
 		tx_ready_i <= '1';
-	    elsif (i_ssn = '1' and i_csn = '0') then
+	    elsif (i_ssn_s = '1' and i_csn = '0') then
 		tx_ready_i <= '1';
-	    elsif (i_csn = '0' and i_ssn = '0') then
+	    elsif (i_csn = '0' and i_ssn_s = '0') then
                 tx_ready_i <= '0';
 	    end if;
 	end if;
@@ -583,11 +601,11 @@ begin
 	if i_sys_rst = '1' then  		-- asynchronous reset (active high)
 	    data_valid_i <= '0';
 	elsif i_sys_clk'event and i_sys_clk = '1' then  -- rising clock edge
-	    if (i_wr = '1' and i_ssn = '0') then
+	    if (i_wr = '1' and i_ssn_s = '0') then
 		  data_valid_i <= '1';
 	    elsif tx_done_pulse_i = '1' then
 		  data_valid_i <= '0';
-	    elsif i_ssn = '1' then
+	    elsif i_ssn_s = '1' then
 		  data_valid_i <= '0';
 	    end if;
 	end if;
@@ -599,7 +617,7 @@ begin
 	if i_sys_rst = '1' then  		-- asynchronous reset (active high)
 	    o_tx_ack <= '0';
 	elsif i_sys_clk'event and i_sys_clk = '1' then  -- rising clock edge
-	    if (i_ssn = '1' and data_valid_i = '1') then
+	    if (i_ssn_s = '1' and data_valid_i = '1') then
 		  o_tx_ack <= '0';
 	    elsif tx_done_pulse_i = '1' and data_valid_i = '1' then
 		  o_tx_ack <= '1';
@@ -614,7 +632,7 @@ begin
 	if i_sys_rst = '1' then  		-- asynchronous reset (active high)
 	    o_tx_no_ack <= '0';
 	elsif i_sys_clk'event and i_sys_clk = '1' then  -- rising clock edge
-	    if (i_ssn = '1' and data_valid_i = '1') then
+	    if (i_ssn_s = '1' and data_valid_i = '1') then
 		o_tx_no_ack <= '1';
 	    elsif tx_done_reg3_i = '1' and data_valid_i = '1' then
 		o_tx_no_ack <= '0';

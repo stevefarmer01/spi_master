@@ -163,8 +163,8 @@ begin
         else
             rx_valid_S <= '0';
             o_rx_ready_slave_r0 <= o_rx_ready_slave_s;
-            if o_rx_ready_rising_edge_s = '1' and ss_n = '0' then
---            if o_rx_ready_rising_edge_s = '1' then
+--            if o_rx_ready_rising_edge_s = '1' and ss_n = '0' then
+            if o_rx_ready_rising_edge_s = '1' then
                 rx_valid_s <= '1';
                 rx_read_write_bit_s <= o_data_slave_s(SPI_ADDRESS_BITS+SPI_DATA_BITS);                     -- Tead/Write bit is the MSb
                 rx_address_s <= o_data_slave_s((SPI_ADDRESS_BITS-1)+SPI_DATA_BITS downto SPI_DATA_BITS); -- Address bits are the next MSb's after data
