@@ -49,7 +49,9 @@ use ieee.std_logic_unsigned.all;
 
 entity spi_slave is
     generic(
-        DATA_SIZE  :     natural := 16);
+            DATA_SIZE  :     natural := 16;
+            make_rx_data_happen_at_ss_n_high_edge : boolean := FALSE     -- When set to TRUE SPI rx data will be valid when ss_n goes high (this will cause board select IP to fail but will allow other SPI configurations to work)
+            );
     port (
         i_sys_clk  : in  std_logic;  	-- system clock
         i_sys_rst  : in  std_logic;  	-- system reset
@@ -137,14 +139,24 @@ begin
                falling_edge_detected => i_sclk_falling_edge_s -- : out std_logic
              );
 
-    i_ssn_edge_detect : edge_detect_domain_crossed
-        Port map(
-               clk => i_sys_clk,                             -- : in std_logic;
-               signal_to_detect => i_ssn,                    -- : in std_logic;
-               signal_out => i_ssn_s,                        -- : out std_logic;
-               rising_edge_detected => i_ssn_rising_edge_s,  -- : out std_logic;
-               falling_edge_detected => i_ssn_falling_edge_s -- : out std_logic
-             );
+-- When set to TRUE SPI rx data will be valid when ss_n goes high (this will cause board select IP to fail but will allow other SPI configurations to work)
+gen_ss_n_high : if make_rx_data_happen_at_ss_n_high_edge generate
+        i_ssn_edge_detect : edge_detect_domain_crossed
+            Port map(
+                   clk => i_sys_clk,                             -- : in std_logic;
+                   signal_to_detect => i_ssn,                    -- : in std_logic;
+                   signal_out => i_ssn_s,                        -- : out std_logic;
+                   rising_edge_detected => i_ssn_rising_edge_s,  -- : out std_logic;
+                   falling_edge_detected => i_ssn_falling_edge_s -- : out std_logic
+                 );
+end generate gen_ss_n_high;
+
+-- When set to FALSE SPI rx data will be valid when all required bits have been recieved
+gen_not_ss_n_high : if not make_rx_data_happen_at_ss_n_high_edge generate
+        i_ssn_s <= i_ssn;
+end generate gen_not_ss_n_high;
+
+
 ----------------------------------------------------------------------------------------------------
 -- Data input latch process
 -- Latched only when slave enabled, Transmitter ready and wr is high.
@@ -238,35 +250,57 @@ begin
         end if;
     end process;
 
-    process(i_sys_clk, i_sys_rst)
-    begin
-        if (i_sys_rst = '1') then
-            rx_data_count_pos_sclk_i         <= (others => '0');
-            rx_done_pos_sclk_i               <= '0';
-        elsif rising_edge(i_sys_clk) then
---            if i_ssn_s = '1' then
---                rx_data_count_pos_sclk_i <= (others => '0');
-            if i_ssn_rising_edge_s = '1' then
-                rx_data_count_pos_sclk_i <= (others => '0');
-                rx_done_pos_sclk_i       <= '1';
-            else
-                if i_sclk_rising_edge_s = '1' then
-                    if (i_ssn_s = '0' and ((i_cpol = '0' and i_cpha = '0') or (i_cpol = '1' and i_cpha = '1'))) then
---                        if (rx_data_count_pos_sclk_i = DATA_SIZE - 1) then
-------                            rx_data_count_pos_sclk_i <= (others => '0');
---                            rx_done_pos_sclk_i       <= '1';
-                        if (i_ssn_s = '0') then
-                            rx_data_count_pos_sclk_i <= rx_data_count_pos_sclk_i + 1;
-                            rx_done_pos_sclk_i       <= '0';
+-- When set to TRUE SPI rx data will be valid when ss_n goes high (this will cause board select IP to fail but will allow other SPI configurations to work)
+gen_ss_n_high_0 : if make_rx_data_happen_at_ss_n_high_edge generate
+        process(i_sys_clk, i_sys_rst)
+        begin
+            if (i_sys_rst = '1') then
+                rx_data_count_pos_sclk_i         <= (others => '0');
+                rx_done_pos_sclk_i               <= '0';
+            elsif rising_edge(i_sys_clk) then
+                if i_ssn_rising_edge_s = '1' then
+                    rx_data_count_pos_sclk_i <= (others => '0');
+                    rx_done_pos_sclk_i       <= '1';
+                else
+                    if i_sclk_rising_edge_s = '1' then
+                        if (i_ssn_s = '0' and ((i_cpol = '0' and i_cpha = '0') or (i_cpol = '1' and i_cpha = '1'))) then
+                            if (i_ssn_s = '0') then
+                                rx_data_count_pos_sclk_i <= rx_data_count_pos_sclk_i + 1;
+                                rx_done_pos_sclk_i       <= '0';
+                            end if;
                         end if;
                     end if;
                 end if;
             end if;
-        end if;
-    end process;
+        end process;
+end generate gen_ss_n_high_0;
 
---               rising_edge_detected => i_ssn_rising_edge_s,  -- : out std_logic;
---               falling_edge_detected => i_ssn_falling_edge_s -- : out std_logic
+-- When set to FALSE SPI rx data will be valid when all required bits have been recieved
+gen_not_ss_n_high_0 : if not make_rx_data_happen_at_ss_n_high_edge generate
+        process(i_sys_clk, i_sys_rst)
+        begin
+            if (i_sys_rst = '1') then
+                rx_data_count_pos_sclk_i         <= (others => '0');
+                rx_done_pos_sclk_i               <= '0';
+            elsif rising_edge(i_sys_clk) then
+                if i_ssn_s = '1' then
+                    rx_data_count_pos_sclk_i <= (others => '0');
+                else
+                    if i_sclk_rising_edge_s = '1' then
+                        if (i_ssn_s = '0' and ((i_cpol = '0' and i_cpha = '0') or (i_cpol = '1' and i_cpha = '1'))) then
+                            if (rx_data_count_pos_sclk_i = DATA_SIZE - 1) then
+    ----.                            rx_data_count_pos_sclk_i <= (others => '0');
+                                rx_done_pos_sclk_i       <= '1';
+                            elsif (i_ssn_s = '0') then
+                                rx_data_count_pos_sclk_i <= rx_data_count_pos_sclk_i + 1;
+                                rx_done_pos_sclk_i       <= '0';
+                            end if;
+                        end if;
+                    end if;
+                end if;
+            end if;
+        end process;
+end generate gen_not_ss_n_high_0;
 
 ----------------------------------------------------------------------------
 --- MOSI Sampling : Sample at negedge of SCLK for
@@ -291,6 +325,31 @@ begin
         end if;
     end process;
 
+-- When set to TRUE SPI rx data will be valid when ss_n goes high (this will cause board select IP to fail but will allow other SPI configurations to work)
+gen_ss_n_high_1 : if make_rx_data_happen_at_ss_n_high_edge generate
+    process(i_sys_clk, i_sys_rst)
+    begin
+        if (i_sys_rst = '1') then
+            rx_data_count_neg_sclk_i     <= (others => '0');
+            rx_done_neg_sclk_i           <= '0';
+        elsif rising_edge(i_sys_clk) then
+            if i_ssn_rising_edge_s = '1' then
+                rx_data_count_neg_sclk_i <= (others => '0');
+                rx_done_neg_sclk_i       <= '1';
+            else
+                if i_sclk_falling_edge_s = '1' then
+                    if (i_ssn_s = '0') then
+                        rx_data_count_neg_sclk_i <= rx_data_count_neg_sclk_i + 1;
+                        rx_done_neg_sclk_i       <= '0';
+                    end if;
+                end if;
+            end if;
+        end if;
+    end process;
+end generate gen_ss_n_high_1;
+
+-- When set to FALSE SPI rx data will be valid when all required bits have been recieved
+gen_not_ss_n_high_1 : if not make_rx_data_happen_at_ss_n_high_edge generate
     process(i_sys_clk, i_sys_rst)
     begin
         if (i_sys_rst = '1') then
@@ -312,6 +371,7 @@ begin
             end if;
         end if;
     end process;
+end generate gen_not_ss_n_high_1;
 
 
 ----------------------------------------------------------------------------
