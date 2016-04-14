@@ -103,11 +103,11 @@ architecture rtl_arch of spi_slave is
     signal tx_error_i : std_logic := '0';
     signal rx_error_i : std_logic := '0';
     signal tx_ready_i : std_logic := '0';
-    signal rx_ready_i : std_logic := '0';
+    signal rx_ready_i : std_logic := '1'; -- Initialise this to 1 otherwise a rouge wrte of zero to address zero will happen from start-up
 
     signal miso_00_i, miso_01_i, miso_10_i, miso_11_i : std_logic := '0';
 
-    signal rx_done_pos_sclk_i, rx_done_neg_sclk_i, rx_done_reg1_i, rx_done_reg2_i, rx_done_reg3_i : std_logic := '0';
+    signal rx_done_pos_sclk_i, rx_done_neg_sclk_i, rx_done_reg1_i, rx_done_reg2_i, rx_done_reg3_i : std_logic := '1';
     signal tx_done_pos_sclk_i, tx_done_neg_sclk_i, tx_done_reg1_i, tx_done_reg2_i, tx_done_reg3_i : std_logic := '0';
     signal rx_data_count_pos_sclk_i                                                               : std_logic_vector(5 downto 0) := (others => '0');
     signal rx_data_count_neg_sclk_i                                                               : std_logic_vector(5 downto 0) := (others => '0');
@@ -256,7 +256,7 @@ gen_ss_n_high_0 : if make_rx_data_happen_at_ss_n_high_edge generate
         begin
             if (i_sys_rst = '1') then
                 rx_data_count_pos_sclk_i         <= (others => '0');
-                rx_done_pos_sclk_i               <= '0';
+                rx_done_pos_sclk_i               <= '1';
             elsif rising_edge(i_sys_clk) then
                 if i_ssn_rising_edge_s = '1' then
                     rx_data_count_pos_sclk_i <= (others => '0');
@@ -281,7 +281,7 @@ gen_not_ss_n_high_0 : if not make_rx_data_happen_at_ss_n_high_edge generate
         begin
             if (i_sys_rst = '1') then
                 rx_data_count_pos_sclk_i         <= (others => '0');
-                rx_done_pos_sclk_i               <= '0';
+                rx_done_pos_sclk_i               <= '1';
             elsif rising_edge(i_sys_clk) then
                 if i_ssn_s = '1' then
                     rx_data_count_pos_sclk_i <= (others => '0');
@@ -381,9 +381,9 @@ end generate gen_not_ss_n_high_1;
     process(i_sys_clk, i_sys_rst)
     begin
         if (i_sys_rst = '1') then
-            rx_done_reg1_i     <= '0';
-            rx_done_reg2_i     <= '0';
-            rx_done_reg3_i     <= '0';
+            rx_done_reg1_i     <= '1';
+            rx_done_reg2_i     <= '1';
+            rx_done_reg3_i     <= '1';
         elsif rising_edge(i_sys_clk) then
 --            if (i_ssn_s = '0' and ((i_cpol = '0' and i_cpha = '0') or (i_cpol = '1' and i_cpha = '1'))) then
             if (((i_cpol = '0' and i_cpha = '0') or (i_cpol = '1' and i_cpha = '1'))) then
@@ -403,7 +403,7 @@ end generate gen_not_ss_n_high_1;
     process(i_sys_clk, i_sys_rst)
     begin
         if (i_sys_rst = '1') then
-            rx_ready_i     <= '0';
+            rx_ready_i     <= '1';
         elsif rising_edge(i_sys_clk) then
             if (rx_done_reg2_i = '1' and rx_done_reg3_i = '0') then
                 rx_ready_i <= '1';

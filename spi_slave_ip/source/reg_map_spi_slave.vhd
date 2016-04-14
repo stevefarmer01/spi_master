@@ -105,8 +105,8 @@ constant DATA_SIZE : integer := DATA_SIZE_C;
 --signal reg_map_array_to_pins_s : mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0) := mem_array_t_initalised; -- This may be safer (due to syth support although tested in Diamond 3.5 and vivado 2014.1)) but not as nice
 signal reg_map_array_to_pins_s : mem_array_t( 0 to (2**SPI_ADDRESS_BITS)-1, SPI_DATA_BITS-1 downto 0) := MEM_ARRAY_T_INITIALISATION; -- This may be safer (due to syth support although tested in Diamond 3.5 and vivado 2014.1)) but not as nice
 
-signal o_rx_ready_slave_s : std_logic := '0';
-signal o_rx_ready_slave_r0 : std_logic := '0';
+signal o_rx_ready_slave_s : std_logic := '1'; -- Initialise this to 1 otherwise a rouge wrte of zero to address zero will happen from start-up
+signal o_rx_ready_slave_r0 : std_logic := '1'; -- Initialise this to 1 otherwise a rouge wrte of zero to address zero will happen from start-up
 signal o_rx_ready_rising_edge_s : std_logic := '0';
 signal o_data_slave_s : std_logic_vector(DATA_SIZE-1 downto 0) := (others  => '0');
 
