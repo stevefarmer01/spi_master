@@ -18,33 +18,33 @@ entity sclk_gen is
         i_hold_cycles  : in  std_logic_vector(7 downto 0);
         i_tx2tx_cycles : in  std_logic_vector(7 downto 0);
         i_cpol         : in  std_logic;
-        o_ss_start     : out std_logic;
-        o_sclk         : out std_logic
+        o_ss_start     : out std_logic := '1';
+        o_sclk         : out std_logic := '0'
         );
 end sclk_gen;
 
 architecture count_arch of sclk_gen is
 
-    signal clk_periodby2_i       : std_logic_vector(7 downto 0);
-    signal sclk_period_i         : std_logic_vector(7 downto 0);
-    signal sclk_count_i          : std_logic_vector(7 downto 0);
-    signal delay_clk_i           : std_logic;
-    signal div_clk_i             : std_logic;
-    signal clk_falling_i         : std_logic;
-    signal clk_rising_i          : std_logic;
-    signal delay_count_start_i   : std_logic;
-    signal tx2tx_delay_done_i    : std_logic;
-    signal hold_delay_done_i     : std_logic;
-    signal setup_delay_done_i    : std_logic;
-    signal delay_count_i         : std_logic_vector(7 downto 0);
-    signal falling_count_start_i : std_logic;
-    signal clk_falling_count_i   : std_logic_vector(7 downto 0);
-    signal spi_start_i           : std_logic;
-    signal sclk_count_start_i    : std_logic;
+    signal clk_periodby2_i       : std_logic_vector(7 downto 0) := (others => '0');
+    signal sclk_period_i         : std_logic_vector(7 downto 0) := (others => '0');
+    signal sclk_count_i          : std_logic_vector(7 downto 0) := "00000001";
+    signal delay_clk_i           : std_logic := '0';
+    signal div_clk_i             : std_logic := '0';
+    signal clk_falling_i         : std_logic := '0';
+    signal clk_rising_i          : std_logic := '0';
+    signal delay_count_start_i   : std_logic := '0';
+    signal tx2tx_delay_done_i    : std_logic := '0';
+    signal hold_delay_done_i     : std_logic := '0';
+    signal setup_delay_done_i    : std_logic := '0';
+    signal delay_count_i         : std_logic_vector(7 downto 0) := "00000001";
+    signal falling_count_start_i : std_logic := '0';
+    signal clk_falling_count_i   : std_logic_vector(7 downto 0) := (others => '0');
+    signal spi_start_i           : std_logic := '0';
+    signal sclk_count_start_i    : std_logic := '0';
 
     type spim_clk_states is (SPIM_IDLE_STATE, SPIM_SETUP_STATE,
                              SPIM_DATA_TX_STATE, SPIM_HOLD_STATE, SPIM_TX2TX_WAIT_STATE);
-    signal spim_clk_state_i : spim_clk_states;
+    signal spim_clk_state_i : spim_clk_states := SPIM_IDLE_STATE;
 
 
 begin

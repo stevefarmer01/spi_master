@@ -32,7 +32,7 @@ entity spi_master is
         i_setup_cycles : in  std_logic_vector(7 downto 0);  -- SPIM setup time  in terms of i_sys_clk
         i_hold_cycles  : in  std_logic_vector(7 downto 0);  -- SPIM hold time  in terms of i_sys_clk
         i_tx2tx_cycles : in  std_logic_vector(7 downto 0);  -- SPIM interval between data transactions in terms of i_sys_clk
-        o_slave_csn    : out std_logic_vector(3 downto 0);  -- SPI Slave select (chip select) active low
+        o_slave_csn    : out std_logic_vector(3 downto 0) := (others => '1');  -- SPI Slave select (chip select) active low
         o_mosi         : out std_logic;  -- Master output to Slave
         i_miso         : in  std_logic;  -- Master input from Slave
         o_sclk         : out std_logic;  -- Master clock
