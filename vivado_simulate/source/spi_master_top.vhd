@@ -37,30 +37,32 @@ entity spi_master_top is
         FIFO_REQ       :     Boolean := True
         );
     port(
-        i_sys_clk  : in  std_logic;  -- system clock
-        i_sys_rst  : in  std_logic;  -- system reset
-        i_csn      : in  std_logic;  -- SPI Master chip select
-        i_data     : in  std_logic_vector(DATA_SIZE - 1 downto 0);  -- Input data
-        i_wr       : in  std_logic;  -- Active Low Write, Active High Read
-        i_rd       : in  std_logic;  -- Active Low Write, Active High Read
-        o_data     : out std_logic_vector(DATA_SIZE - 1 downto 0);  --output data
-        o_tx_ready : out std_logic;  -- Transmitter ready, can write another 
-        o_rx_ready : out std_logic;  -- Receiver ready, can read data
-        o_tx_error : out std_logic;  -- Transmitter error
-        o_rx_error : out std_logic;  -- Receiver error
-        i_slave_addr   : in  std_logic_vector(1 downto 0);  -- Slave Address
-        i_cpol         : in  std_logic;  -- CPOL value - 0 or 1
-        i_cpha         : in  std_logic;  -- CPHA value - 0 or 1 
-        i_lsb_first    : in  std_logic;  -- lsb first when '1' /msb first when 
-        i_spi_start    : in  std_logic;  -- START SPI Master Transactions
-        i_clk_period   : in  std_logic_vector(7 downto 0);  -- SCL clock period in terms of i_sys_clk
-        i_setup_cycles : in  std_logic_vector(7 downto 0);  -- SPIM setup time  in terms of i_sys_clk
-        i_hold_cycles  : in  std_logic_vector(7 downto 0);  -- SPIM hold time  in terms of i_sys_clk
-        i_tx2tx_cycles : in  std_logic_vector(7 downto 0);  -- SPIM interval between data transactions in terms of i_sys_clk
-        o_slave_csn    : out std_logic_vector(3 downto 0);  -- SPI Slave select (chip select) active low
-        o_mosi         : out std_logic;  -- Master output to Slave
-        i_miso         : in  std_logic;  -- Master input from Slave
-        o_sclk         : out std_logic  -- Master clock
+        i_sys_clk      : in  std_logic;                                -- system clock
+        i_sys_rst      : in  std_logic;                                -- system reset
+        i_csn          : in  std_logic;                                -- SPI Master chip select
+        i_data         : in  std_logic_vector(DATA_SIZE - 1 downto 0); -- Input data
+        i_wr           : in  std_logic;                                -- Active Low Write, Active High Read
+        i_rd           : in  std_logic;                                -- Active Low Write, Active High Read
+        o_data         : out std_logic_vector(DATA_SIZE - 1 downto 0);  --output data
+        o_tx_ready     : out std_logic;                                -- Transmitter ready, can write another
+        o_rx_ready     : out std_logic;                                -- Receiver ready, can read data
+        o_tx_error     : out std_logic;                                -- Transmitter error
+        o_rx_error     : out std_logic;                                -- Receiver error
+        i_slave_addr   : in  std_logic_vector(1 downto 0);             -- Slave Address
+        i_cpol         : in  std_logic;                                -- CPOL value - 0 or 1
+        i_cpha         : in  std_logic;                                -- CPHA value - 0 or 1
+        i_lsb_first    : in  std_logic;                                -- lsb first when '1' /msb first when
+        i_spi_start    : in  std_logic;                                -- START SPI Master Transactions
+        i_clk_period   : in  std_logic_vector(7 downto 0);             -- SCL clock period in terms of i_sys_clk
+        i_setup_cycles : in  std_logic_vector(7 downto 0);             -- SPIM setup time  in terms of i_sys_clk
+        i_hold_cycles  : in  std_logic_vector(7 downto 0);             -- SPIM hold time  in terms of i_sys_clk
+        i_tx2tx_cycles : in  std_logic_vector(7 downto 0);             -- SPIM interval between data transactions in terms of i_sys_clk
+        o_slave_csn    : out std_logic_vector(3 downto 0);             -- SPI Slave select (chip select) active low
+        o_mosi         : out std_logic;                                -- Master output to Slave
+        i_miso         : in  std_logic;                                -- Master input from Slave
+        o_sclk         : out std_logic;                                -- Master clock
+        mosi_tri_en    : out std_logic;                                -- Tri-state low enable to use mosi_internal port with extenal tri-state - this is low enable as this is the Xilinx standard for tri-state enables
+        mosi_internal  : out std_logic                                 -- Raw internal (non-tristated) output of o_mosi - io_miso_s <= o_mosi_s when mosi_tri_en_s = '0' else 'Z';
         );
 end spi_master_top;
 
@@ -143,5 +145,8 @@ spi_master_inst : spi_master
     io_miso_s <= o_mosi_s when mosi_tri_en_s = '0' else 'Z';
 
     o_mosi <= io_miso_s;
+
+    mosi_internal <= o_mosi_s;
+    mosi_tri_en <= mosi_tri_en_s;
 
  end Behavioral;

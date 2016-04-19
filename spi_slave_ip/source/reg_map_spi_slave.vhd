@@ -40,7 +40,8 @@ entity reg_map_spi_slave is
             SPI_ADDRESS_BITS : integer := 4;
             SPI_DATA_BITS : integer := 16;
             MEM_ARRAY_T_INITIALISATION : mem_array_t;
-            make_rx_data_happen_at_ss_n_high_edge : boolean := FALSE     -- When set to TRUE SPI rx data will be valid when ss_n goes high (this will cause board select IP to fail but will allow other SPI configurations to work)
+            make_rx_data_happen_at_ss_n_high_edge : boolean := FALSE;     -- When set to TRUE SPI rx data will be valid when ss_n goes high (this will cause board select IP to fail but will allow other SPI configurations to work)
+            make_spi_write_only_no_rw_bit : boolean := FALSE              -- Make spi_slave accept one bit less (no r/w bit) and make all transactions a write (this will mimic DAC AD5322 SPI interface)
         );
     Port (  
             clk : in std_logic;
@@ -121,11 +122,15 @@ signal wr_en_to_spi_slave_s : std_logic := '0';
 
 signal write_enable_from_spi_s : std_logic := '0';
 
+signal rx_ready_rising_edge_s : std_logic := '0';
+signal raw_rx_read_write_bit_s : std_logic := '0';
+
 signal low_s : std_logic := '0';
 signal high_s : std_logic := '1';
 
 begin
 
+gen_not_write_only_spi : if not make_spi_write_only_no_rw_bit generate
     spi_slave_inst : spi_slave
         generic map(
             DATA_SIZE => DATA_SIZE,
@@ -155,53 +160,75 @@ begin
             o_tx_no_ack => open                  -- o_tx_no_ack : out std_logic
             );
 
+    raw_rx_read_write_bit_s <= o_data_slave_s(SPI_ADDRESS_BITS+SPI_DATA_BITS); -- Correct read write bit extracted as per Griffin protocol
+
+end generate gen_not_write_only_spi;
+
+gen_write_only_spi : if make_spi_write_only_no_rw_bit generate
+    spi_slave_inst : spi_slave
+        generic map(
+            DATA_SIZE => DATA_SIZE-1,           -- Expected data now 1 bit shorter
+            make_rx_data_happen_at_ss_n_high_edge => make_rx_data_happen_at_ss_n_high_edge
+            )
+        port map(
+            i_sys_clk   => clk,                  -- : in  std_logic;                   -- system clock
+            i_sys_rst   => reset,                -- : in  std_logic;                   -- system reset
+            i_csn       => low_s,                -- : in  std_logic;                   -- chip select for SPI master
+            i_data      => tx_data_s(tx_data_s'LEFT downto 1),            -- : in  std_logic_vector;            -- Input data
+            i_wr        => wr_en_to_spi_slave_s, -- : in  std_logic;                   -- Active Low Write, Active High Read
+            i_rd        => low_s,                -- : in  std_logic;                   -- Active Low Write, Active High Read
+            o_data      => o_data_slave_s(o_data_slave_s'LEFT-1 downto 0),       -- o_data     : out std_logic_vector; -- output data
+            o_tx_ready  => open,                 -- o_tx_ready : out std_logic;        -- Transmitter ready, can write another
+            o_rx_ready  => o_rx_ready_slave_s,   -- o_rx_ready : out std_logic;        -- Receiver ready, can read data
+            o_tx_error  => open,                 -- o_tx_error : out std_logic;        -- Transmitter error
+            o_rx_error  => open,                 -- o_rx_error : out std_logic;        -- Receiver error
+            i_cpol      => cpol,                 -- : in  std_logic;                   -- CPOL value - 0 or 1
+            i_cpha      => cpha,                 -- : in  std_logic;                   -- CPHA value - 0 or 1
+            i_lsb_first => lsb_first,            -- : in  std_logic;                   -- lsb first when '1' /msb first when
+            i_ssn       => ss_n,                 -- i_ssn  : in  std_logic;            -- Slave Slect Active low
+            i_raw_ssn   => i_raw_ssn,            -- : in  std_logic;                   -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to i_ssn
+            i_mosi      => mosi,                 -- i_mosi : in  std_logic;            -- Slave input from Master
+            o_miso      => miso,                 -- o_miso : out std_logic;            -- Slave output to Master
+            i_sclk      => sclk,                 -- i_sclk : in  std_logic;            -- Clock from SPI Master
+            o_tx_ack    => open,                 -- o_tx_ack : out std_logic;
+            o_tx_no_ack => open                  -- o_tx_no_ack : out std_logic
+            );
+
+    raw_rx_read_write_bit_s <= '0'; -- Always write commands as per input generic
+
+end generate gen_write_only_spi;
+
 o_rx_ready_rising_edge_s <= '1' when o_rx_ready_slave_r0 = '0' and o_rx_ready_slave_s = '1' else '0';
 
--- When set to TRUE SPI rx data will be valid when ss_n goes high (this will cause board select IP to fail but will allow other SPI configurations to work)
+
+gen_not_ss_n_high : if not make_rx_data_happen_at_ss_n_high_edge generate
+    rx_ready_rising_edge_s <= o_rx_ready_rising_edge_s and not ss_n; -- When set to FALSE SPI rx data will be valid when all required bits have been recieved
+end generate gen_not_ss_n_high;
+
 gen_ss_n_high : if make_rx_data_happen_at_ss_n_high_edge generate
-    spi_rx_bits_proc : process(clk)
-    begin
-        if rising_edge(clk) then
-            if reset = '1' then
-                rx_read_write_bit_s <= '0';        
-                rx_address_s <= (others => '0');
-                rx_data_s <= (others => '0');
-            else
-                rx_valid_S <= '0';
-                o_rx_ready_slave_r0 <= o_rx_ready_slave_s;
-                if o_rx_ready_rising_edge_s = '1' then
-                    rx_valid_s <= '1';
-                    rx_read_write_bit_s <= o_data_slave_s(SPI_ADDRESS_BITS+SPI_DATA_BITS);                     -- Tead/Write bit is the MSb
-                    rx_address_s <= o_data_slave_s((SPI_ADDRESS_BITS-1)+SPI_DATA_BITS downto SPI_DATA_BITS); -- Address bits are the next MSb's after data
-                    rx_data_s <= o_data_slave_s((SPI_DATA_BITS-1) downto 0);                                 -- Data bits are LSb's
-                end if;
-            end if;
-        end if;
-    end process;
+    rx_ready_rising_edge_s <= o_rx_ready_rising_edge_s; -- When set to TRUE SPI rx data will be valid when ss_n goes high (this will cause board select IP to fail but will allow other SPI configurations to work)
 end generate gen_ss_n_high;
 
--- When set to FALSE SPI rx data will be valid when all required bits have been recieved
-gen_not_ss_n_high : if not make_rx_data_happen_at_ss_n_high_edge generate
-    spi_rx_bits_proc : process(clk)
-    begin
-        if rising_edge(clk) then
-            if reset = '1' then
-                rx_read_write_bit_s <= '0';        
-                rx_address_s <= (others => '0');
-                rx_data_s <= (others => '0');
-            else
-                rx_valid_S <= '0';
-                o_rx_ready_slave_r0 <= o_rx_ready_slave_s;
-                    if o_rx_ready_rising_edge_s = '1' and ss_n = '0' then
-                    rx_valid_s <= '1';
-                    rx_read_write_bit_s <= o_data_slave_s(SPI_ADDRESS_BITS+SPI_DATA_BITS);                     -- Tead/Write bit is the MSb
-                    rx_address_s <= o_data_slave_s((SPI_ADDRESS_BITS-1)+SPI_DATA_BITS downto SPI_DATA_BITS); -- Address bits are the next MSb's after data
-                    rx_data_s <= o_data_slave_s((SPI_DATA_BITS-1) downto 0);                                 -- Data bits are LSb's
-                end if;
+
+spi_rx_bits_proc : process(clk)
+begin
+    if rising_edge(clk) then
+        if reset = '1' then
+            rx_read_write_bit_s <= '0';        
+            rx_address_s <= (others => '0');
+            rx_data_s <= (others => '0');
+        else
+            rx_valid_S <= '0';
+            o_rx_ready_slave_r0 <= o_rx_ready_slave_s;
+                if rx_ready_rising_edge_s = '1' then
+                rx_valid_s <= '1';
+                rx_read_write_bit_s <= raw_rx_read_write_bit_s;                     -- Read/Write bit is the MSb
+                rx_address_s <= o_data_slave_s((SPI_ADDRESS_BITS-1)+SPI_DATA_BITS downto SPI_DATA_BITS); -- Address bits are the next MSb's after data
+                rx_data_s <= o_data_slave_s((SPI_DATA_BITS-1) downto 0);                                 -- Data bits are LSb's
             end if;
         end if;
-    end process;
-end generate gen_not_ss_n_high;
+    end if;
+end process;
 
 ---Extract read data from reg map array and send it back across SPI to master
 read_data_s <= get_data(reg_map_array_from_pins, to_integer(unsigned(rx_address_s)));           -- Use address received  to extract read data from reg map array to send back on next tx
