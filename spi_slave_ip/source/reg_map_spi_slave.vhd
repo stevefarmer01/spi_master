@@ -52,6 +52,8 @@ entity reg_map_spi_slave is
             i_raw_ssn : in  std_logic;    -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to i_ssn
             mosi : in STD_LOGIC;
             miso : out STD_LOGIC;
+            --DAC AD5322 BFM loading port
+            ldac_bar : in std_logic := '0';
             --Low level SPI interface parameters
             cpol      : in std_logic := '0';                                -- CPOL value - 0 or 1
             cpha      : in std_logic := '0';                                -- CPHA value - 0 or 1
@@ -124,6 +126,8 @@ signal write_enable_from_spi_s : std_logic := '0';
 
 signal rx_ready_rising_edge_s : std_logic := '0';
 signal raw_rx_read_write_bit_s : std_logic := '0';
+signal store_rx_ready_rising_edge_r : std_logic := '0';
+signal store_rx_ready_rising_edge_s : std_logic := '0';
 
 signal low_s : std_logic := '0';
 signal high_s : std_logic := '1';
@@ -162,6 +166,8 @@ gen_not_write_only_spi : if not make_spi_write_only_no_rw_bit generate
 
     raw_rx_read_write_bit_s <= o_data_slave_s(SPI_ADDRESS_BITS+SPI_DATA_BITS); -- Correct read write bit extracted as per Griffin protocol
 
+    o_rx_ready_rising_edge_s <= '1' when o_rx_ready_slave_r0 = '0' and o_rx_ready_slave_s = '1' else '0';
+
 end generate gen_not_write_only_spi;
 
 gen_write_only_spi : if make_spi_write_only_no_rw_bit generate
@@ -194,11 +200,25 @@ gen_write_only_spi : if make_spi_write_only_no_rw_bit generate
             o_tx_no_ack => open                  -- o_tx_no_ack : out std_logic
             );
 
-    raw_rx_read_write_bit_s <= '0'; -- Always write commands as per input generic
+    raw_rx_read_write_bit_s <= '0'; -- All commands are writes as per input generic
+
+    store_rx_ready_rising_edge_s <= '1' when o_rx_ready_slave_r0 = '0' and o_rx_ready_slave_s = '1' else '0';
+
+    --Store rx_ready until input DAC AD5322 style loading port ldac goes low
+    store_rx_read_proc : process
+    begin
+        wait until rising_edge(clk);
+        o_rx_ready_rising_edge_s <= '0';
+        if store_rx_ready_rising_edge_s = '1' then
+            store_rx_ready_rising_edge_r <= '1';
+        elsif ((not ldac_bar) and store_rx_ready_rising_edge_r) = '1' then
+            store_rx_ready_rising_edge_r <= '0';
+            o_rx_ready_rising_edge_s <= '1'; -- Input load port has gone low and so pass rx_ready on
+        end if;
+    end process;
 
 end generate gen_write_only_spi;
 
-o_rx_ready_rising_edge_s <= '1' when o_rx_ready_slave_r0 = '0' and o_rx_ready_slave_s = '1' else '0';
 
 
 gen_not_ss_n_high : if not make_rx_data_happen_at_ss_n_high_edge generate

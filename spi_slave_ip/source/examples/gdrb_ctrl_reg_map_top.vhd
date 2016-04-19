@@ -78,6 +78,8 @@ component reg_map_spi_slave is
             i_raw_ssn : in  std_logic;    -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to i_ssn
             mosi : in STD_LOGIC;
             miso : out STD_LOGIC;
+            --DAC AD5322 BFM loading port
+            ldac_bar : in std_logic := '0';
             --Low level SPI interface parameters
             cpol      : in std_logic := '0';                                -- CPOL value - 0 or 1
             cpha      : in std_logic := '0';                                -- CPHA value - 0 or 1

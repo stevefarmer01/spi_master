@@ -51,6 +51,8 @@ entity generic_spi_reg_map_top is
             i_raw_ssn : in  std_logic;                                   -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to i_ssn
             mosi : in STD_LOGIC;
             miso : out STD_LOGIC;
+            --DAC AD5322 BFM loading port
+            ldac_bar : in std_logic := '0';
             --Low level SPI interface parameters
             cpol      : in std_logic := '0';                             -- CPOL value - 0 or 1
             cpha      : in std_logic := '0';                             -- CPHA value - 0 or 1
@@ -80,6 +82,8 @@ component reg_map_spi_slave is
             i_raw_ssn : in  std_logic;    -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to i_ssn
             mosi : in STD_LOGIC;
             miso : out STD_LOGIC;
+            --DAC AD5322 BFM loading port
+            ldac_bar : in std_logic := '0';
             --Low level SPI interface parameters
             cpol      : in std_logic := '0';                                -- CPOL value - 0 or 1
             cpha      : in std_logic := '0';                                -- CPHA value - 0 or 1
@@ -191,6 +195,8 @@ reg_map_spi_slave_inst : reg_map_spi_slave
             i_raw_ssn => i_raw_ssn,                                                         -- : in  std_logic;                                                            -- Slave Slect Active low - this is not masked by board select for Griffin protocol - for normal operation (not Griffin) connect this to i_ssn
             mosi => mosi,                                                                   -- : in STD_LOGIC;
             miso => miso,                                                                   -- : out STD_LOGIC;
+            --DAC AD5322 BFM loading port
+            ldac_bar => ldac_bar,                                                           -- : in std_logic := '0';
             --Low level SPI interface parameters
             cpol => cpol,                                                                   -- : in std_logic := '0';                                                      -- CPOL value - 0 or 1
             cpha => cpha,                                                                   -- : in std_logic := '0';                                                      -- CPHA value - 0 or 1
@@ -238,9 +244,9 @@ end generate non_testbenching_gen;
 testbenching_gen : if make_all_addresses_writeable_for_testing generate
 
 --    spi_array_from_pins_s <= spi_array_to_pins_s;
-    set_all_data(spi_array_to_pins_s, spi_array_from_pins_s);
+    set_all_data(spi_array_to_pins_s, spi_array_from_pins_s); -- set_all_data(in, out) -- Send all rx'd data from SPI back so that it can be tx'd and thus read over SPI for testing
+    set_all_data(spi_array_to_pins_s, reg_map_array_to_pins); -- set_all_data(in, out) -- Send all rd'd data from SPI to output pins for testing
 
 end generate testbenching_gen;
-
 
 end Behavioral;
