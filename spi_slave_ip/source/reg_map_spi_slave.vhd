@@ -132,6 +132,9 @@ signal store_rx_ready_rising_edge_s : std_logic := '0';
 signal low_s : std_logic := '0';
 signal high_s : std_logic := '1';
 
+--These signals will not produce any logic after synthesis
+signal ss_n_falling_edge_time_s : time := 0 ns;
+
 begin
 
 gen_not_write_only_spi : if not make_spi_write_only_no_rw_bit generate
@@ -216,6 +219,39 @@ gen_write_only_spi : if make_spi_write_only_no_rw_bit generate
             o_rx_ready_rising_edge_s <= '1'; -- Input load port has gone low and so pass rx_ready on
         end if;
     end process;
+
+--Check DAC's LDAC_N input has gone from low to high less than 20nS after it's SYNC_N has gone from low to high and this is a failure as per the AD5322 datasheet
+--Check DAC's LDAC_N low pulse with less than 20 nS and this is a failure as per the AD5322 datasheet
+--Code from here to.....
+-- synthesis translate_off
+
+        process
+        begin
+            wait until rising_edge(ss_n);
+            ss_n_falling_edge_time_s <= now;
+        end process;
+
+        process
+        begin
+            wait until rising_edge(ldac_bar);
+            if (now - ss_n_falling_edge_time_s) < 20 ns then
+                report "DAC's LDAC_N input has gone from low to high less than 20nS after it's SYNC_N has gone from low to high and this is a failure as per the AD5322 datasheet" severity FAILURE;
+            end if; 
+        end process;
+
+        process
+            variable ldac_bar_falling_edge_time_v : time := 0 ns;
+        begin
+            wait until falling_edge(ldac_bar);
+            ldac_bar_falling_edge_time_v := now;
+            wait until rising_edge(ldac_bar);
+            if (now - ldac_bar_falling_edge_time_v) < 20 ns then
+                report "DAC's LDAC_N low pulse with less than 20 nS and this is a failure as per the AD5322 datasheet" severity FAILURE;
+            end if;
+        end process;
+
+-- synthesis translate_on
+--.....here is for use in a BFM on a testbench and so should not be synthesised. The translate_on/off around it will doulbly ensure this
 
 end generate gen_write_only_spi;
 
