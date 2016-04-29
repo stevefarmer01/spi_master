@@ -764,7 +764,7 @@ input_vector_file_test_gen : if DUT_TYPE = "input_vector_file_test" generate
         FILE_OPEN(status, F, "..\\" & filename_prefix & "input_test.txt", READ_MODE);
         if status /= OPEN_OK then
             assert FALSE
-                report "Failed to open file" severity WARNING;
+                report "Failed to open file" & "..\\" & filename_prefix & "input_test.txt" severity WARNING;
 --                stop_clks <= TRUE;                                                                  -- Stop simulator so that all other tests can stop simulator when they have completed (all anded at top level)
         else
             stop_sim_on_fail <= FALSE;                                                                                     -- Do not exit on fail as we want complete file IO output showing fails (set to true when doing clk speed tests (will exit when fail detected))
@@ -1009,7 +1009,7 @@ begin
     end if;
 
     assert not a_test_has_failed                                                                     -- ...this to stop simulation in modelsim not as nice but effective (probably due to us using old modelsim version 6.6)
-        report "Error - There have been one or more ERRORS" severity failure;
+        report "Error - There have been one or more ERRORS" severity warning;
     assert a_test_has_failed                                                                     -- ...this to stop simulation in modelsim not as nice but effective (probably due to us using old modelsim version 6.6)
         report "Pass - All test completed with no fails" severity warning;  -- Reduce to warning so that multiple runs of this testbench will all finish all of their tests
     wait;
