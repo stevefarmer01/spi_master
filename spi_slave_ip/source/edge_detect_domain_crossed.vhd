@@ -42,28 +42,31 @@ end edge_detect_domain_crossed;
 
 architecture Behavioral of edge_detect_domain_crossed is
 
-    component level_change_domain is
-        generic(number_of_domain_cross_regs : natural := 2);
-        Port ( signal_in : in  std_logic_vector;
-               SystemClk : in  std_logic;
-               signal_out : out  std_logic_vector
-               );
-    end component;
+--    component level_change_domain is
+--        generic(number_of_domain_cross_regs : natural := 2);
+--        Port ( signal_in : in  std_logic_vector;
+--               SystemClk : in  std_logic;
+--               signal_out : out  std_logic_vector
+--               );
+--    end component;
 
     signal signal_to_detect_s : std_logic := '0';
     signal signal_to_detect_r0 : std_logic := '0';
 
 begin
 
-    level_change_domain_inst : level_change_domain
-        generic map (
-                     number_of_domain_cross_regs => 2 -- : natural := 2
-                     )
-        Port map (  
-                  signal_in(0) => signal_to_detect,   -- : in  std_logic_vector;
-                  SystemClk => clk,                   -- : in  std_logic;
-                  signal_out(0) => signal_to_detect_s -- : out  std_logic_vector
-                  );
+--    level_change_domain_inst : level_change_domain
+--        generic map (
+--                     number_of_domain_cross_regs => 2 -- : natural := 2
+--                     )
+--        Port map (  
+--                  signal_in(0) => signal_to_detect,   -- : in  std_logic_vector;
+--                  SystemClk => clk,                   -- : in  std_logic;
+--                  signal_out(0) => signal_to_detect_s -- : out  std_logic_vector
+--                  );
+
+--Domain crossing now done in top level
+signal_to_detect_s <= signal_to_detect;
 
     reg_proc : process
     begin
