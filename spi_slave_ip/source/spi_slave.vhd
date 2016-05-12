@@ -566,20 +566,26 @@ end generate gen_not_ss_n_high_1;
         end if;
     end process;
 
-    process(i_raw_ssn, i_cpol, i_cpha, miso_00_i, miso_01_i, miso_10_i, miso_11_i)
+--Make this process syncronous because it can cause constraints to fail. However, this will reduce it's maximum SPI speed
+--    process(i_raw_ssn, i_cpol, i_cpha, miso_00_i, miso_01_i, miso_10_i, miso_11_i)
+    process(i_sys_clk, i_sys_rst)
     begin
-        if (i_raw_ssn = '0') then
-            if (i_cpol = '0' and i_cpha = '0') then
-                o_miso <= miso_00_i;
-            elsif (i_cpol = '0' and i_cpha = '1') then
-                o_miso <= miso_01_i;
-            elsif (i_cpol = '1' and i_cpha = '0') then
-                o_miso <= miso_10_i;
-            else
-                o_miso <= miso_11_i;
-            end if;
-        else
+        if (i_sys_rst = '1') then
             o_miso     <= '0';
+        elsif rising_edge(i_sys_clk) then
+            if (i_raw_ssn = '0') then
+                if (i_cpol = '0' and i_cpha = '0') then
+                    o_miso <= miso_00_i;
+                elsif (i_cpol = '0' and i_cpha = '1') then
+                    o_miso <= miso_01_i;
+                elsif (i_cpol = '1' and i_cpha = '0') then
+                    o_miso <= miso_10_i;
+                else
+                    o_miso <= miso_11_i;
+                end if;
+            else
+                o_miso     <= '0';
+            end if;
         end if;
     end process;
 
