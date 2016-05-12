@@ -350,12 +350,12 @@ signal   mosi_i          : std_logic                     := '0';  -- Master outp
 signal   miso_s          : std_logic                     := '1';  -- Master input from Slave
 signal   sclk_i          : std_logic                     := '0';  -- Master clock
 signal   ss_i            : std_logic;  -- Master
-constant TIME_PERIOD_CLK : time                          := 10 ns;
-shared variable cnt      : integer                       := 0;
+--constant TIME_PERIOD_CLK : time                          := 10 ns;
+--constant TIME_PERIOD_CLK : time                          := 2 ns;
+constant TIME_PERIOD_CLK : time                          := 5 ns;
 
     constant induce_fault_master_tx_c : boolean := FALSE;
 
-    signal TIME_PERIOD_CLK_S : time := 10 ns;
     signal TIME_PERIOD_CLK_DUT_S : time := 16.67 ns;
     signal dut_sys_clk_i : std_logic := '0';
     signal dut_clk_ratio_to_testbench : integer := integer(TIME_PERIOD_CLK_DUT_S/TIME_PERIOD_CLK);
