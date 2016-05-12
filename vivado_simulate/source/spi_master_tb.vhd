@@ -67,12 +67,6 @@
 --.    constant SPI_DATA_BITS : integer := 16;
 --.    constant DATA_SIZE : integer   := SPI_ADDRESS_BITS+SPI_DATA_BITS+1;                             -- Total data size = read/write bit + address + data
 
--- test
--- test_1
--- test_2
--- test_3
-
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -84,6 +78,7 @@ use work.multi_array_types_pkg.all;
 
 entity spi_master_tb is
     generic(
+            spi_speed : positive := 2E6;
             board_select : boolean := FALSE;                                        -- Use generate statement - xxxxxx_gen : if not board_select generate xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx end generate;
             external_spi_slave_dut : boolean := false;
             make_all_addresses_writeable_for_testing : boolean := TRUE;
@@ -345,14 +340,14 @@ signal   rd_i            : std_logic                     := '0';  -- Active Low 
 signal   slave_addr_i    : std_logic_vector(1 downto 0)  := "00";  -- Slave Address
 signal   spi_start_i     : std_logic                     := '0';  -- START SPI Master Transactions
 signal   tx2tx_cycles_i  : std_logic_vector(7 downto 0) := std_logic_vector(to_unsigned(16,8));  -- SPIM interval between data transactions in terms of i_sys_clk
+signal   clk_period_i    : std_logic_vector(7 downto 0) := std_logic_vector(to_unsigned(50,8));  -- SPI SCLK output period of master in terms of i_sys_clk
 signal   slave_csn_i     : std_logic_vector(3 downto 0);  -- SPI Slave select (chip select) active low
 signal   mosi_i          : std_logic                     := '0';  -- Master output to Slave
 signal   miso_s          : std_logic                     := '1';  -- Master input from Slave
 signal   sclk_i          : std_logic                     := '0';  -- Master clock
 signal   ss_i            : std_logic;  -- Master
---constant TIME_PERIOD_CLK : time                          := 10 ns;
---constant TIME_PERIOD_CLK : time                          := 2 ns;
-constant TIME_PERIOD_CLK : time                          := 5 ns;
+
+constant TIME_PERIOD_CLK : time := (1.0 / real(spi_speed * to_integer(unsigned(clk_period_i)))) * 1 sec;
 
     constant induce_fault_master_tx_c : boolean := FALSE;
 
@@ -706,7 +701,8 @@ data_i_master_tx <= (data_i(data_i'HIGH downto 1) & '1') when induce_fault_maste
             i_lsb_first    => SPI_LSB_FIRST,     -- : in  std_logic;                                    -- lsb first when '1' /msb first when
             i_spi_start    => spi_start_i,       -- : in  std_logic;                                    -- START SPI Master Transactions
 --            i_clk_period   => "01100100",        -- : in  std_logic_vector(7 downto 0);                 -- SCL clock period in terms of i_sys_clk
-            i_clk_period   => "00110010",        -- : in  std_logic_vector(7 downto 0);                 -- SCL clock period in terms of i_sys_clk
+--            i_clk_period   => "00110010",        -- : in  std_logic_vector(7 downto 0);                 -- SCL clock period in terms of i_sys_clk
+            i_clk_period   => clk_period_i,      -- : in  std_logic_vector(7 downto 0);                 -- SCL clock period in terms of i_sys_clk
             i_setup_cycles => "00011111",        -- : in  std_logic_vector(7 downto 0);                 -- SPIM setup time  in terms of i_sys_clk
             i_hold_cycles  => "00011111",        -- : in  std_logic_vector(7 downto 0);                 -- SPIM hold time  in terms of i_sys_clk
             i_tx2tx_cycles => tx2tx_cycles_i,    -- : in  std_logic_vector(7 downto 0);                 -- SPIM interval between data transactions in terms of i_sys_clk
