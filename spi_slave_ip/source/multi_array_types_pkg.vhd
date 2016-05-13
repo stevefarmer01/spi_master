@@ -44,7 +44,13 @@ package multi_array_types_pkg is
 --                        address : natural;
 --                        bit_address_range : natural range <>) return std_logic_vector;
 
-    procedure set_data_v (--signal clk : in std_logic;
+    procedure set_data_v (
+                        variable mem_array : inout mem_array_t;
+                        address : in natural;
+                        data : in std_logic_vector
+                        );
+
+    procedure set_data_sliced_vector_v (
                         variable mem_array : inout mem_array_t;
                         address : in natural;
                         data : in std_logic_vector
@@ -139,6 +145,17 @@ package body multi_array_types_pkg is
                     mem_array(address,i) := data(i);
             end loop;
     end set_data_v;
+    
+    procedure set_data_sliced_vector_v (--signal clk : in std_logic;
+                        variable mem_array : inout mem_array_t;
+                        address : in natural;
+                        data : in std_logic_vector
+                        ) is
+    begin
+            for i in mem_array'RANGE(2) loop
+                    mem_array(address,i) := data(data'RIGHT+i);
+            end loop;
+    end set_data_sliced_vector_v;
     
 
 
