@@ -18,10 +18,17 @@ package multi_array_types_pkg is
     function get_data (input_array : mem_array_t;
                         address : natural) return std_logic_vector;
 
-    procedure set_data (--signal clk : in std_logic;
+    procedure set_data (
                         signal mem_array : out mem_array_t;
                         address : in natural;
                         data : in std_logic_vector
+                        );
+
+    procedure set_data_bit (
+                        signal mem_array : out mem_array_t;
+                        address : in natural;
+                        bit_address : natural;
+                        data : in std_logic
                         );
 
     procedure set_all_data (--signal clk : in std_logic;
@@ -84,6 +91,16 @@ package body multi_array_types_pkg is
             end loop;
     end set_data;
     
+    procedure set_data_bit (
+                        signal mem_array : out mem_array_t;
+                        address : in natural;
+                        bit_address : natural;
+                        data : in std_logic
+                        ) is
+    begin
+            mem_array(address,bit_address) <= data;
+    end set_data_bit;
+
     procedure set_all_data (--signal clk : in std_logic;
 --                        signal mem_array_in : in mem_array_t;
                         constant mem_array_in : in mem_array_t;
